@@ -8,6 +8,7 @@
     <div class="main-container">
       <navbar></navbar>
       <app-main></app-main>
+      <div class="footer-name" :class="{lgWidth: !sidebar.opened}">Copyright © 2017 版权所有 北京同创永益科技发展有限公司 | 京ICP备 5896664661号</div>
     </div>
   </div>
 </template>
@@ -62,6 +63,33 @@ export default {
   }
   .scroll-container.sidebar-container{
     margin-top:49px;
+  }
+  .footer-name{
+    position: fixed;
+    bottom: 0px;
+    right: 0;
+    left: 90px;
+    width: 100%;
+    overflow: hidden;
+    text-align: center;
+    display: inline-block;
+    color:#555;
+    line-height: 30px;
+    font-size: 12px;
+    border-top:solid 1px #e6e6e6;
+    background-color: #fff;
+    z-index: 10;
+    transition: left 0.3s;
+    -moz-transition: left 0.3s;
+    -webkit-transition: left 0.3s;
+    -o-transition: left 0.3s;
+  }
+  .footer-name.lgWidth{
+    left:36px;
+    transition: left 0.3s;
+    -moz-transition: left 0.3s;
+    -webkit-transition: left 0.3s;
+    -o-transition: left 0.3s;
   }
 }
 </style>

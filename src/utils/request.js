@@ -1,21 +1,24 @@
 import axios from 'axios'
 import { Message, MessageBox } from 'element-ui'
 import store from '../store'
-// import { getToken } from '@/utils/auth'
+import { getToken } from '@/utils/auth'
 
 // 创建axios实例
 const service = axios.create({
+  // withCredentials: true,
   baseURL: process.env.BASE_API, // api的base_url
   timeout: 15000 // 请求超时时间
 })
 
 // request拦截器
 service.interceptors.request.use(config => {
+  console.log(getToken())
   if (store.getters.token) {
-    config.headers = {
-      'X-Requested-With': 'XMLHttpRequest',
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    }
+    // config.headers['X-Token'] = getToken() // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
+    // config.headers = {
+    //   'X-Requested-With': 'XMLHttpRequest',
+    //   'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+    // }
   }
   return config
 }, error => {

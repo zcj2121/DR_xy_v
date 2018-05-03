@@ -6,7 +6,7 @@
         <el-table-column label="序号" prop="id" sortable width="65" :show-overflow-tooltip=true></el-table-column>
         <el-table-column label="步骤类型" prop="name" sortable width="90" :show-overflow-tooltip=true></el-table-column>
         <el-table-column label="内容" prop="state" sortable min-width="180" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column label="动作" prop="describe" sortable width="90" :show-overflow-tooltip=true></el-table-column>
+        <el-table-column label="动作" prop="describe" sortable width="65" :show-overflow-tooltip=true></el-table-column>
         <el-table-column label="描述" prop="describe" min-width="180" :show-overflow-tooltip=true></el-table-column>
         <el-table-column label="计划时间" prop="time" sortable width="152" :show-overflow-tooltip=true></el-table-column>
         <el-table-column class-name="status-col" label="状态" sortable width="90" align="center">

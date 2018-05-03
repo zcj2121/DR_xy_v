@@ -18,15 +18,8 @@ export function login(username, password) {
 export function getInfo(token) {
   return request({
     url: '/user/info',
-    method: 'post',
-    // params: { token }
-    data: {
-      token
-    },
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    }
+    method: 'get',
+    params: { token }
   })
 }
 

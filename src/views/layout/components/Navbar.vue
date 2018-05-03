@@ -2,22 +2,30 @@
   <el-menu class="navbar" mode="horizontal">
     <hamburger class="hamburger-container" :toggleClick="toggleSideBar" :isActive="sidebar.opened"></hamburger>
     <breadcrumb></breadcrumb>
-    <el-dropdown class="avatar-container" placement="bottom-end" trigger="click">
-      <div class="avatar-wrapper">
-        欢迎您，<span>{{name}}</span>
-        <i class="el-icon-caret-bottom"></i>
-      </div>
-      <el-dropdown-menu class="user-dropdown" slot="dropdown">
-        <!--<router-link class="inlineBlock" to="/">-->
+
+    <div class="right-menu">
+      <el-tooltip class="item" effect="dark" content="全屏" placement="bottom">
+        <span class="screenfull" @click="screenfullChange">
+        <i class="fa fa-arrows-alt"></i>
+      </span>
+      </el-tooltip>
+      <el-dropdown class="avatar-container" placement="bottom-end" trigger="click">
+        <div class="avatar-wrapper">
+          欢迎您，<span>{{name}}</span>
+          <i class="el-icon-caret-bottom"></i>
+        </div>
+        <el-dropdown-menu class="user-dropdown" slot="dropdown">
+          <!--<router-link class="inlineBlock" to="/">-->
           <!--<el-dropdown-item>-->
-            <!--首 页-->
+          <!--首 页-->
           <!--</el-dropdown-item>-->
-        <!--</router-link>-->
-        <el-dropdown-item divided>
-          <span @click="logout" style="display:block;">退 出</span>
-        </el-dropdown-item>
-      </el-dropdown-menu>
-    </el-dropdown>
+          <!--</router-link>-->
+          <el-dropdown-item divided>
+            <span @click="logout" style="display:block;">退 出</span>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+    </div>
   </el-menu>
 </template>
 
@@ -27,6 +35,11 @@ import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 
 export default {
+  data() {
+    return {
+      screenfullShow: false
+    }
+  },
   components: {
     Breadcrumb,
     Hamburger
@@ -39,6 +52,43 @@ export default {
     ])
   },
   methods: {
+    screenfullChange() {
+      const isPullscreen = fullscreen()
+      if (isPullscreen === true) {
+        exitFullscreen()
+      } else if (isPullscreen === false) {
+        requestFullScreen()
+      }
+      // 是否全屏
+      function fullscreen() {
+        return document.fullscreen ||
+          document.webkitIsFullScreen ||
+          document.mozFullScreen ||
+          false
+      }
+      // 进入全屏
+      function requestFullScreen() {
+        var de = document.documentElement
+        if (de.requestFullscreen) {
+          de.requestFullscreen()
+        } else if (de.mozRequestFullScreen) {
+          de.mozRequestFullScreen()
+        } else if (de.webkitRequestFullScreen) {
+          de.webkitRequestFullScreen()
+        }
+      }
+      // 退出全屏
+      function exitFullscreen() {
+        var de = document
+        if (de.exitFullscreen) {
+          de.exitFullscreen()
+        } else if (de.mozCancelFullScreen) {
+          de.mozCancelFullScreen()
+        } else if (de.webkitCancelFullScreen) {
+          de.webkitCancelFullScreen()
+        }
+      }
+    },
     toggleSideBar() {
       this.$store.dispatch('ToggleSideBar')
     },
@@ -62,45 +112,54 @@ export default {
     float: left;
     padding: 0 10px;
   }
-  .screenfull {
-    position: absolute;
-    right: 90px;
-    top: 16px;
-    color: red;
-  }
-  .avatar-container {
-    height: 50px;
-    display: inline-block;
-    position: absolute;
-    right: 0px;
-    padding-right: 35px;
-    .avatar-wrapper {
+  .right-menu{
+    float: right;
+    height: 100%;
+    .screenfull{
+      color:#606266;
       cursor: pointer;
-      margin-top: 0px;
-      position: relative;
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-      }
-      .el-icon-caret-bottom {
-        position: absolute;
-        right: -20px;
-        top: 20px;
-        font-size: 12px;
+      margin: 0 8px;
+      /*border: 1px solid #ccc;*/
+      /*padding: 2px 4px;*/
+      /*border-radius: 2px;*/
+    }
+    .screenfull:hover{
+      color:rgb(64, 158, 255);
+      border-color: rgb(64, 158, 255);
+    }
+    .avatar-container {
+      height: 50px;
+      display: inline-block;
+      /*position: absolute;*/
+      /*right: 0px;*/
+      padding-right: 35px;
+      .avatar-wrapper {
+        cursor: pointer;
+        margin-top: 0px;
+        position: relative;
+        .user-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+        }
+        .el-icon-caret-bottom {
+          position: absolute;
+          right: -20px;
+          top: 20px;
+          font-size: 12px;
 
+        }
       }
     }
   }
 }
-.el-dropdown-menu{
-  .el-dropdown-menu__item{
-    width:100px;
+.el-dropdown-menu {
+  .el-dropdown-menu__item {
+    width: 100px;
     text-align: center;
     margin-top: 0px;
     border-top: none;
   }
 }
-
 </style>
 

@@ -2,9 +2,9 @@
   <div class="app-container">
     <span class="tabel-title">灾备恢复历史列表</span>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
-      <el-table-column label="恢复策略名称" prop="name" sortable></el-table-column>
-      <el-table-column label="时间" prop="time" sortable></el-table-column>
-      <el-table-column label="描述" prop="describe"></el-table-column>
+      <el-table-column label="恢复策略名称" prop="name" sortable width="160"></el-table-column>
+      <el-table-column label="时间" prop="time" sortable width="152"></el-table-column>
+      <el-table-column label="描述" prop="describe" min-width="220"></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110" align="center">
         <template slot-scope="scope">
           <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>

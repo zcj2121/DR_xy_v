@@ -3,7 +3,7 @@
     <span class="tabel-title">灾备恢复管理列表</span>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="恢复策略名称" prop="name" width="160" sortable></el-table-column>
-      <el-table-column label="描述" prop="describe"></el-table-column>
+      <el-table-column label="描述" prop="describe" min-width="250"></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110" align="center">
         <template slot-scope="scope">
           <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>

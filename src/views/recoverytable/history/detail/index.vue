@@ -2,6 +2,10 @@
   <div class="app-container">
     <div id="nowDetail">
       <span class="tabel-title">{{parentData.name}}报告</span>
+      <span class="tabel-time">
+        <span>执行时间：<span>2018.02.23 16:25:25</span></span>
+        <span>完成时间：<span>2018.02.23 16:25:25</span></span>
+      </span>
       <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row :default-expand-all="true">
         <el-table-column type="expand">
           <template slot-scope="props" v-if="props.row.state==='离线'">
@@ -12,13 +16,13 @@
         </el-table-column>
         <el-table-column label="序号" prop="id" sortable width="65" :show-overflow-tooltip=true></el-table-column>
         <el-table-column label="步骤类型" prop="name" sortable width="90" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column label="内容" prop="state" sortable min-width="180" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column label="动作" prop="describe" sortable width="90" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column label="描述" prop="describe" min-width="180" :show-overflow-tooltip=true></el-table-column>
+        <el-table-column label="内容" prop="state" sortable min-width="150" :show-overflow-tooltip=true></el-table-column>
+        <el-table-column label="动作" prop="describe" sortable width="65" :show-overflow-tooltip=true></el-table-column>
+        <el-table-column label="描述" prop="describe" min-width="150" :show-overflow-tooltip=true></el-table-column>
         <el-table-column label="计划时间" prop="time" sortable width="152" :show-overflow-tooltip=true></el-table-column>
         <el-table-column label="开始时间" prop="time" sortable width="152" :show-overflow-tooltip=true></el-table-column>
         <el-table-column label="完成时间" prop="time" sortable width="152" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column class-name="status-col" label="状态" sortable width="90" align="center">
+        <el-table-column class-name="status-col" label="状态" sortable width="70" align="center">
           <template slot-scope="scope">
             <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
           </template>
@@ -98,6 +102,15 @@
 </script>
 <style rel="stylesheet/scss" lang="scss">
   #nowDetail{
+    .tabel-time{
+      font-size: 14px;
+      display: block;
+      margin-bottom:10px;
+      >span:nth-child(2){
+        margin-left:25px;
+      }
+    }
+
     .el-table {
       tr:hover>td{
         background-color: initial !important;

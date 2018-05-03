@@ -1,8 +1,8 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" id="seetableAll">
     <span class="tabel-title">集群资源列表</span>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
-      <el-table-column label="集群名称" prop="name" sortable></el-table-column>
+      <el-table-column label="集群名称" prop="name" sortable min-width="300"></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110" align="center">
         <template slot-scope="scope">
           <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
@@ -20,7 +20,7 @@
       </el-table-column>
       <el-table-column label="操作" width="80">
         <template slot-scope="scope">
-          <el-button size="mini" type="info" >查看</el-button>
+          <el-button size="mini" type="info" @click="detail(scope.row.id)">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -33,7 +33,22 @@
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
     </el-pagination>
+    <!--查看弹出框-->
+    <el-dialog title="查看服务组列表" width="600px" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogs">
+      <el-table :data="list" element-loading-text="Loading" border fit highlight-current-row>
+        <el-table-column label="服务组名称" prop="name" sortable></el-table-column>
+        <el-table-column class-name="status-col" label="状态" width="110" align="center">
+          <template slot-scope="scope">
+            <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeDialogs">关 闭</el-button>
+      </div>
+    </el-dialog>
   </div>
+
 </template>
 
 <script>
@@ -49,7 +64,8 @@ export default {
       queryPage: {
         index: 1,
         size: 10
-      }
+      },
+      detailShow: false
     }
   },
   filters: {
@@ -88,7 +104,29 @@ export default {
       const size = this.queryPage.size
       const index = this.queryPage.index
       this.list = this.data.slice(size * (index - 1), size * index)
+    },
+    detail(val) {
+      this.detailShow = true
+    },
+    closeDialogs() {
     }
   }
 }
 </script>
+
+<style rel="stylesheet/scss" lang="scss">
+  #seetableAll{
+    .el-dialog__body{
+      padding: 10px 20px;
+      .el-table__body-wrapper{
+        height: 250px;
+        overflow-y: auto;
+      }
+    }
+  }
+</style>
+<style  rel="stylesheet/scss" lang="scss" scoped>
+  .el-dialog__body{
+    padding: 10px 20px;
+  }
+</style>
