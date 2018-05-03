@@ -65,7 +65,7 @@ export const constantRouterMap = [
       },
       {
         path: 'now',
-        name: 'recoverytablenow',
+        name: 'recoverytablenows',
         component: () => import('@/views/recoverytable/now/detail/index'),
         meta: { title: '恢复管理', icon: 'calendar-minus-o' },
         hidden: true,
@@ -86,7 +86,7 @@ export const constantRouterMap = [
       },
       {
         path: 'history',
-        name: 'recoverytablehistory',
+        name: 'recoverytablehistorys',
         component: () => import('@/views/recoverytable/history/detail/index'),
         meta: { title: '恢复历史', icon: 'calendar-times-o' },
         hidden: true,

@@ -6,7 +6,7 @@
         <el-table-column type="expand">
           <template slot-scope="props" v-if="props.row.state==='离线'">
             <div class="other-panel">
-              123123
+              {{props.row.describe}}
             </div>
           </template>
         </el-table-column>
