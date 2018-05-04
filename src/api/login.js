@@ -17,6 +17,7 @@ export function login(username, password) {
 
 export function getInfo(token) {
   return request({
+    baseURL: 'vbs',
     url: '/user/info',
     method: 'get',
     params: { token }
