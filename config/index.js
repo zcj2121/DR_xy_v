@@ -12,7 +12,7 @@ module.exports = {
     proxyTable: {
       '/hatech': {
         // target: 'http://localhost:8080',
-        target: 'http://39.107.118.71:3000',//阿里云服务器
+        target: 'http://39.107.118.71:3000',
         changeOrigin: true,
         pathRewrite: {
           '^/hatech': ''
@@ -20,7 +20,7 @@ module.exports = {
       },
       '/vbs': {
         // target: 'http://localhost:8080',
-        target: 'http://39.107.118.71:3000',//阿里云服务器
+        target: 'https://192.168.1.196:14161',
         changeOrigin: true,
         pathRewrite: {
           '^/vbs': ''
@@ -28,7 +28,7 @@ module.exports = {
       }
     },
     // Various Dev Server settings
-    host: 'localhost', // can be overwritten by process.env.HOST
+    host: '127.0.0.1', // can be overwritten by process.env.HOST
     port: 9528, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: true,
     errorOverlay: true,
