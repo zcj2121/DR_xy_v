@@ -2,7 +2,8 @@
   <div class="login-container">
     <el-form autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left" label-width="0px"
       class="card-box login-form">
-      <h3 class="title">XX灾备管理系统</h3>
+      <!--<h3 class="title">XX灾备管理系统</h3>-->
+      <div class="title-box"><img src="./ico-sz.png" alt=""><span class="title">VERITAS</span></div>
       <el-form-item prop="username">
         <span class="svg-container svg-container_login">
           <i class="fa fa-user"></i>
@@ -137,14 +138,22 @@ export default {
     .svg-container_login{
       font-size:14px !important;
     }
-    .title {
-      font-size: 26px;
-      font-weight: 400;
-      color: #555;
-      margin: 0px auto 40px auto;
+    .title-box{
       text-align: center;
-      font-weight: bold;
+      margin-bottom: 15px;
+      .title {
+        font-size: 26px;
+        /*font-weight: 400;*/
+        color: #ab2328;
+        /*margin: 0px auto 40px auto;*/
+        text-align: center;
+        font-weight: bold;
+        line-height: 50px;
+        vertical-align: text-bottom;
+        margin-left: 8px;
+      }
     }
+
     .login-form {
       position: absolute;
       left: 0;

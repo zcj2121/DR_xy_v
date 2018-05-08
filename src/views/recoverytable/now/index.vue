@@ -9,9 +9,13 @@
           <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="80">
+      <el-table-column label="操作" width="190">
         <template slot-scope="scope">
-          <el-button size="mini" type="info" @click="detail(scope.row)">查看</el-button>
+          <el-button-group>
+            <el-button size="mini" type="info" @click="detail(scope.row)">查看</el-button>
+            <el-button size="mini" type="info" @click="operation(scope.row.id,1)">执行</el-button>
+            <el-button size="mini" type="info" @click="operation(scope.row.id,2)">完毕</el-button>
+          </el-button-group>
         </template>
       </el-table-column>
     </el-table>
@@ -29,6 +33,7 @@
 
 <script>
 import { getList } from '@/api/recoverytable'
+import { alertBox } from '@/utils/alert'
 
 export default {
   data() {
@@ -88,6 +93,20 @@ export default {
           name: val.name
         }
       })
+    },
+    operation(val, type) {
+      let url, msg
+      switch (type) {
+        case 1:
+          url = '123' // 执行
+          msg = '确认执行此恢复计划吗？'
+          break
+        case 2:
+          url = '123' // 完毕
+          msg = '确认此恢复计划完成吗？'
+          break
+      }
+      alertBox(this, msg, url, val)
     }
   }
 }

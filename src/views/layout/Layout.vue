@@ -1,14 +1,14 @@
 <template>
   <div class="app-wrapper" :class="{hideSidebar:!sidebar.opened}">
     <div class="wrapper-title">
-      <img class="title-pic" src="./ico-sz.png" alt="">
-      <span class="title-name">XX灾备管理系统</span>
+      <img class="title-pic" src="./ico-sz.png" alt="" v-if="!sidebar.opened">
+      <span class="title-name" v-else><img src="./ico-sz-other.png" alt=""></span>
     </div>
     <sidebar class="sidebar-container"></sidebar>
     <div class="main-container">
       <navbar></navbar>
       <app-main></app-main>
-      <div class="footer-name" :class="{lgWidth: !sidebar.opened}">Copyright © 2017 版权所有 北京同创永益科技发展有限公司 | 京ICP备 5896664661号</div>
+      <div class="footer-name" :class="{lgWidth: !sidebar.opened}">Copyright © <span>{{(new Date).getFullYear()}}</span> Veritas Technologies LLC. All rights reserved</div>
     </div>
   </div>
 </template>
@@ -18,6 +18,11 @@ import { Navbar, Sidebar, AppMain } from '@/views/layout/components'
 
 export default {
   name: 'layout',
+  data() {
+    return {
+      footerYear: null
+    }
+  },
   components: {
     Navbar,
     Sidebar,
@@ -49,8 +54,9 @@ export default {
     font-size:18px;
     font-weight: bold;
     text-align: left;
-    background: #409eff;
+    background: #FFF;
     padding-left: 6px;
+    border-right: 1px solid rgb(48, 65, 86);
     .title-pic{
       width: 24px;
       height: 24px;
@@ -60,7 +66,14 @@ export default {
       /*top: 14px;*/
     }
     .title-name{
-      margin-left: 2px;
+      display: inline-block;
+      width: 100%;
+      /*margin-left: 2px;*/
+      text-align: center;
+      img{
+        margin-top: 8px;
+        width: 66%;
+      }
     }
   }
   .scroll-container.sidebar-container{
