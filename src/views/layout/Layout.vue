@@ -54,13 +54,13 @@ export default {
     font-size:18px;
     font-weight: bold;
     text-align: left;
-    background: #FFF;
-    padding-left: 6px;
-    border-right: 1px solid rgb(48, 65, 86);
+    background: #ccc;
+    /*border-right: 1px solid rgb(48, 65, 86);*/
     .title-pic{
       width: 24px;
       height: 24px;
       vertical-align: sub;
+      margin-left: 6px;
       /*position: absolute;*/
       /*left: 8px;*/
       /*top: 14px;*/

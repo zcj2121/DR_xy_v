@@ -2,30 +2,23 @@ import request from '@/utils/request'
 
 export function login(username, password) {
   return request({
-    url: '/user/login',
-    method: 'post',
-    data: {
-      username,
-      password
-    },
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-    }
+    url: '/dr/loginCheck.do',
+    method: 'get',
+    params: { username, password }
   })
 }
 
 export function getInfo(token) {
   return request({
-    url: '/user/info',
-    method: 'get',
-    params: { token }
+    url: '/dr/getLoginUserVbs.do',
+    method: 'get'
+    // params: { token }
   })
 }
 
 export function logout() {
   return request({
-    url: '/user/logout',
+    url: '/dr/logoutVbs.do',
     method: 'get'
   })
 }

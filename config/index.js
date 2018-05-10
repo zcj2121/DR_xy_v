@@ -12,7 +12,7 @@ module.exports = {
     proxyTable: {
       '/hatech': {
         // target: 'http://localhost:8080',
-        target: 'http://39.107.118.71:3000',
+        target: 'http://vbs.fhave.com:8088/archetype-ui-dr',
         changeOrigin: true,
         pathRewrite: {
           '^/hatech': ''
@@ -20,7 +20,7 @@ module.exports = {
       },
       '/vbs': {
         // target: 'http://localhost:8080',
-        target: 'https://192.168.1.196:14161',
+        target: 'http://59.110.238.148:3000',
         changeOrigin: true,
         pathRewrite: {
           '^/vbs': ''

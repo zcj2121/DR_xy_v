@@ -38,14 +38,14 @@ export const constantRouterMap = [
     children: [
       {
         path: 'vbs',
-        name: 'vbsTable',
+        name: 'vbs',
         component: () => import('@/views/seetable/vbs/index'),
         meta: { title: 'VBS资源', icon: 'cube' }
       },
       {
-        path: 'all',
-        name: 'vbsTableAll',
-        component: () => import('@/views/seetable/all/index'),
+        path: 'colony',
+        name: 'colony',
+        component: () => import('@/views/seetable/colony/index'),
         meta: { title: '集群资源', icon: 'cubes' }
       }
     ]
@@ -59,13 +59,13 @@ export const constantRouterMap = [
     children: [
       {
         path: 'now',
-        name: 'recoverytablenow',
+        name: 'now',
         component: () => import('@/views/recoverytable/now/index'),
         meta: { title: '恢复管理', icon: 'calendar-minus-o' }
       },
       {
         path: 'now',
-        name: 'recoverytablenows',
+        name: 'nows',
         component: () => import('@/views/recoverytable/now/detail/index'),
         meta: { title: '恢复管理', icon: 'calendar-minus-o' },
         hidden: true,
@@ -80,13 +80,13 @@ export const constantRouterMap = [
       },
       {
         path: 'history',
-        name: 'recoverytablehistory',
+        name: 'history',
         component: () => import('@/views/recoverytable/history/index'),
         meta: { title: '恢复历史', icon: 'calendar-times-o' }
       },
       {
         path: 'history',
-        name: 'recoverytablehistorys',
+        name: 'historys',
         component: () => import('@/views/recoverytable/history/detail/index'),
         meta: { title: '恢复历史', icon: 'calendar-times-o' },
         hidden: true,
@@ -101,19 +101,81 @@ export const constantRouterMap = [
       }
     ]
   },
-  // {
-  //   path: '/form',
-  //   component: Layout,
-  //   children: [
-  //     {
-  //       path: 'index',
-  //       name: 'Form',
-  //       component: () => import('@/views/form/index'),
-  //       meta: { title: 'Form', icon: 'form' }
-  //     }
-  //   ]
-  // },
-
+  {
+    path: '/plans',
+    component: Layout,
+    redirect: '/plans/plan',
+    name: 'plans',
+    meta: { title: '文档管理', icon: 'file-text' },
+    children: [
+      {
+        path: 'plan',
+        name: 'plan',
+        component: () => import('@/views/plans/plan/index'),
+        meta: { title: '文档管理', icon: 'file' }
+      },
+      {
+        path: 'plandetail',
+        name: 'plandetail',
+        component: () => import('@/views/plans/plandetail/index'),
+        meta: { title: '文档查看', icon: 'file-image-o' }
+      }
+    ]
+  },
+  {
+    path: '/org',
+    component: Layout,
+    redirect: '/org/orgtable',
+    name: 'org',
+    meta: { title: '组织架构', icon: 'flag' },
+    children: [
+      {
+        path: 'orgtable',
+        name: 'orgtable',
+        component: () => import('@/views/org/orgtable/index'),
+        meta: { title: '组织管理', icon: 'flag-o' }
+      },
+      {
+        path: 'orgview',
+        name: 'orgview',
+        component: () => import('@/views/org/orgview/index'),
+        meta: { title: '组织架构视图', icon: 'sitemap' }
+      }
+    ]
+  },
+  {
+    path: '/system',
+    component: Layout,
+    redirect: '/system/menu',
+    name: 'system',
+    meta: { title: '系统管理', icon: 'cog' },
+    children: [
+      {
+        path: 'menu',
+        name: 'menu',
+        component: () => import('@/views/system/menu/index'),
+        meta: { title: '菜单管理', icon: 'list' }
+      },
+      {
+        path: 'role',
+        name: 'role',
+        component: () => import('@/views/system/role/index'),
+        meta: { title: '角色管理', icon: 'user-secret' }
+      },
+      {
+        path: 'jurisdiction',
+        name: 'jurisdiction',
+        component: () => import('@/views/system/jurisdiction/index'),
+        meta: { title: '权限管理', icon: 'key' }
+      },
+      {
+        path: 'user',
+        name: 'user',
+        component: () => import('@/views/system/user/index'),
+        meta: { title: '用户管理', icon: 'users' }
+      }
+    ]
+  },
   { path: '*', redirect: '/404', hidden: true }
 ]
 
