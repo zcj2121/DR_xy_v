@@ -61,6 +61,9 @@ export default {
         index: 1,
         size: 10
       },
+      listQuery: {
+        url: 'vom/hadr/manage/vbs/vbslist'
+      },
       detailShow: false
     }
   },

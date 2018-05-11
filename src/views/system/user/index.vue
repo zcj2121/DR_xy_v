@@ -2,14 +2,14 @@
   <div class="app-container" id="userTable">
     <span class="tabel-title">用户管理列表</span>
     <div class="filter-container">
-      <el-input style="width: 200px;" size="medium" class="filter-item" v-model="pageTotal">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
       </el-input>
-      <el-select style="width: 200px;" size="medium" v-model="role" placeholder="ALL权限">
+      <el-select style="width: 200px;" size="mini" v-model="role" placeholder="ALL权限">
         <el-option v-for="item in roleDataOptions" :key="item.value" :label="item.label"
                    :value="item.value"></el-option>
       </el-select>
-      <el-button class="filter-item" size="medium" type="primary" icon="el-icon-search">搜索</el-button>
-      <el-button class="filter-item" size="medium" style="margin-left: 10px;" type="primary" icon="el-icon-edit">新增</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit">新增</el-button>
     </div>
     <el-table :data="userData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="用户名" prop="userName" sortable></el-table-column>

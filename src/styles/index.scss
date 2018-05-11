@@ -95,3 +95,15 @@ a:hover {
   margin-bottom:10px;
   display: inline-block;
 }
+.el-button--mini, .el-button--mini.is-round{
+  padding:7px;
+}
+
+.filter-container{
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.el-menu-item{
+  padding-left:30px !important;
+}

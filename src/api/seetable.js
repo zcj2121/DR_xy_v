@@ -26,3 +26,11 @@ export function getListDetail(params) {
     params
   })
 }
+
+export function getList1(params) {
+  return request({
+    url: '/rs/dr/system/vbsmanager/retrieve',
+    method: 'get',
+    params
+  })
+}

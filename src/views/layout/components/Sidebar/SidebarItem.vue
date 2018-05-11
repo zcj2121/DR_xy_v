@@ -22,7 +22,7 @@
 
           <router-link v-else :to="'/'+item.path+'/'+child.path" :key="child.name">
             <el-menu-item :index="'/'+item.path+'/'+child.path">
-              <i :class="'fa fa-'+child.meta.icon"></i>
+              <i class="fa" style="width: 0px;"></i>
               <span v-if="child.meta&&child.meta.title" slot="title">{{child.meta.title}}</span>
             </el-menu-item>
           </router-link>

@@ -2,10 +2,10 @@
   <div class="app-container" id="roleTable">
     <span class="tabel-title">角色管理列表</span>
     <div class="filter-container">
-      <el-input style="width: 200px;" size="medium" class="filter-item" v-model="pageTotal">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
       </el-input>
-      <el-button class="filter-item" size="medium" type="primary" icon="el-icon-search">搜索</el-button>
-      <el-button class="filter-item" size="medium" style="margin-left: 10px;" type="primary" icon="el-icon-edit">新增</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit">新增</el-button>
     </div>
     <el-table :data="roleData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="角色名称" prop="tRoleName" sortable></el-table-column>
