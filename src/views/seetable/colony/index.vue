@@ -18,7 +18,7 @@
           <el-tag :type="scope.row.type | statusFilter">{{scope.row.type}}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="80">
+      <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button size="mini" type="info" @click="detail(scope.row.id)">查看</el-button>
         </template>

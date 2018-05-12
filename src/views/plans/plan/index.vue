@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container" id="userTable">
+  <div class="app-container" id="planTable">
     <div class="filter-container">
       <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
       </el-input>
@@ -16,9 +16,10 @@
       <el-table-column label="操作" width="266">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="detail">查看</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'">配置流程</el-button>
+            <el-button size="mini" type="primary" @click="detail" v-if="scope.row.statu!=='驳回'">查看</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'" @click="operate('edit',scope.row)">编辑</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.statu==='驳回'" @click="operateback('edit',scope.row)">编辑</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'" @click="setshow(scope.row)">配置流程</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'" @click="operation(scope.row.id, '确认提交审核吗', '123')">提交审核</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.statu==='通过'" @click="operation(scope.row.id, '确认发布吗', '123')">发布</el-button>
@@ -91,7 +92,8 @@
       </div>
     </el-dialog>
     <!--查看 弹出框-->
-    <el-dialog  class="detail-dialog" :title="planDetailTitle" width="80%" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogDetail">
+    <el-dialog  class="detail-dialog" title="查看预案计划详情" width="80%" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogDetail">
+      <div class="title">预案名称</div>
       <div class="is-scrolling-none">
         <table class="el-table__body">
           <tr>
@@ -137,57 +139,7 @@
           </tr>
         </table>
       </div>
-      <hr>
-        <div class="child-title">专项预案名称1</div>
-      <hr>
-      <div class="is-scrolling-none">
-        <table class="el-table__body">
-          <tr>
-            <td class="text-bold" style="width:100px;">版本号</td>
-            <td colspan="2">1.0</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
-            <td colspan="2">张三</td>
-          </tr>
-          <tr>
-            <td class="text-bold">预案类型</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">预案文件</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">描述</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">所属预案</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">适用场景</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr style="background: #f7f7f7;">
-            <td class="text-bold"></td>
-            <td class="text-bold" colspan="4">预案操作</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">张三</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">李四</td>
-          </tr>
-        </table>
-      </div>
-      <hr>
       <div class="child-title">专项预案名称1</div>
-      <hr>
       <div class="is-scrolling-none">
         <table class="el-table__body">
           <tr>
@@ -237,6 +189,157 @@
         <el-button @click="closeDialogDetail('allform')">关 闭</el-button>
       </div>
     </el-dialog>
+    <!--配置预案流程 弹出框-->
+    <el-dialog  class="detail-dialog" title="配置预案流程" width="80%" :visible.sync="setShow" :modal-append-to-body="false" @close="closeDialogSet">
+      <div class="title">预案名称</div>
+      <div class="is-scrolling-none">
+        <table class="el-table__body">
+          <tr>
+            <td class="text-bold" style="width:100px;">版本号</td>
+            <td colspan="2">1.0</td>
+            <td class="text-bold" style="width:100px;">负责人</td>
+            <td colspan="2">张三</td>
+          </tr>
+          <tr>
+            <td class="text-bold">预案类型</td>
+            <td colspan="5">预案类型</td>
+          </tr>
+          <tr>
+            <td class="text-bold">预案文件</td>
+            <td colspan="5">预案类型</td>
+          </tr>
+          <tr>
+            <td class="text-bold">描述</td>
+            <td colspan="5">预案类型</td>
+          </tr>
+          <tr>
+            <td class="text-bold">所属预案</td>
+            <td colspan="5">预案类型</td>
+          </tr>
+          <tr>
+            <td class="text-bold">适用场景</td>
+            <td colspan="5">预案类型</td>
+          </tr>
+          <tr style="background: #f7f7f7;">
+            <td class="text-bold"></td>
+            <td class="text-bold" colspan="4">预案操作</td>
+            <td class="text-bold" style="width:100px;">负责人</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
+            <td style="width:100px;">张三</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
+            <td style="width:100px;">李四</td>
+          </tr>
+        </table>
+      </div>
+      <div class="child-title"><el-button size="mini" type="primary" @click="addSet">添加预案操作</el-button></div>
+      <div class="is-scrolling-none">
+        <table class="el-table__body">
+          <tr>
+            <td class="text-bold" style="width:100px;">编号</td>
+            <td class="text-bold">预案操作</td>
+            <td class="text-bold" style="width:155px;">负责人</td>
+            <td class="text-bold" style="width:65px;">操作</td>
+          </tr>
+          <tr v-for="(item, index) in setform" :key="index">
+            <td>{{index}}</td>
+            <td>
+              <el-input v-model="item.setname" placeholder="请输入预案操作内容"></el-input>
+            </td>
+            <td>
+              <el-input v-model="item.leader" placeholder="请输入姓名"></el-input>
+            </td>
+            <td><el-button size="mini" type="primary" @click="delSet(index)">删除</el-button></td>
+          </tr>
+        </table>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeDialogSet('allform')">关 闭</el-button>
+        <el-button type="primary" @click="saveSet('allform')">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!--驳回 编辑 弹出框-->
+    <el-dialog  class="detail-dialog" title="编辑预案流程" width="80%" :visible.sync="setBackShow" :modal-append-to-body="false" @close="closeDialogSetBack">
+      <div class="error-box">
+        <div class="pull-left error-box-title">驳回原因：</div>
+        <div class="pull-left">驳回原因</div>
+      </div>
+      <el-form :model="form" ref="" label-position="right" label-width="100px">
+        <el-form-item label="预案名称：" prop="name">
+          <el-input v-model="form.name" placeholder="请输入预案名称"></el-input>
+          <div class="name-repeat" v-if="nameRepeat">名称重复</div>
+        </el-form-item>
+        <el-form-item label="版本号：" prop="remark">
+          <el-input v-model="form.version" placeholder="请输入版本号"></el-input>
+        </el-form-item>
+        <el-form-item label="负责人：" prop="enabled">
+          <el-select v-model="form.leader" placeholder="请选择负责人" style="width:100%;">
+            <el-option v-for="(item,index) in leaderOptions" :key="index" :value="item.value"
+                       :label="item.label"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="预案类型：" prop="enabled">
+          <el-select v-model="form.type" placeholder="请选择预案类型" style="width:100%;">
+            <el-option v-for="(item,index) in typeOptions" :key="index" :value="item.value"
+                       :label="item.label"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="预案文件：" prop="enabled">
+          <el-upload
+            class="upload-demo"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :limit="1"
+            :file-list="fileList"
+            :auto-upload="false">
+            <el-button slot="trigger" size="small" type="primary" @click="addfiles">选取文件</el-button>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="描述：" prop="remark">
+          <el-input type="textarea" v-model="form.remark" placeholder="请输入描述"></el-input>
+        </el-form-item>
+        <el-form-item label="所属预案：" prop="enabled">
+          <el-select v-model="form.belongs" placeholder="请选择所属预案" style="width:100%;">
+            <el-option v-for="(item,index) in belongsOptions" :key="index" :value="item.value"
+                       :label="item.label"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="适用场景：" prop="scene">
+          <el-input v-model="form.scene" placeholder="请输入适用场景"></el-input>
+        </el-form-item>
+      </el-form>
+      <div class="child-title"><el-button size="mini" type="primary" @click="addSet">添加预案操作</el-button></div>
+      <div class="is-scrolling-none">
+        <table class="el-table__body">
+          <tr>
+            <td class="text-bold" style="width:100px;">编号</td>
+            <td class="text-bold">预案操作</td>
+            <td class="text-bold" style="width:155px;">负责人</td>
+            <td class="text-bold" style="width:65px;">操作</td>
+          </tr>
+          <tr v-for="(item, index) in setform" :key="index">
+            <td>{{index}}</td>
+            <td>
+              <el-input v-model="item.setname" placeholder="请输入预案操作内容"></el-input>
+            </td>
+            <td>
+              <el-input v-model="item.leader" placeholder="请输入姓名"></el-input>
+            </td>
+            <td><el-button size="mini" type="primary" @click="delSet(index)">删除</el-button></td>
+          </tr>
+        </table>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeDialogSetBack('allform')">关 闭</el-button>
+        <el-button type="primary" @click="saveSetBack('allform')">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -250,9 +353,10 @@
         list: null,
         listLoading: true,
         planTitle: '',
-        planDetailTitle: '',
         formShow: false,
         detailShow: false,
+        setShow: false,
+        setBackShow: false,
         nameRepeat: false,
         fileList: [],
         form: {
@@ -264,6 +368,10 @@
           belongs: '',
           scene: ''
         },
+        setform: [{
+          leader: '',
+          setname: ''
+        }],
         pageTotal: 0,
         pageSizes: [10, 15, 20],
         queryPage: {
@@ -415,8 +523,32 @@
       closeDialogDetail() {
       },
       detail() {
-        this.planDetailTitle = '预案名称'
         this.detailShow = true
+      },
+      setshow() {
+        this.setShow = true
+      },
+      closeDialogSet() {
+        this.setShow = false
+      },
+      saveSet() {
+      },
+      addSet() {
+        this.setform.push({
+          leader: '',
+          setname: ''
+        })
+      },
+      delSet(index) {
+        this.setform.splice(index, 1)
+      },
+      operateback() {
+        this.setBackShow = true
+      },
+      closeDialogSetBack() {
+        this.setBackShow = false
+      },
+      saveSetBack() {
       }
     }
   }
@@ -443,11 +575,22 @@
           overflow-y: auto;
           height: 500px;
           padding: 20px 50px;
+          .title{
+            font-size:16px;
+            text-align:center;
+            margin-bottom:5px;
+            font-weight: bold;
+          }
           .child-title{
             font-size:15px;
+            margin-top:15px;
+            margin-bottom:5px;
           }
         }
       }
+    }
+    .error-box{
+
     }
   }
 </style>
@@ -478,6 +621,16 @@
   .detail-dialog{
     .el-dialog{
       margin-top: 6vh;
+    }
+  }
+  .error-box{
+    overflow: hidden;
+    margin-bottom: 20px;
+    color: red;
+    .error-box-title{
+      width:100px;
+      padding-right:12px;
+      text-align: right;
     }
   }
 </style>

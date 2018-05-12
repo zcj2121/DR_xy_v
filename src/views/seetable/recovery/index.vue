@@ -12,12 +12,10 @@
           <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="190">
+      <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="info" @click="detailshow(scope.row)">查看</el-button>
-            <el-button size="mini" type="info" @click="operation(scope.row.id,1)">执行</el-button>
-            <el-button size="mini" type="info" @click="operation(scope.row.id,2)">完毕</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -58,6 +56,9 @@
           </template>
         </el-table-column>
       </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button>关 闭</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
