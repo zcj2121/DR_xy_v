@@ -9,7 +9,7 @@
       <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="info" @click="detailshow(scope.row)">查看</el-button>
+            <el-button size="mini" type="primary" @click="detailshow(scope.row)">查看</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -42,14 +42,14 @@
             <el-button-group>
               <!--<el-button type="info" @click="operation(scope.row.id,1)">暂停</el-button>-->
               <!--<el-button type="info" @click="operation(scope.row.id,2)">继续</el-button>-->
-              <el-button type="info" size="mini" @click="operation(scope.row.id,3)">重试</el-button>
-              <el-button type="info" size="mini" @click="operation(scope.row.id,4)">跳过</el-button>
-              <el-button type="info" size="mini" @click="operation(scope.row.id,5)">一键退回</el-button>
-              <el-button type="info" size="mini" @click="operation(scope.row.id,6)">停止</el-button>
+              <el-button type="primary" size="mini" @click="operation(scope.row.id,3)">重试</el-button>
+              <el-button type="primary" size="mini" @click="operation(scope.row.id,4)">跳过</el-button>
+              <el-button type="primary" size="mini" @click="operation(scope.row.id,5)">一键退回</el-button>
+              <el-button type="primary" size="mini" @click="operation(scope.row.id,6)">停止</el-button>
             </el-button-group>
           </template>
         </el-table-column>
-      </el-table>
+      </el-table>`
       <div slot="footer" class="dialog-footer">
         <el-button>关 闭</el-button>
       </div>

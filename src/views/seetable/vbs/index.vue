@@ -15,7 +15,7 @@
       </el-table-column>
       <el-table-column label="操作" width="62">
         <template slot-scope="scope">
-          <el-button size="mini" type="info" @click="detail(scope.row.id)">查看</el-button>
+          <el-button size="mini" type="primary" @click="detail(scope.row.id)">查看</el-button>
         </template>
       </el-table-column>
     </el-table>

@@ -1,6 +1,6 @@
 <template>
-  <div class="app-container" id="menuTable">
-    <span class="tabel-title">组织架构视图</span>
+  <div class="app-container" id="orgviewTable">
+    <span class="tabel-title">组织架构概览</span>
     <div class="groupview-box">
       <div class="jOrgChart">
         <org-node :model='model' v-for='model in data.data' :key="model.key"></org-node>
@@ -132,7 +132,7 @@
   }
 </script>
 <style rel="stylesheet/scss" lang="scss">
-  #menuTable{
+  #orgviewTable{
     .menu-left{
       margin-right: 20px;
       .el-radio-group{

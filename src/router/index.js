@@ -138,13 +138,19 @@ export const constantRouterMap = [
         path: 'changeaudit',
         name: 'changeaudit',
         component: () => import('@/views/change/changeaudit/index'),
-        meta: { title: '切换流程审核', icon: 'sitemap' }
+        meta: { title: '执行切换审核', icon: 'sitemap' }
       },
       {
         path: 'execute',
         name: 'execute',
         component: () => import('@/views/change/execute/index'),
         meta: { title: '切换流程执行', icon: 'sitemap' }
+      },
+      {
+        path: 'nottask',
+        name: 'nottask',
+        component: () => import('@/views/change/nottask/index'),
+        meta: { title: '切换待办任务', icon: 'sitemap' }
       },
       {
         path: 'history',

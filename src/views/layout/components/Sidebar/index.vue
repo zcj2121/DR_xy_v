@@ -117,12 +117,17 @@ export default {
             {
               path: 'changeaudit',
               name: 'changeaudit',
-              meta: { title: '切换流程审核', icon: '' }
+              meta: { title: '执行切换审核', icon: '' }
             },
             {
               path: 'execute',
               name: 'execute',
               meta: { title: '切换流程执行', icon: '' }
+            },
+            {
+              path: 'nottask',
+              name: 'nottask',
+              meta: { title: '切换待办任务', icon: '' }
             },
             {
               path: 'history',
