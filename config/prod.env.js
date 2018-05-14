@@ -1,5 +1,5 @@
 'use strict'
 module.exports = {
   NODE_ENV: '"production"',
-  BASE_API: '"/archetype-ui-dr"',
+  BASE_API: '"archetype-ui-dr"',
 }

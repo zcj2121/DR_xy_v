@@ -4,5 +4,5 @@ const prodEnv = require('./prod.env')
 
 module.exports = merge(prodEnv, {
   NODE_ENV: '"development"',
-  BASE_API: '"http://39.107.118.71:3000"',
+  BASE_API: '"http://vbs.fhave.com:8088/archetype-ui-dr"',
 })
