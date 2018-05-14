@@ -1,17 +1,11 @@
 <template>
   <div class="app-container" id="recoveryTable">
-    <span class="tabel-title">恢复计划管理列表</span>
     <div class="filter-container">
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-sort">同步</el-button>
     </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="恢复策略名称" prop="name" width="160" sortable></el-table-column>
       <el-table-column label="描述" prop="describe" min-width="250"></el-table-column>
-      <el-table-column class-name="status-col" label="状态" width="110" align="center">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
-        </template>
-      </el-table-column>
       <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button-group>

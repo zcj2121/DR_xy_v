@@ -1,28 +1,29 @@
 <template>
   <div class="app-container" id="userTable">
-    <span class="tabel-title">切换流程管理列表</span>
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入名称">
       </el-input>
       <el-select style="width: 200px;" size="mini" v-model="role" placeholder="ALL权限">
         <el-option v-for="item in roleDataOptions" :key="item.value" :label="item.label"
                    :value="item.value"></el-option>
       </el-select>
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
-      <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit">新增</el-button>
+      <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
     </div>
     <el-table :data="userData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
-      <el-table-column label="用户名" prop="userName" sortable></el-table-column>
-      <el-table-column label="显示昵称" prop="displayName" sortable></el-table-column>
-      <el-table-column label="手机号码" prop="telphone" sortable></el-table-column>
-      <el-table-column label="电子邮箱" prop="email" sortable></el-table-column>
-      <el-table-column label="权限" prop="permission" sortable></el-table-column>
+      <el-table-column label="名称" prop="name" min-width="100" sortable></el-table-column>
+      <el-table-column label="描述" prop="remark" min-width="120" sortable></el-table-column>
+      <el-table-column label="负责人" prop="leader" width="100" sortable></el-table-column>
+      <el-table-column label="状态" prop="statu" width="75" sortable></el-table-column>
       <el-table-column label="操作" width="212">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="info">重置密码</el-button>
-            <el-button size="mini" type="info">编辑</el-button>
-            <el-button size="mini" type="info">删除</el-button>
+            <el-button size="mini" type="info" v-if="scope.row.statu!=='驳回'">查看</el-button>
+            <el-button size="mini" type="info" v-if="scope.row.statu==='驳回'">查看驳回建议</el-button>
+            <el-button size="mini" type="info" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'" @click="operate('edit',scope.row)">编辑</el-button>
+            <el-button size="mini" type="info" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'">提交</el-button>
+            <el-button size="mini" type="info" v-if="scope.row.statu==='通过'">申请执行</el-button>
+            <el-button size="mini" type="info" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -36,6 +37,32 @@
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
     </el-pagination>
+    <!--新增、编辑 弹出框-->
+    <el-dialog :title="operateTitle" width="600px" :visible.sync="formShow" :modal-append-to-body="false" @close="operateClose">
+      <el-form :model="form" label-position="right" label-width="85px">
+        <el-form-item label="场景名称：" prop="name">
+          <el-input v-model="form.name" placeholder="请输入场景名称"></el-input>
+          <div class="name-repeat" v-if="nameRepeat">名称重复</div>
+        </el-form-item>
+        <el-form-item label="场景描述：" prop="remark">
+          <el-input type="textarea" v-model="form.remark" placeholder="请输入场景描述"></el-input>
+        </el-form-item>
+        <el-form-item label="场景负责人：" prop="enabled">
+          <el-select v-model="form.belongs" placeholder="请选择场景负责人" style="width:100%;">
+            <el-option value="" label=""></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="审批流程：" prop="enabled">
+          <el-select v-model="form.belongs" placeholder="请选择审批流程" style="width:100%;">
+            <el-option value="" label=""></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="operateClose('allform')">取 消</el-button>
+        <el-button type="primary" @click="save('allform')">确 定</el-button>
+      </div>
+    </el-dialog>
     <!--查看弹出框-->
     <el-dialog title="查看服务组列表" width="600px" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogs">
       <el-table :data="list" element-loading-text="Loading" border fit highlight-current-row>
@@ -62,6 +89,14 @@
         data: null,
         list: null,
         listLoading: true,
+        operateTitle: '',
+        formShow: false,
+        form: {
+          name: '',
+          leader: '',
+          type: '0',
+          remark: ''
+        },
         pageTotal: 0,
         pageSizes: [10, 15, 20],
         queryPage: {
@@ -93,107 +128,39 @@
           items: [
             {
               id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
+              name: '切换流程一',
+              version: '2.0',
+              leader: '管理员',
+              statu: '待提交',
+              type: '总体预案',
+              remark: '描述描述描述'
             },
             {
               id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
+              name: '切换流程一',
+              version: '2.0',
+              leader: '管理员',
+              statu: '待审批',
+              type: '总体预案',
+              remark: '描述描述描述'
             },
             {
               id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
+              name: '切换流程一',
+              version: '2.0',
+              leader: '管理员',
+              statu: '驳回',
+              type: '总体预案',
+              remark: '描述描述描述'
             },
             {
               id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
+              name: '切换流程一',
+              version: '2.0',
+              leader: '管理员',
+              statu: '通过',
+              type: '总体预案',
+              remark: '描述描述描述'
             }
           ]
         }
@@ -238,8 +205,17 @@
       detail(val) {
         this.detailShow = true
       },
-      closeDialogs() {
-      }
+      operate(type, val) {
+        if (type === 'add') {
+          this.operateTitle = '新增场景信息'
+        } else if (type === 'edit') {
+          this.operateTitle = '编辑场景信息'
+        }
+        this.formShow = true
+      },
+      operateClose() {
+      },
+      save() {}
     }
   }
 </script>

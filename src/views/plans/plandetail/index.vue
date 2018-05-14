@@ -1,7 +1,7 @@
 <template>
   <div class="app-container" id="plandetailTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入预案名称">
       </el-input>
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
     </div>

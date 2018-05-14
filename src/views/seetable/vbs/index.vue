@@ -1,6 +1,5 @@
 <template>
   <div class="app-container" id="seetableVbs">
-    <span class="tabel-title">VBS资源列表</span>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="名称" prop="name" width="160" sortable></el-table-column>
       <el-table-column label="描述" prop="describe" min-width="250"></el-table-column>

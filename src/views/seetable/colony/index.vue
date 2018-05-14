@@ -1,6 +1,5 @@
 <template>
   <div class="app-container" id="seetableAll">
-    <span class="tabel-title">集群资源列表</span>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="集群名称" prop="name" sortable min-width="300"></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110" align="center">
