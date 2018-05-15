@@ -17,7 +17,7 @@
             <el-button size="mini" type="primary" v-if="scope.row.statu==='未运行'"
                        @click="operation(scope.row.id, '确认开始执行吗', '123')">开始
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu!=='未运行'">大屏
+            <el-button size="mini" type="primary" v-if="scope.row.statu!=='未运行'" @click="goBigScreen">大屏
             </el-button>
             <el-button size="mini" type="primary" v-if="scope.row.statu==='完成'||scope.row.statu==='终止'"
                        @click="operation(scope.row.id, '确认完成执行吗', '123')">完毕
@@ -330,6 +330,9 @@
       },
       closeDialog() {
         this.detailShow = false
+      },
+      goBigScreen() {
+        this.$router.push({ path: '/bigscreen' })
       }
     }
   }

@@ -4,7 +4,7 @@
     <breadcrumb></breadcrumb>
     <div class="right-menu">
       <el-tooltip class="item" effect="dark" content="通知代办" placement="bottom">
-        <span class="screenfull">
+        <span class="screenfull" @click="goNottask">
           <el-badge :value="badge" class="item">
             <i class="fa fa-bell"></i>
           </el-badge>
@@ -101,6 +101,9 @@
       },
       toggleSideBar() {
         this.$store.dispatch('ToggleSideBar')
+      },
+      goNottask() {
+        this.$router.push({ path: '/change/nottask' })
       },
       logout() {
         this.$store.dispatch('LogOut').then(() => {

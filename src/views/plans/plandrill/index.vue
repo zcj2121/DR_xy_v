@@ -479,7 +479,7 @@
         <div class="log-box">
           <div class="log-box-title">演练日志</div>
           <div class="msg-box">
-            <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
+            <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a @click="goLoginAudit">http://XXXXXX.com/login</a></span></div>
             <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
             <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
             <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
@@ -642,6 +642,9 @@
       },
       closeDialogDetail() {
         this.detailShow = false
+      },
+      goLoginAudit() {
+        this.$router.push({ path: '/loginaudit' })
       }
     }
   }
