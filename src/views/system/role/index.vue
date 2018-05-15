@@ -1,20 +1,19 @@
 <template>
   <div class="app-container" id="roleTable">
-    <span class="tabel-title">角色管理列表</span>
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入角色名称">
       </el-input>
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
-      <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit">新增</el-button>
+      <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
     </div>
     <el-table :data="roleData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="角色名称" prop="tRoleName" sortable></el-table-column>
       <el-table-column label="角色键值" prop="tRoleValue" sortable></el-table-column>
-      <el-table-column label="操作" width="134">
+      <el-table-column label="操作" width="101">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="info">编辑</el-button>
-            <el-button size="mini" type="info">删除</el-button>
+            <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
+            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -28,18 +27,21 @@
        layout="total, sizes, prev, pager, next, jumper"
        :total="pageTotal">
     </el-pagination>
-    <!--查看弹出框-->
-    <el-dialog title="查看服务组列表" width="600px" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogs">
-      <el-table :data="list" element-loading-text="Loading" border fit highlight-current-row>
-        <el-table-column label="服务组名称" prop="name" sortable></el-table-column>
-        <el-table-column class-name="status-col" label="状态" width="110" align="center">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
+    <!--新增、编辑 弹出框-->
+    <el-dialog :title="operateTitle" width="500px" :visible.sync="formShow" :modal-append-to-body="false"
+               @close="operateClose">
+      <el-form :model="form" label-position="right" label-width="85px">
+        <el-form-item label="角色名称：" prop="name">
+          <el-input v-model="form.tRoleName" placeholder="请输入角色名称"></el-input>
+          <div class="name-repeat" v-if="nameRepeat">名称重复</div>
+        </el-form-item>
+        <el-form-item label="角色键值：" prop="enabled">
+          <el-input v-model="form.tRoleValue" placeholder="请输入角色键值"></el-input>
+        </el-form-item>
+      </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialogs">关 闭</el-button>
+        <el-button @click="operateClose('allform')">取 消</el-button>
+        <el-button type="primary" @click="save('allform')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -47,7 +49,7 @@
 
 <script>
 import { getList } from '@/api/seetable'
-
+import { alertBox } from '@/utils/alert'
 export default {
   data() {
     return {
@@ -60,7 +62,13 @@ export default {
         index: 1,
         size: 10
       },
-      detailShow: false,
+      form: {
+        tRoleName: '',
+        tRoleValue: ''
+      },
+      operateTitle: '',
+      formShow: false,
+      nameRepeat: false,
       roleData: {
         count: 4,
         items: [
@@ -128,10 +136,19 @@ export default {
       const index = this.queryPage.index
       this.list = this.data.slice(size * (index - 1), size * index)
     },
-    detail(val) {
-      this.detailShow = true
+    operation(id, msg, url) {
+      alertBox(this, msg, url, id)
     },
-    closeDialogs() {
+    operate(type, val) {
+      if (type === 'add') {
+        this.operateTitle = '新增角色信息'
+      } else if (type === 'edit') {
+        this.operateTitle = '编辑角色信息'
+      }
+      this.formShow = true
+    },
+    operateClose() {
+      this.formShow = false
     }
   }
 }

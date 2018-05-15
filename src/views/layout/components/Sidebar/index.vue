@@ -159,7 +159,17 @@ export default {
             {
               path: 'orgtable',
               name: 'orgtable',
-              meta: { title: '组织管理', icon: '' }
+              meta: { title: '组织架构管理', icon: '' }
+            },
+            {
+              path: 'info',
+              name: 'info',
+              meta: { title: '消息接口配置', icon: '' }
+            },
+            {
+              path: 'auditall',
+              name: 'auditall',
+              meta: { title: '审批流程配置', icon: '' }
             }
           ]
         }

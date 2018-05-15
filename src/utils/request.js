@@ -34,37 +34,41 @@ service.interceptors.response.use(
      * code为非20000是抛错 可结合自己业务进行修改
      */
     const res = response.data
-    if (res.code && res.code !== 20000) {
-      if (res.code === 40001) {
-        Message({
-          message: '密码错误！',
-          type: 'error',
-          duration: 5 * 1000
-        })
-      } else if (res.code === 40005) {
-        Message({
-          message: '登录失败',
-          type: 'error',
-          duration: 5 * 1000
-        })
-      } else {
-        Message({
-          message: '请求失败！',
-          type: 'error',
-          duration: 5 * 1000
-        })
+    const msg = (msg, type) => {
+      Message({
+        message: msg,
+        type: type,
+        duration: 2 * 1000
+      })
+    }
+    if (res.code && res.code !== 20000 && res.code !== 200) {
+      switch (res.code) {
+        case 40001:
+          msg('密码错误！', 'error')
+          break
+        case 40005:
+          msg('登录失败！', 'error')
+          break
+        case 0:
+          msg(res.msg, 'error')
+          break
+        case 2:
+          msg(res.msg, 'error')
+          break
       }
       return Promise.reject('error')
     } else {
+      if (res.code === 200) {
+        msg('操作成功！', 'success')
+      }
       return response.data
     }
   },
   error => {
-    console.log('err' + error)// for debug
     Message({
-      message: error.message,
+      message: error.msg,
       type: 'error',
-      duration: 5 * 1000
+      duration: 2 * 1000
     })
     return Promise.reject(error)
   }

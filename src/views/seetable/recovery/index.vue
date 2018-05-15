@@ -1,7 +1,7 @@
 <template>
   <div class="app-container" id="recoveryTable">
     <div class="filter-container">
-      <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-sort">同步</el-button>
+      <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-sort" @click="operation('', '确认同步吗', '123')">同步</el-button>
     </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="恢复策略名称" prop="name" width="160" sortable></el-table-column>
@@ -49,7 +49,7 @@
             </el-button-group>
           </template>
         </el-table-column>
-      </el-table>`
+      </el-table>
       <div slot="footer" class="dialog-footer">
         <el-button>关 闭</el-button>
       </div>
@@ -114,35 +114,8 @@ export default {
     detailshow(val) {
       this.detailShow = true
     },
-    operation(val, type) {
-      let url, msg
-      switch (type) {
-        case 1:
-          url = '123' //  执行
-          msg = '确认执行此恢复计划吗'
-          break
-        case 2:
-          url = '123' // 完毕
-          msg = '确认此恢复计划完成吗'
-          break
-        case 3:
-          url = '123' // 重试
-          msg = '确认重试该步骤吗'
-          break
-        case 4:
-          url = '123' // 跳过
-          msg = '确认跳过该步骤吗'
-          break
-        case 5:
-          url = '123' // 一键退回
-          msg = '确认退回该步骤吗'
-          break
-        case 6:
-          url = '123' // 停止
-          msg = '确认停止该步骤吗'
-          break
-      }
-      alertBox(this, msg, url, val)
+    operation(id, msg, url) {
+      alertBox(this, msg, url, id)
     },
     detailClose() {
     }

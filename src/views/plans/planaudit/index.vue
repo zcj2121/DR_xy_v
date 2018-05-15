@@ -12,7 +12,7 @@
       <el-table-column label="负责人" prop="leader" width="100" sortable></el-table-column>
       <el-table-column label="描述" prop="remark" min-width="120" sortable></el-table-column>
       <el-table-column label="状态" prop="statu" width="75" sortable></el-table-column>
-      <el-table-column label="操作" width="65">
+      <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="audit">审批</el-button>

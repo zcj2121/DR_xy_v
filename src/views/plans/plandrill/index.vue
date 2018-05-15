@@ -670,7 +670,7 @@
           height: 500px;
           padding: 20px 50px;
           .title{
-            font-size:16px;
+            font-size:15px;
             text-align:center;
             margin-bottom:5px;
             font-weight: bold;

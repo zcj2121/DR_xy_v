@@ -163,7 +163,7 @@ export const constantRouterMap = [
   {
     path: '/system',
     component: Layout,
-    redirect: '/system/menu',
+    redirect: '/system/role',
     name: 'system',
     meta: { title: '系统管理', icon: 'cog' },
     children: [
@@ -189,7 +189,19 @@ export const constantRouterMap = [
         path: 'orgtable',
         name: 'orgtable',
         component: () => import('@/views/system/orgtable/index'),
-        meta: { title: '组织管理', icon: 'flag-o' }
+        meta: { title: '组织架构管理', icon: 'flag-o' }
+      },
+      {
+        path: 'info',
+        name: 'info',
+        component: () => import('@/views/system/info/index'),
+        meta: { title: '消息接口配置', icon: 'flag-o' }
+      },
+      {
+        path: 'auditall',
+        name: 'auditall',
+        component: () => import('@/views/system/auditall/index'),
+        meta: { title: '审批流程配置', icon: 'flag-o' }
       }
     ]
   },

@@ -237,7 +237,7 @@
           </tr>
         </table>
       </div>
-      <div class="child-title"><el-button size="mini" type="primary" @click="addSet">添加预案操作</el-button></div>
+      <div class="child-title" style="text-align: left"><el-button size="mini" type="primary" @click="addSet">添加预案操作</el-button></div>
       <div class="is-scrolling-none">
         <table class="el-table__body">
           <tr>
@@ -554,7 +554,7 @@
   }
 </script>
 <style rel="stylesheet/scss" lang="scss">
-  #userTable{
+  #planTable{
     .el-dialog__body{
       padding: 10px 20px;
       .el-table__body-wrapper{
@@ -576,7 +576,7 @@
           height: 500px;
           padding: 20px 50px;
           .title{
-            font-size:16px;
+            font-size:15px;
             text-align:center;
             margin-bottom:5px;
             font-weight: bold;
@@ -632,5 +632,18 @@
       padding-right:12px;
       text-align: right;
     }
+  }
+  .title{
+    font-size: 15px;
+    text-align: center;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  .child-title{
+    margin-top: 15px;
+    font-size: 15px;
+    text-align: center;
+    margin-bottom: 5px;
+    font-weight: bold;
   }
 </style>

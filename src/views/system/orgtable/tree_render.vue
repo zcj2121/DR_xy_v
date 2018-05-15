@@ -2,7 +2,7 @@
 	<span class="tree-expand">
 		<span class="tree-label" v-show="DATA.isEdit">
 			<el-input class="edit" size="mini" autofocus
-                v-model="DATA.name"
+                v-model="DATA.groupName"
                 :ref="'treeInput'+DATA.id"
                 @click.stop.native="nodeEditFocus"
                 @blur.stop="nodeEditPass(STORE,DATA,NODE)"
@@ -10,106 +10,43 @@
 		</span>
 		<span v-show="!DATA.isEdit"
           :class="[DATA.id > maxexpandId ? 'tree-new tree-label' : 'tree-label']">
-			<span>{{DATA.name}}</span>
+			<span>{{DATA.groupName}} <span style="color:#09c;" v-if="DATA">共{{DATA.personCount}}人</span> </span>
 		</span>
 		<span class="tree-btn" v-show="!DATA.isEdit">
-			<i class="el-icon-plus" @click.stop="nodeAdd(STORE,DATA,NODE)"></i>
-			<i class="el-icon-edit" @click.stop="nodeEdit(STORE,DATA,NODE)"></i>
-			<i class="el-icon-delete" @click.stop="nodeDel(STORE,DATA,NODE)"></i>
+			<i class="el-icon-plus" title="添加" @click.stop="nodeAdd(STORE,DATA,NODE)"></i>
+			<i class="el-icon-edit" title="修改" @click.stop="nodeEdit(STORE,DATA,NODE)"></i>
+			<i class="el-icon-delete" title="删除" @click.stop="nodeDel(STORE,DATA,NODE)"></i>
 		</span>
-    <!--弹出框-->
-    <el-dialog :title="modelTitle" width="500px" :visible.sync="dialogShow"
-               :modal-append-to-body="false" @close='dialogClose'>
-      <el-form :model="form" label-position="right" label-width="95px">
-        <el-form-item label="组织名称：" prop="facilityType">
-          <el-input v-model="form.groupName" placeholder="请输入组织名称"></el-input>
-        </el-form-item>
-        <el-form-item label="前置节点：" prop="field">
-        <el-select v-model="form.groupParent" placeholder="请选择前置节点" style="width:100%">
-          <el-option v-for="item in groupOptions" :key="item.value" :label="item.label"
-          :value="item.value"></el-option>
-        </el-select>
-        </el-form-item>
-        <el-form-item label="组织描述：" prop="oid">
-          <el-input type="textarea" :rows="2" v-model="form.groupDesc" placeholder="请输入组织描述"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="save('form')">确 定</el-button>
-        <el-button @click="reset('form')">重 置</el-button>
-      </div>
-    </el-dialog>
 	</span>
 
 </template>
 
 <script>
-  import { findParentAndAboveNode } from '@/api/orgtable'
   export default {
     data() {
       return {
-        modelTitle: '',
-        dialogShow: false,
-        groupOptions: [],
-        dataQuery: {
-          groupId: 1
-        },
-        form: {
-          groupParent: '0',
-          groupDesc: '',
-          groupName: ''
-        }
       }
     },
     name: 'treeExpand',
     props: ['NODE', 'DATA', 'STORE', 'maxexpandId'],
     methods: {
       nodeAdd(s, d, n) { // 新增
-        this.dialogShow = true
-        this.modelTitle = '新增组织'
-        this.groupAll()
+        this.$emit('nodeAdd', s, d, n)
       },
       nodeEdit(s, d, n) { // 编辑
-        this.dialogShow = true
-        this.modelTitle = '编辑组织'
-        this.groupAll()
-      },
-      groupAll() {
-        findParentAndAboveNode(this.dataQuery).then(response => {
-          this.groupOptions = [{
-            label: '无',
-            value: '0'
-          }]
-          if (response) {
-            for (const i in response) {
-              this.groupOptions.push({
-                label: response[i].groupName,
-                value: response[i].id
-              })
-            }
-          }
-        })
+        this.$emit('nodeEdit', s, d, n)
       },
       nodeDel(s, d, n) { // 删除
-        this.$confirm('是否删除此节点？', '提示', {
-          confirmButtonText: '确认',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-        }).catch(() => {
-          return false
-        })
+        this.$emit('nodeDel', s, d, n)
       },
       nodeEditPass(s, d, n) { // 编辑完成
       },
       nodeEditFocus() {
         // 阻止点击节点的事件冒泡
       },
-      dialogClose() {
+      close() {
       },
       save() {
-      },
-      reset() {
       }
     }
   }
@@ -135,12 +72,27 @@
   .tree-expand .tree-btn {
     display: none;
     float: right;
-    margin-right: 20px;
+    margin-left: 10px;
+    position: absolute;
+    right: 10px;
+    background: #eee;
+    padding:0 2px 0 5px;
   }
 
   .tree-expand .tree-btn i {
     color: #8492a6;
     font-size: 0.9em;
     margin-right: 3px;
+    font-weight: bold;
   }
+  .tree-expand .tree-btn i:first-child {
+    color:#409EFF;
+  }
+  .tree-expand .tree-btn i:nth-child(2) {
+    color:#E6A23C;
+  }
+  .tree-expand .tree-btn i:last-child {
+    color:#F56C6C;
+  }
+
 </style>
