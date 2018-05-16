@@ -61,4 +61,20 @@ export function findGroupById(params) { // 请求组织名称
   })
 }
 
+export function saveOrUpdatePerson(data) { // 添加 修改 成员
+  return request({
+    url: '/rs/dr/groupUserManager/saveOrUpdatePerson',
+    method: 'post',
+    data
+  })
+}
+
+export function deletePersonById(params) { // 删除 成员
+  return request({
+    url: '/rs/dr/groupUserManager/deletePersonById',
+    method: 'post',
+    params
+  })
+}
+
 // 组织架构管理 API orgtable

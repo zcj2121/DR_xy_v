@@ -15,7 +15,7 @@
                        :expand-on-click-node="false"
                        :render-content="renderContent"
                        :default-expanded-keys="defaultExpandKeys"
-                       @node-click="handleNodeClick" @child-say="ievent"></el-tree>
+                       @node-click="handleNodeClick"></el-tree>
             </div>
         </div>
       </el-col>
@@ -28,7 +28,7 @@
           <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
         </span>
         <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
-          <el-table-column label="成员姓名" prop="userName" :show-overflow-tooltip="true" sortable></el-table-column>
+          <el-table-column label="成员姓名" prop="displayName" :show-overflow-tooltip="true" sortable></el-table-column>
           <el-table-column label="手机号码" prop="telphone" :show-overflow-tooltip="true" sortable></el-table-column>
           <el-table-column label="电子邮箱" prop="email" :show-overflow-tooltip="true" sortable></el-table-column>
           <el-table-column label="部门" prop="department" :show-overflow-tooltip="true" sortable></el-table-column>
@@ -38,7 +38,7 @@
             <template slot-scope="scope">
               <el-button-group>
                 <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-                <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
+                <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '/rs/dr/groupUserManager/deletePersonById')">删除</el-button>
               </el-button-group>
             </template>
           </el-table-column>
@@ -63,7 +63,7 @@
           <el-input v-model="orgForm.groupName" placeholder="请输入组织名称"></el-input>
         </el-form-item>
         <el-form-item label="组织描述：" prop="oid">
-          <el-input type="textarea" :rows="2" v-model="orgForm.groupDesc" placeholder="请输入组织描述"></el-input>
+          <el-input v-model="orgForm.groupDesc" placeholder="请输入组织描述"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -78,13 +78,17 @@
       <el-form :model="form" ref="form" label-position="right" label-width="95px">
         <el-form-item label="组织名称：" prop="facilityType">
           <el-select v-model="form.groupId" placeholder="请选择组织名称" style="width:100%;">
-            <el-option v-for="(item, index) in groupIdOptions" :value="item.value" :label="item.label" :key="index"></el-option>
+            <el-option v-for="(item, index) in groupIdOptions" :value="item.id" :label="item.groupName" :key="index"></el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item label="成员姓名：" prop="facilityType">
-          <el-select v-model="form.userId" placeholder="请选择成员" style="width:100%;">
-            <el-option v-for="(item, index) in userIdOptions" :value="item.id" :label="item.displayName" :key="index"></el-option>
-          </el-select>
+          <el-autocomplete
+            v-model="autocomplete"
+            :fetch-suggestions="querySearchAsync"
+            placeholder="请输入内容"
+            @select="handleSelect" style="width: 100%" :disabled="isFormEdit"
+          ></el-autocomplete>
         </el-form-item>
         <el-form-item label="职务：" prop="facilityType">
           <el-select v-model="form.personPost" placeholder="请选择职务" style="width:100%;">
@@ -93,6 +97,17 @@
             <el-option value="成员" label="成员"></el-option>
           </el-select>
         </el-form-item>
+        <div v-if="isFormEdit">
+          <el-form-item label="手机号码：" prop="oid">
+            <el-input v-model="form.telphone" placeholder="请输入手机号码"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱：" prop="oid">
+            <el-input v-model="form.email" placeholder="请输入邮箱"></el-input>
+          </el-form-item>
+          <el-form-item label="部门：" prop="oid">
+            <el-input v-model="form.department" placeholder="请输入部门"></el-input>
+          </el-form-item>
+        </div>
         <el-form-item label="职责：" prop="oid">
           <el-input type="textarea" :rows="2" v-model="form.personDuty" placeholder="请输入职责"></el-input>
         </el-form-item>
@@ -100,14 +115,13 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeOperate('form')">取 消</el-button>
         <el-button type="primary" @click="saveOperate('form')">确 定</el-button>
-
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { orgtableList, findAllGroupToTree, saveOrUpdateGroup, deleteGroupById, findAllUserInRoleEnable, findGroupById } from '@/api/system/orgtable'
+  import { orgtableList, findAllGroupToTree, saveOrUpdateGroup, deleteGroupById, findAllUserInRoleEnable, findAllGroup, saveOrUpdatePerson } from '@/api/system/orgtable'
   import { alertBox } from '@/utils/alert'
   import TreeRender from './tree_render'
 
@@ -133,9 +147,12 @@
         modelTitle: '',
         orgShow: false,
         isAdd: '',
+        isFormEdit: false,
         isChecked: '',
         groupIdOptions: [],
         userIdOptions: [],
+        autocomplete: '',
+        timeout: null,
         operateTitle: '',
         operateShow: false,
         form: {
@@ -151,6 +168,7 @@
           index: 1,
           size: 10
         },
+        thisPage: null,
         detailShow: false,
         radio3: 4,
         isLoadingTree: false, // 是否加载节点树
@@ -170,6 +188,13 @@
           if (isChecked) {
             this.fetchData()
           }
+        },
+        deep: true
+      },
+      listQuery: {
+        handler(listQuery) {
+          this.search()
+          this.queryPage.index = 1
         },
         deep: true
       }
@@ -276,6 +301,7 @@
         this.listData()
       },
       handleCurrentChange(val) {
+        this.thisPage = val
         this.queryPage.index = val
         this.listData()
       },
@@ -290,26 +316,31 @@
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
       },
-      ievent(somedata) {
-        console.log(somedata)
-      },
       operate(type, row) {
         this.groupIdOptions = []
-        findGroupById({ groupId: this.groupId }).then(response => {
-          this.groupIdOptions.push({
-            label: response.groupDto.groupName,
-            value: response.groupDto.id
-          })
-          this.form.groupId = response.groupDto.id
+        findAllGroup().then(response => {
+          this.groupIdOptions = response
+          this.form.groupId = this.isChecked
         })
         findAllUserInRoleEnable().then(response => {
           const deffindall = Object.assign({}, response.userList)
-          this.userIdOptions = deffindall
-          this.form.userId = deffindall[0].id
+          const arr = []
+          for (const i in deffindall) {
+            arr.push({
+              value: deffindall[i].displayName,
+              id: deffindall[i].id
+            })
+          }
+          this.userIdOptions = arr
         })
         if (type === 'add') {
+          this.isFormEdit = false
+          this.autocomplete = ''
           this.operateTitle = '新增成员信息'
         } else if (type === 'edit') {
+          this.isFormEdit = true
+          this.form = Object.assign({}, row)
+          this.autocomplete = row.displayName
           this.operateTitle = '编辑成员信息'
         }
         this.operateShow = true
@@ -324,6 +355,32 @@
           id: '',
           displayName: ''
         }
+      },
+      saveOperate() {
+        saveOrUpdatePerson(this.form).then(response => {
+          this.groupTree()
+          this.fetchData()
+          this.operateShow = false
+        }).catch(() => {
+        })
+      },
+      querySearchAsync(queryString, cb) {
+        var userIdOptions = this.userIdOptions
+        var results = queryString ? userIdOptions.filter(this.createStateFilter(queryString)) : userIdOptions
+
+        clearTimeout(this.timeout)
+        this.timeout = setTimeout(() => {
+          cb(results)
+        }, 1000 * Math.random())
+      },
+      createStateFilter(queryString) {
+        return (state) => {
+          return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+        }
+      },
+      handleSelect(item) {
+        this.form.userId = item.id
+        this.form.displayName = item.value
       }
     }
   }

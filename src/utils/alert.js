@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-axios.baseURL = process.env.BASE_API
+// axios.baseURL = process.env.BASE_API
+axios.baseURL = 'hatech'
 
 export function alertBox(_this, msg, url, params) {
   _this.$confirm(msg, '提示', {
@@ -8,9 +9,7 @@ export function alertBox(_this, msg, url, params) {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    axios.get(axios.baseURL + url, {
-      params: params
-    })
+    axios.post(axios.baseURL + url + '?id=' + params)
       .then(function(response) {
         if (response === 'ok') {
           _this.$message({
