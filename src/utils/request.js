@@ -49,7 +49,7 @@ service.interceptors.response.use(
         case 40005:
           msg('登录失败！', 'error')
           break
-        case 0:
+        case 3:
           msg(res.msg, 'error')
           break
         case 2:
@@ -66,7 +66,7 @@ service.interceptors.response.use(
   },
   error => {
     Message({
-      message: error.msg,
+      message: '服务器响应失败，请重试！',
       type: 'error',
       duration: 2 * 1000
     })

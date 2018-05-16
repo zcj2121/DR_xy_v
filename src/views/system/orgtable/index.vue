@@ -25,7 +25,7 @@
           <el-input style="width: 200px;" size="mini" class="filter-item" v-model="listQuery.displayName" placeholder="请输入成员姓名">
           </el-input>
           <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
-          <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit">新增</el-button>
+          <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
         </span>
         <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
           <el-table-column label="成员姓名" prop="userName" :show-overflow-tooltip="true" sortable></el-table-column>
@@ -37,8 +37,8 @@
           <el-table-column label="操作" width="101">
             <template slot-scope="scope">
               <el-button-group>
-                <el-button size="mini" type="primary">编辑</el-button>
-                <el-button size="mini" type="primary">删除</el-button>
+                <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
+                <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
               </el-button-group>
             </template>
           </el-table-column>
@@ -72,11 +72,43 @@
 
       </div>
     </el-dialog>
+    <!--弹出框-->
+    <el-dialog :title="operateTitle" width="500px" :visible.sync="operateShow"
+               :modal-append-to-body="false" @close='closeOperate("form")'>
+      <el-form :model="form" ref="form" label-position="right" label-width="95px">
+        <el-form-item label="组织名称：" prop="facilityType">
+          <el-select v-model="form.groupId" placeholder="请选择组织名称" style="width:100%;">
+            <el-option v-for="(item, index) in groupIdOptions" :value="item.value" :label="item.label" :key="index"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="成员姓名：" prop="facilityType">
+          <el-select v-model="form.userId" placeholder="请选择成员" style="width:100%;">
+            <el-option v-for="(item, index) in userIdOptions" :value="item.id" :label="item.displayName" :key="index"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="职务：" prop="facilityType">
+          <el-select v-model="form.personPost" placeholder="请选择职务" style="width:100%;">
+            <el-option value="组长" label="组长"></el-option>
+            <el-option value="副组长" label="副组长"></el-option>
+            <el-option value="成员" label="成员"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="职责：" prop="oid">
+          <el-input type="textarea" :rows="2" v-model="form.personDuty" placeholder="请输入职责"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="closeOperate('form')">取 消</el-button>
+        <el-button type="primary" @click="saveOperate('form')">确 定</el-button>
+
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-  import { orgtableList, findAllGroupToTree, saveOrUpdateGroup, findParentAndAboveNode, findAllUser } from '@/api/system/orgtable'
+  import { orgtableList, findAllGroupToTree, saveOrUpdateGroup, deleteGroupById, findAllUserInRoleEnable, findGroupById } from '@/api/system/orgtable'
+  import { alertBox } from '@/utils/alert'
   import TreeRender from './tree_render'
 
   export default {
@@ -102,11 +134,17 @@
         orgShow: false,
         isAdd: '',
         isChecked: '',
-        groupOptions: [],
+        groupIdOptions: [],
+        userIdOptions: [],
+        operateTitle: '',
+        operateShow: false,
         form: {
-          groupParent: '0',
-          groupDesc: '',
-          groupName: ''
+          groupId: '',
+          userId: '',
+          personPost: '',
+          personDuty: '',
+          id: '',
+          displayName: ''
         },
         pageSizes: [10, 15, 20],
         queryPage: {
@@ -207,31 +245,20 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          deleteGroupById({ groupId: d.id }).then(response => {
+            this.groupTree()
+          }).catch(() => {
+          })
         }).catch(() => {
           return false
         })
       },
       saveOrg() { // 保存
-        if (this.isAdd === 'add') {
-          saveOrUpdateGroup(this.orgForm).then(response => {
-            this.groupTree()
-            this.orgShow = false
-          }).catch(() => {
-          })
-        } else if (this.isAdd === 'edit') {
-          saveOrUpdateGroup(this.orgForm).then(response => {
-            this.groupTree()
-            this.orgShow = false
-          }).catch(() => {
-          })
-        } else {
-          saveOrUpdateGroup(this.orgForm).then(response => {
-            this.groupTree()
-            this.orgShow = false
-          }).catch(() => {
-          })
-        }
-
+        saveOrUpdateGroup(this.orgForm).then(response => {
+          this.groupTree()
+          this.orgShow = false
+        }).catch(() => {
+        })
       },
       fetchData() {
         this.listLoading = true
@@ -260,8 +287,43 @@
       search() {
         this.fetchData()
       },
+      operation(id, msg, url) {
+        alertBox(this, msg, url, id)
+      },
       ievent(somedata) {
         console.log(somedata)
+      },
+      operate(type, row) {
+        this.groupIdOptions = []
+        findGroupById({ groupId: this.groupId }).then(response => {
+          this.groupIdOptions.push({
+            label: response.groupDto.groupName,
+            value: response.groupDto.id
+          })
+          this.form.groupId = response.groupDto.id
+        })
+        findAllUserInRoleEnable().then(response => {
+          const deffindall = Object.assign({}, response.userList)
+          this.userIdOptions = deffindall
+          this.form.userId = deffindall[0].id
+        })
+        if (type === 'add') {
+          this.operateTitle = '新增成员信息'
+        } else if (type === 'edit') {
+          this.operateTitle = '编辑成员信息'
+        }
+        this.operateShow = true
+      },
+      closeOperate() {
+        this.operateShow = false
+        this.form = {
+          groupId: '',
+          userId: '',
+          personPost: '',
+          personDuty: '',
+          id: '',
+          displayName: ''
+        }
       }
     }
   }
