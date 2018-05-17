@@ -12,6 +12,7 @@
                        node-key="id"
                        highlight-current
                        :props="defaultProps"
+                       default-expand-all
                        :expand-on-click-node="false"
                        :render-content="renderContent"
                        :default-expanded-keys="defaultExpandKeys"
@@ -47,7 +48,7 @@
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
                        :current-page="queryPage.index"
-                       :page-sizes="[10, 20, 30, 40, 50,1000]"
+                       :page-sizes="pageSizes"
                        :page-size="queryPage.size"
                        layout="total, sizes, prev, pager, next, jumper"
                        :total="pageTotal">
@@ -208,8 +209,10 @@
     methods: {
       groupTree() {
         findAllGroupToTree().then(response => {
-          this.setTree = response
-          this.isChecked = response[0].id
+          if (response) {
+            this.setTree = response.list
+            this.isChecked = response.list[0].id
+          }
         })
       },
       initExpand() {
@@ -290,10 +293,12 @@
         this.listQuery.groupId = this.isChecked
         this.data = []
         orgtableList(this.listQuery).then(response => {
-          this.data = response.groupUserDtoList
-          this.pageTotal = response.count
-          this.listData()
-          this.listLoading = false
+          if (response) {
+            this.data = response.groupUserDtoList
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
       handleSizeChange(val) {
@@ -319,19 +324,24 @@
       operate(type, row) {
         this.groupIdOptions = []
         findAllGroup().then(response => {
-          this.groupIdOptions = response
-          this.form.groupId = this.isChecked
+          if (response) {
+            this.groupIdOptions = response.list
+            this.form.groupId = this.isChecked
+          }
         })
         findAllUserInRoleEnable().then(response => {
-          const deffindall = Object.assign({}, response.userList)
-          const arr = []
-          for (const i in deffindall) {
-            arr.push({
-              value: deffindall[i].displayName,
-              id: deffindall[i].id
-            })
+          if (response) {
+            const deffindall = Object.assign({}, response.list)
+            const arr = []
+            for (const i in deffindall) {
+              arr.push({
+                value: deffindall[i].displayName,
+                id: deffindall[i].id
+              })
+            }
+            this.userIdOptions = arr
+            console.log(this.userIdOptions)
           }
-          this.userIdOptions = arr
         })
         if (type === 'add') {
           this.isFormEdit = false
@@ -367,7 +377,6 @@
       querySearchAsync(queryString, cb) {
         var userIdOptions = this.userIdOptions
         var results = queryString ? userIdOptions.filter(this.createStateFilter(queryString)) : userIdOptions
-
         clearTimeout(this.timeout)
         this.timeout = setTimeout(() => {
           cb(results)

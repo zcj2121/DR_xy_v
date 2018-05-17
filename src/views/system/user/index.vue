@@ -1,16 +1,17 @@
 <template>
   <div class="app-container" id="userTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入用户名">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.userName" placeholder="请输入用户名">
       </el-input>
-      <el-select style="width: 200px;" size="mini" v-model="role" placeholder="请选择权限">
-        <el-option v-for="item in roleDataOptions" :key="item.value" :label="item.label"
-                   :value="item.value"></el-option>
+      <el-select style="width: 200px;" size="mini" v-model="searchQuery.permission" placeholder="请选择权限">
+        <el-option label="全部" value=""></el-option>
+        <el-option v-for="item in roleDataOptions" :key="item.tRoleValue" :label="item.tRoleName"
+                   :value="item.tRoleValue"></el-option>
       </el-select>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
     </div>
-    <el-table :data="userData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
       <el-table-column label="用户名" prop="userName" sortable></el-table-column>
       <el-table-column label="显示昵称" prop="displayName" sortable></el-table-column>
       <el-table-column label="手机号码" prop="telphone" sortable></el-table-column>
@@ -19,9 +20,9 @@
       <el-table-column label="操作" width="164">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认重置密码吗', '123')">重置密码</el-button>
+            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认重置密码吗', '/rs/dr/system/usermanager/resetPassword')">重置密码</el-button>
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
+            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '/rs/dr/system/usermanager/delete')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -30,7 +31,7 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
@@ -41,7 +42,6 @@
       <el-form :model="form" label-position="right" label-width="85px">
         <el-form-item label="用户名：" prop="name">
           <el-input v-model="form.userName" placeholder="请输入用户名"></el-input>
-          <div class="name-repeat" v-if="nameRepeat">名称重复</div>
         </el-form-item>
         <el-form-item label="显示昵称：" prop="enabled">
           <el-input v-model="form.displayName" placeholder="请输入显示昵称"></el-input>
@@ -57,8 +57,8 @@
         </el-form-item>
         <el-form-item label="权限：" prop="enabled">
           <el-select v-model="form.permission" placeholder="请选择权限" style="width:100%;">
-            <el-option v-for="item in roleDataOptions" :key="item.value" :label="item.label"
-                       :value="item.value"></el-option>
+            <el-option v-for="item in roleDataOptions" :key="item.tRoleValue" :label="item.tRoleName"
+                       :value="item.tRoleValue"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -71,21 +71,25 @@
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { retrieve, retrieveRole, creat, update } from '@/api/system/user'
   import { alertBox } from '@/utils/alert'
   export default {
     data() {
       return {
-        data: null,
-        list: null,
-        listLoading: true,
-        pageTotal: 0,
-        pageSizes: [10, 15, 20],
+        data: null, // 原始数据
+        list: null, // 列表显示数据
+        listLoading: true, // 加载动画
+        pageTotal: 0, // 数据总条数
+        pageSizes: [10, 15, 20], // 每页显示条数 规则
         queryPage: {
-          index: 1,
-          size: 10
+          index: 1, // 第几页
+          size: 10 // 每页显示条数
         },
-        form: {
+        searchQuery: { // 查询数据
+          userName: '',
+          permission: ''
+        },
+        form: { // 新增编辑 数据
           userName: '',
           displayName: '',
           department: '',
@@ -93,10 +97,9 @@
           email: '',
           permission: ''
         },
-        operateTitle: '',
-        formShow: false,
-        nameRepeat: false,
-        role: '',
+        isEdit: false, // 是否是进行编辑操作
+        operateTitle: '', // 新增、编辑 弹出框 标题
+        formShow: false, // 是否 显示 新增、编辑 弹出框
         roleDataOptions: [
           {
             label: '超级管理员',
@@ -114,168 +117,121 @@
             label: '管理员',
             value: 'manager'
           }
-        ],
-        userData: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            },
-            {
-              id: 10723,
-              permissionValue: 'manager',
-              department: '前端开发部',
-              displayName: '秦臻',
-              email: '272171225@qq.com',
-              password: 'MTIzNDU2',
-              permission: '管理员',
-              sessionid: '1DFA16ACC7F0879F9B41A9AA1D537288',
-              telphone: '18268064851',
-              userName: 'qinzhen',
-              ipAddress: null
-            }
-          ]
-        }
+        ]
       }
     },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          '在线': 'success',
-          '健康': 'gray',
-          '离线': 'danger'
-        }
-        return statusMap[status]
+    watch: {
+      // 监听 查询条件
+      searchQuery: {
+        handler(searchQuery) {
+          this.search()
+          this.queryPage.index = 1
+        },
+        deep: true
       }
     },
     created() {
       this.fetchData()
+      this.rolehData()
     },
     methods: {
+      // 列表数据 分页 搜索
+      // 请求 原始数据
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        retrieve(this.searchQuery).then(response => {
+          if (response) {
+            this.data = response.list
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
+      // 每页 条数
       handleSizeChange(val) {
         this.queryPage.size = val
         this.listData()
       },
+      // 第几页
       handleCurrentChange(val) {
         this.queryPage.index = val
         this.listData()
       },
+      // 当前列表 显示数据
       listData() {
         const size = this.queryPage.size
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
+      // 查询 数据
+      search() {
+        this.fetchData()
+      },
+      // 列表数据 分页 搜索
+      // 请求 权限
+      rolehData() {
+        this.roleDataOptions = []
+        retrieveRole().then(response => {
+          if (response) {
+            this.roleDataOptions = response.list
+          }
+        })
+      },
+      // 请求 权限
+      // 删除、启用等 公共弹框
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
       },
+      // 删除、启用等 公共弹框
+      // 新增、修改 操作
+      // 弹出框 打开
       operate(type, val) {
         if (type === 'add') {
           this.operateTitle = '新增用户信息'
+          this.isEdit = false
         } else if (type === 'edit') {
+          this.isEdit = true
+          this.form = Object.assign({}, {
+            id: val.id,
+            userName: val.userName,
+            displayName: val.displayName,
+            department: val.department,
+            telphone: val.telphone,
+            email: val.email,
+            permission: val.permissionValue
+          })
           this.operateTitle = '编辑用户信息'
         }
         this.formShow = true
       },
+      // 弹出框 关闭
       operateClose() {
         this.formShow = false
+        this.form = {
+          userName: '',
+          displayName: '',
+          department: '',
+          telphone: '',
+          email: '',
+          permission: ''
+        }
+      },
+      // 点击保存
+      save() {
+        if (this.isEdit === true) {
+          update(this.form).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        } else {
+          creat(this.form).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        }
       }
+      // 新增、修改 操作
     }
   }
 </script>

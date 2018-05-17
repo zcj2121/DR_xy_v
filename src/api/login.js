@@ -22,3 +22,11 @@ export function logout() {
     method: 'get'
   })
 }
+
+export function menuItem() {
+  return request({
+    url: '/dr/data/vbsmenu.do',
+    method: 'get'
+  })
+}
+

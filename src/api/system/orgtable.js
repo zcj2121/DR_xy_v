@@ -22,14 +22,6 @@ export function findAllGroup() { // 所有组织 下拉框数据
   })
 }
 
-export function findParentAndAboveNode(groupId) { // 前置节点 父级组织 下拉框数据
-  return request({
-    url: '/rs/dr/groupManager/findParentAndAboveNode',
-    method: 'post',
-    params: groupId
-  })
-}
-
 export function findAllUserInRoleEnable() { // 所有成员 下拉框数据
   return request({
     url: '/rs/dr/system/usermanager/findAllUserInRoleEnable',
@@ -48,14 +40,6 @@ export function saveOrUpdateGroup(data) { // 添加 修改 组织
 export function deleteGroupById(params) { // 删除 组织
   return request({
     url: '/rs/dr/groupManager/deleteGroupById',
-    method: 'post',
-    params
-  })
-}
-
-export function findGroupById(params) { // 请求组织名称
-  return request({
-    url: '/rs/dr/groupManager/findGroupById',
     method: 'post',
     params
   })

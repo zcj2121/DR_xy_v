@@ -5,8 +5,8 @@
       <el-col :span="5">
         <span class="tabel-title">角色列表</span>
         <div class="menu-left">
-          <el-radio-group v-model="radio3">
-            <el-radio-button :label="item.id" v-for="(item, index) in roleData.items" :key="index">{{item.tRoleName}}</el-radio-button>
+          <el-radio-group v-model="roleActive">
+            <el-radio-button :label="item.id" v-for="(item, index) in roleData" :key="index">{{item.tRoleName}}</el-radio-button>
           </el-radio-group>
         </div>
       </el-col>
@@ -14,165 +14,122 @@
         <span class="tabel-title">菜单树</span>
         <div class="menu-tree">
           <el-tree
-            :data="data2"
+            :data="menuList"
             show-checkbox
             node-key="id"
-            :default-expanded-keys="[2, 3]"
-            :default-checked-keys="[5]"
+            ref="tree"
+            default-expand-all
+            :default-checked-keys="menuActive"
             :props="defaultProps">
           </el-tree>
         </div>
         <div class="btn-box-bottom">
-          <el-button class="filter-item" size="medium" type="primary" >保存</el-button> <el-button class="filter-item" style="margin-left:10px;" size="medium" type="primary" >重置</el-button>
+          <el-button class="filter-item" size="medium" type="primary" @click="save">保存</el-button> <el-button class="filter-item" style="margin-left:10px;" size="medium" type="primary" @click="reset">重置</el-button>
         </div>
-
       </el-col>
     </el-row>
-
-    <!--查看弹出框-->
-    <el-dialog title="查看服务组列表" width="600px" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogs">
-      <el-table :data="list" element-loading-text="Loading" border fit highlight-current-row>
-        <el-table-column label="服务组名称" prop="name" sortable></el-table-column>
-        <el-table-column class-name="status-col" label="状态" width="110" align="center">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialogs">关 闭</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
-
+  import { retrieve, menuAPI, retrieveActive, update } from '@/api/system/jurisdiction'
   export default {
     data() {
       return {
         data: null,
         list: null,
         listLoading: true,
-        pageTotal: 0,
-        pageSizes: [10, 15, 20],
-        queryPage: {
-          index: 1,
-          size: 10
-        },
         detailShow: false,
-        radio3: 6,
-        roleData: {
-          count: 4,
-          items: [
-            {
-              id: 6,
-              tRoleName: '超级管理员',
-              tRoleValue: 'supermanager',
-              enable: 1
-            },
-            {
-              id: 3,
-              tRoleName: '观察员',
-              tRoleValue: 'query',
-              enable: 1
-            },
-            {
-              id: 2,
-              tRoleName: '操作员',
-              tRoleValue: 'operator',
-              enable: 1
-            },
-            {
-              id: 1,
-              tRoleName: '管理员',
-              tRoleValue: 'manager',
-              enable: 1
-            }
-          ]
-        },
-        data2: [{
-          id: 1,
-          label: '一级 1',
-          children: [{
-            id: 4,
-            label: '二级 1-1',
-            children: [{
-              id: 9,
-              label: '三级 1-1-1'
-            }, {
-              id: 10,
-              label: '三级 1-1-2'
-            }]
-          }]
-        }, {
-          id: 2,
-          label: '一级 2',
-          children: [{
-            id: 5,
-            label: '二级 2-1'
-          }, {
-            id: 6,
-            label: '二级 2-2'
-          }]
-        }, {
-          id: 3,
-          label: '一级 3',
-          children: [{
-            id: 7,
-            label: '二级 3-1'
-          }, {
-            id: 8,
-            label: '二级 3-2'
-          }]
-        }],
+        roleActive: null,
+        roleData: [],
+        menuList: [],
+        menuActive: [],
+        defMenuActive: [],
         defaultProps: {
-          children: 'children',
-          label: 'label'
+          children: 'sumMenuList',
+          label: 'menuName'
+        },
+        saveForm: {
+          tAuthRoleId: '',
+          tAuthMenuIds: null
         }
       }
     },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          '在线': 'success',
-          '健康': 'gray',
-          '离线': 'danger'
-        }
-        return statusMap[status]
+    watch: {
+      // 监听 选中的角色
+      roleActive: {
+        handler(roleActive) {
+          this.menuDataActive()
+        },
+        deep: true
       }
     },
     created() {
       this.fetchData()
+      this.menuData()
     },
     methods: {
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        retrieve().then(response => {
+          if (response) {
+            this.roleData = response.list
+            this.roleActive = response.list[0].id
+            this.listLoading = false
+          }
         })
       },
-      handleSizeChange(val) {
-        this.queryPage.size = val
-        this.listData()
+      menuData() {
+        menuAPI().then(response => {
+          if (response) {
+            this.menuList = Object.assign([], response.list)
+            this.menuDataActive()
+            this.listLoading = false
+          }
+        })
       },
-      handleCurrentChange(val) {
-        this.queryPage.index = val
-        this.listData()
+      menuDataActive() {
+        retrieveActive({ tAuthValue: this.roleActive }).then(response => {
+          if (response) {
+            const defData = response.list
+            const arr = []
+            for (const i in defData) {
+              if (defData[i].checked === true) {
+                arr.push(defData[i].id)
+              }
+            }
+            this.menuActive = Object.assign([], arr)
+            this.defMenuActive = Object.assign([], arr)
+            console.log(this.defMenuActive)
+            this.$refs.tree.setCheckedKeys(this.defMenuActive)
+            this.listLoading = false
+          }
+        })
       },
-      listData() {
-        const size = this.queryPage.size
-        const index = this.queryPage.index
-        this.list = this.data.slice(size * (index - 1), size * index)
+      save() {
+        this.saveForm.tAuthMenuIds = this.$refs.tree.getCheckedKeys() // 获取 树 选中的值
+        this.saveForm.tAuthRoleId = this.roleActive
+        this.$confirm('确定保存吗', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          update(this.saveForm).then(() => {
+            this.$store.dispatch('editMenu').then(() => {
+              location.reload()
+            })
+            this.menuDataActive()
+            this.listLoading = false
+          })
+        }).catch(() => {
+          // _this.$message({
+          //   type: 'info',
+          //   message: '已取消操作'
+          // })
+        })
       },
-      detail(val) {
-        this.detailShow = true
-      },
-      closeDialogs() {
+      reset() {
+        this.$refs.tree.setCheckedKeys(this.defMenuActive) // 设置选中值
       }
     }
   }

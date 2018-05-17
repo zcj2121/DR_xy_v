@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/login'
+import { login, logout, getInfo, menuItem } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 
 const user = {
@@ -7,7 +7,8 @@ const user = {
     name: '',
     userId: '',
     rolesValue: '',
-    roles: ''
+    roles: '',
+    editMenu: ''
   },
 
   mutations: {
@@ -25,6 +26,9 @@ const user = {
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
+    },
+    SET_EDITMENU: (state, editMenu) => {
+      state.editMenu = editMenu
     }
   },
 
@@ -53,6 +57,14 @@ const user = {
           commit('SET_NAME', data.displayName)
           commit('SET_USER_ID', data.userId)
           commit('SET_AVATAR', data.rolesValue)
+          menuItem().then(res => {
+            const datachild = res.list
+            console.log(datachild)
+            commit('SET_EDITMENU', datachild)
+            resolve(response)
+          }).catch(error => {
+            reject(error)
+          })
           resolve(response)
         }).catch(error => {
           reject(error)
@@ -80,6 +92,20 @@ const user = {
         commit('SET_TOKEN', '')
         removeToken()
         resolve()
+      })
+    },
+
+    // 修改
+    editMenu({ commit }) {
+      return new Promise((resolve, reject) => {
+        menuItem().then(response => {
+          const datachild = response.data
+          console.log(datachild)
+          commit('SET_EDITMENU', datachild)
+          resolve(response)
+        }).catch(error => {
+          reject(error)
+        })
       })
     }
   }
