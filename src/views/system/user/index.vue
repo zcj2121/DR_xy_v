@@ -100,24 +100,7 @@
         isEdit: false, // 是否是进行编辑操作
         operateTitle: '', // 新增、编辑 弹出框 标题
         formShow: false, // 是否 显示 新增、编辑 弹出框
-        roleDataOptions: [
-          {
-            label: '超级管理员',
-            value: 'supermanager'
-          },
-          {
-            label: '观察员',
-            value: 'query'
-          },
-          {
-            label: '操作员',
-            value: 'operator'
-          },
-          {
-            label: '管理员',
-            value: 'manager'
-          }
-        ]
+        roleDataOptions: []
       }
     },
     watch: {

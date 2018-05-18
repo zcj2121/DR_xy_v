@@ -40,7 +40,7 @@ export function saveOrUpdateGroup(data) { // 添加 修改 组织
 export function deleteGroupById(params) { // 删除 组织
   return request({
     url: '/rs/dr/groupManager/deleteGroupById',
-    method: 'post',
+    method: 'get',
     params
   })
 }

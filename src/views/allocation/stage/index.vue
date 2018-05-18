@@ -1,11 +1,11 @@
 <template>
   <div class="app-container" id="stageTable">
     <div class="filter-container">
-      <el-select style="width: 200px;" size="mini" v-model="name" placeholder="请选择切换流程名称">
-        <el-option v-for="item in nameOptions" :key="item.value" :label="item.label"
-                   :value="item.value"></el-option>
+      <el-select style="width: 200px;" size="mini" v-model="searchQuery.processName" placeholder="请选择切换流程">
+        <el-option v-for="item in processNameOptions" :key="item.id" :label="item.process_name"
+                   :value="item.id"></el-option>
       </el-select>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
                  @click="operate('add')">新增
       </el-button>
@@ -18,7 +18,7 @@
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
+            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '/rs/dr/drmSwitchingStage/delete')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -27,7 +27,7 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
@@ -37,12 +37,12 @@
                @close="operateClose">
       <el-form :model="form" label-position="right" label-width="120px">
         <el-form-item label="切换阶段名称：" prop="name">
-          <el-input v-model="form.name" placeholder="请输入切换阶段名称"></el-input>
-          <div class="name-repeat" v-if="nameRepeat">名称重复</div>
+          <el-input v-model="form.nameString" placeholder="请输入切换阶段名称"></el-input>
         </el-form-item>
-        <el-form-item label="场景负责人：" prop="enabled">
-          <el-select v-model="form.leader" placeholder="请选择场景负责人" style="width:100%;">
-            <el-option value="" label=""></el-option>
+        <el-form-item label="阶段负责人：" prop="enabled">
+          <el-select v-model="form.userid" placeholder="请选择阶段负责人" style="width:100%;">
+            <el-option v-for="item in useridOptions" :key="item.id" :label="item.displayName"
+                       :value="item.id"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -55,7 +55,7 @@
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { getAllProcess, getAllStage, findAllUser, update, insert } from '@/api/allocation/stage'
   import { alertBox } from '@/utils/alert'
   export default {
     data() {
@@ -63,34 +63,25 @@
         data: null,
         list: null,
         listLoading: true,
+        isEdit: false, // 是否是进行编辑操作
         pageTotal: 0,
         pageSizes: [10, 15, 20],
         queryPage: {
           index: 1,
           size: 10
         },
+        searchQuery: { // 查询数据
+          processName: ''
+        },
         operateTitle: '',
         formShow: false,
+        useridOptions: [],
+        processNameOptions: [],
         form: {
-          name: '',
-          leader: ''
+          nameString: '',
+          userid: '',
+          processidLong: ''
         },
-        nameRepeat: false,
-        name: '1',
-        nameOptions: [
-          {
-            label: '切换流程名称1',
-            value: '1'
-          },
-          {
-            label: '切换流程名称2',
-            value: '2'
-          },
-          {
-            label: '切换流程名称3',
-            value: '3'
-          }
-        ],
         Data: {
           totalCount: 44,
           items: [
@@ -113,27 +104,36 @@
         }
       }
     },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          '在线': 'success',
-          '健康': 'gray',
-          '离线': 'danger'
-        }
-        return statusMap[status]
+    watch: {
+      // 监听 查询条件
+      searchQuery: {
+        handler(searchQuery) {
+          this.fetchData()
+          this.queryPage.index = 1
+        },
+        deep: true
       }
     },
     created() {
-      this.fetchData()
+      this.fetchDataProcess()
     },
     methods: {
+      fetchDataProcess() {
+        getAllProcess(this.listQuery).then(response => {
+          if (response) {
+            this.processNameOptions = response.data
+          }
+        })
+      },
       fetchData() {
-        this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        this.listLoading = false
+        getAllStage({ id: this.searchQuery.processName }).then(response => {
+          if (response) {
+            this.data = response.list
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
       handleSizeChange(val) {
@@ -149,21 +149,58 @@
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
+      // 查询 数据
+      search() {
+        this.fetchData()
+      },
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
       },
       operate(type, val) {
+        this.useridOptions = []
+        findAllUser().then(response => {
+          if (response) {
+            this.useridOptions = Object.assign([], response.list)
+          }
+        })
         if (type === 'add') {
           this.operateTitle = '新增切换阶段信息'
+          this.form.processidLong = this.searchQuery.processName
+          this.isEdit = false
         } else if (type === 'edit') {
+          this.isEdit = true
+          if (val) {
+            this.form = Object.assign({}, {
+              id: val.id,
+              nameString: val.nameString,
+              userid: val.userid,
+              processidLong: val.processidLong
+            })
+          }
           this.operateTitle = '编辑切换阶段信息'
         }
         this.formShow = true
       },
       operateClose() {
         this.formShow = false
+        this.form = {
+          nameString: '',
+          userid: '',
+          processidLong: ''
+        }
       },
       save() {
+        if (this.isEdit === true) {
+          update(this.form).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        } else {
+          insert(this.form).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        }
       }
     }
   }

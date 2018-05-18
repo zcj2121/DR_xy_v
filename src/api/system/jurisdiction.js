@@ -23,11 +23,11 @@ export function retrieveActive(params) { // 菜单数据 树 被选中的 树
   })
 }
 
-export function update(data) { // 保存 菜单数据 树
+export function update(params) { // 保存 菜单数据 树
   return request({
     url: '/rs/dr/system/authority/update',
-    method: 'post',
-    data
+    method: 'get',
+    params
   })
 }
 // 权限管理 API jurisdiction

@@ -1,30 +1,34 @@
 <template>
   <div class="app-container" id="stepTable">
     <div class="filter-container">
-      <el-select style="width: 200px;" size="mini" v-model="process" placeholder="请选择切换流程名称">
-        <el-option v-for="item in processOptions" :key="item.value" :label="item.label"
-                   :value="item.value"></el-option>
+      <el-select style="width: 200px;" size="mini" v-model="defSearchQuery.process" placeholder="请选择切换流程">
+        <el-option v-for="item in processOptions" :key="item.id" :label="item.process_name"
+                   :value="item.id"></el-option>
       </el-select>
-      <el-select style="width: 200px;" size="mini" v-model="stage" placeholder="请选择切换阶段名称">
-        <el-option v-for="item in stageOptions" :key="item.value" :label="item.label"
-                   :value="item.value"></el-option>
+      <el-select style="width: 200px;" size="mini" v-model="defSearchQuery.stage" placeholder="请选择切换阶段">
+        <el-option v-for="item in stageOptions" :key="item.id" v-if='defSearchQuery.process === item.processidLong' :label="item.nameString"
+                   :value="item.id"></el-option>
       </el-select>
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
                  @click="operate('add')">新增
       </el-button>
     </div>
-    <el-table :data="Data.items" v-loading.body="listLoading" element-loading-text="Loading" border fit
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit
               highlight-current-row>
-      <el-table-column label="切换步骤名称" prop="name" sortable></el-table-column>
-      <el-table-column label="分类" prop="type" sortable width="120"></el-table-column>
-      <el-table-column label="灾难恢复计划" prop="plan" sortable></el-table-column>
-      <el-table-column label="阶段负责人" prop="leader" sortable width="120"></el-table-column>
+      <el-table-column label="切换步骤名称" prop="stepNameString" sortable></el-table-column>
+      <el-table-column class-name="status-col" label="分类" width="110" align="center">
+        <template slot-scope="scope">
+          {{scope.row.stepTypeInteger | statusFilter}}
+        </template>
+      </el-table-column>
+      <el-table-column label="灾难恢复计划" prop="recoveryPlanName" sortable></el-table-column>
+      <el-table-column label="阶段负责人" prop="userName" sortable width="120"></el-table-column>
       <el-table-column label="操作" width="100">
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
+            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '/rs/dr/drmSwitchingStep/delete')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -33,7 +37,7 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
@@ -43,27 +47,30 @@
                @close="operateClose">
       <el-form :model="form" label-position="right" label-width="110px">
         <el-form-item label="切换步骤内容：" prop="name">
-          <el-input v-model="form.name" placeholder="请输入切换步骤内容"></el-input>
+          <el-input v-model="form.stepNameString" placeholder="请输入切换步骤内容"></el-input>
         </el-form-item>
         <el-form-item label="切换步骤分类：" prop="enabled">
-          <el-select v-model="form.type" placeholder="请选择切换步骤分类" style="width:100%;">
+          <el-select v-model="form.stepTypeInteger" placeholder="请选择切换步骤分类" style="width:100%;">
             <el-option value="1" label="手动"></el-option>
             <el-option value="2" label="自动"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="灾难恢复计划：" prop="enabled" v-if="form.type === '2'">
-          <el-select v-model="form.plan" placeholder="请选择灾难恢复计划" style="width:100%;">
-            <el-option value="" label=""></el-option>
+        <el-form-item label="灾难恢复计划：" prop="enabled" v-if="form.stepTypeInteger === '2'">
+          <el-select v-model="form.recoveryPlanId" placeholder="请选择灾难恢复计划" style="width:100%;">
+            <el-option v-for="item in recoveryPlanIdOptions" :key="item.id" :label="item.name"
+                       :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="上一步骤：" prop="enabled">
-          <el-select v-model="form.lastStep" placeholder="请选择场上一步骤" style="width:100%;">
-            <el-option value="" label=""></el-option>
+          <el-select v-model="form.sortIdInteger" placeholder="请选择场上一步骤" style="width:100%;">
+            <el-option v-for="item in sortIdIntegerOptions" :key="item.id" :label="item.stepNameString"
+                       :value="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="负责人：" prop="enabled">
-          <el-select v-model="form.leader" placeholder="请选择负责人" style="width:100%;">
-            <el-option value="" label=""></el-option>
+          <el-select v-model="form.userId" placeholder="请选择负责人" style="width:100%;">
+            <el-option v-for="item in userIdOptions" :key="item.id" :label="item.displayName"
+                       :value="item.id"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -76,8 +83,9 @@
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { getallStep, disaster, findAllUser, superStep, insert, update } from '@/api/allocation/step'
   import { alertBox } from '@/utils/alert'
+
   export default {
     data() {
       return {
@@ -90,79 +98,59 @@
           index: 1,
           size: 10
         },
+        searchQuery: { // 查询数据
+          stepName: ''
+        },
+        defSearchQuery: {
+          process: '',
+          stage: ''
+        },
+        processOptions: [],
+        stageOptions: [],
+        recoveryPlanIdOptions: [],
+        sortIdIntegerOptions: [],
+        userIdOptions: [],
         operateTitle: '',
         formShow: false,
+        isEdit: false, // 是否是进行编辑操作
         form: {
-          name: '',
-          type: '1',
-          plan: '',
-          leader: '',
-          lastStep: ''
+          stepNameString: '', // 步骤名
+          stepTypeInteger: '1', // 步骤类型
+          recoveryPlanId: '', // 灾备恢复id
+          sortIdInteger: '', // 上级步骤id
+          stageId: '', // 阶段id
+          userId: '' // 负责人id
         },
-        process: '1',
-        processOptions: [
-          {
-            label: '切换流程名称1',
-            value: '1'
-          },
-          {
-            label: '切换流程名称2',
-            value: '2'
-          },
-          {
-            label: '切换流程名称3',
-            value: '3'
-          }
-        ],
-        stage: '1',
-        stageOptions: [
-          {
-            label: '切换阶段名称1',
-            value: '1'
-          },
-          {
-            label: '切换阶段名称2',
-            value: '2'
-          },
-          {
-            label: '切换阶段名称3',
-            value: '3'
-          }
-        ],
-        Data: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              name: '切换步骤一',
-              type: '自动',
-              leader: '张三',
-              plan: '恢复计划一'
-            },
-            {
-              id: 10723,
-              name: '切换步骤一',
-              type: '自动',
-              leader: '张三',
-              plan: '恢复计划一'
-            },
-            {
-              id: 10723,
-              name: '切换步骤一',
-              type: '自动',
-              leader: '张三',
-              plan: '恢复计划一'
+        stepData: [],
+        stageData: [],
+        defData: []
+      }
+    },
+    watch: {
+      // 监听 查询条件
+      defSearchQuery: {
+        handler(defSearchQuery) {
+          this.isShowData(defSearchQuery)
+        },
+        deep: true
+      },
+      'defSearchQuery.process': {
+        handler(process) {
+          for (const i in this.stageOptions) {
+            if (this.defSearchQuery.process === this.stageOptions[i].processidLong) {
+              this.defSearchQuery.stage = this.stageOptions[i].id
+              return
             }
-          ]
-        }
+          }
+        },
+        deep: true
       }
     },
     filters: {
       statusFilter(status) {
         const statusMap = {
-          '在线': 'success',
-          '健康': 'gray',
-          '离线': 'danger'
+          0: '自动',
+          1: '手动'
         }
         return statusMap[status]
       }
@@ -173,12 +161,44 @@
     methods: {
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
+        getallStep(this.searchQuery).then(response => {
+          if (response) {
+            this.stepData = []
+            const stageData = []
+            const defData = Object.assign([], response.data)
+            for (const i in defData) {
+              const stageDefData = defData[i].drmSwitchingStageDtos
+              for (const j in stageDefData) {
+                stageData.push(stageDefData[j])
+                const stepDefDate = stageDefData[j].map.drmSwitchingStepDtos
+                for (const k in stepDefDate) {
+                  this.stepData.push(stepDefDate[k])
+                }
+              }
+            }
+            this.processOptions = defData
+            this.stageOptions = stageData
+            this.defSearchQuery = {
+              process: this.processOptions[0].id,
+              stage: this.stageOptions[0].id
+            }
+          }
           this.listLoading = false
         })
+      },
+      isShowData(defSearchQuery) {
+        if (defSearchQuery.process && defSearchQuery.stage) {
+          this.data = []
+          for (const j in this.stepData) {
+            if (defSearchQuery.stage === this.stepData[j].stageId) {
+              this.data.push(this.stepData[j])
+            }
+          }
+        } else {
+          this.data = []
+        }
+        this.listData()
+        this.pageTotal = this.data.length
       },
       handleSizeChange(val) {
         this.queryPage.size = val
@@ -193,22 +213,80 @@
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
+      // 删除、启用等 公共弹框
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
       },
+      // 删除、启用等 公共弹框
+      // 新增、修改 操作
+      // 弹出框 打开
       operate(type, val) {
+        this.recoveryPlanIdOptions = []
+        this.sortIdIntegerOptions = []
+        this.userIdOptions = []
+        disaster().then(response => {
+          if (response) {
+            this.recoveryPlanIdOptions = Object.assign([], response.data)
+          }
+        })
+        superStep().then(response => {
+          if (response) {
+            this.sortIdIntegerOptions = Object.assign([], response.data)
+          }
+        })
+        findAllUser().then(response => {
+          if (response) {
+            this.userIdOptions = Object.assign([], response.data)
+          }
+        })
         if (type === 'add') {
           this.operateTitle = '新增切换步骤信息'
+          this.form.stageId = this.defSearchQuery.stage
+          this.isEdit = false
         } else if (type === 'edit') {
+          this.isEdit = true
+          if (val) {
+            this.form = Object.assign({}, {
+              id: val.id,
+              stepNameString: val.stepNameString, // 步骤名
+              stepTypeInteger: val.stepTypeInteger, // 步骤类型
+              recoveryPlanId: val.recoveryPlanId, // 灾备恢复id
+              sortIdInteger: val.sortIdInteger, // 上级步骤id
+              stageId: val.stageId, // 阶段id
+              userId: val.userId // 负责人id
+            })
+          }
           this.operateTitle = '编辑切换步骤信息'
         }
         this.formShow = true
       },
+      // 弹出框 关闭
       operateClose() {
         this.formShow = false
+        this.form = {
+          stepNameString: '', // 步骤名
+          stepTypeInteger: '1', // 步骤类型
+          recoveryPlanId: '', // 灾备恢复id
+          sortIdInteger: '', // 上级步骤id
+          stageId: this.defSearchQuery.stage, // 阶段id
+          userId: '' // 负责人id
+        }
       },
+      // 点击保存
       save() {
+        if (this.isEdit === true) {
+          update(this.form).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        } else {
+          insert(this.form).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        }
       }
+      // 新增、修改 操作
     }
   }
 </script>

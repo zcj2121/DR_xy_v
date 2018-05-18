@@ -51,7 +51,7 @@
         },
         saveForm: {
           tAuthRoleId: '',
-          tAuthMenuIds: null
+          tAuthMenuIds: ''
         }
       }
     },
@@ -100,14 +100,14 @@
             }
             this.menuActive = Object.assign([], arr)
             this.defMenuActive = Object.assign([], arr)
-            console.log(this.defMenuActive)
             this.$refs.tree.setCheckedKeys(this.defMenuActive)
             this.listLoading = false
           }
         })
       },
       save() {
-        this.saveForm.tAuthMenuIds = this.$refs.tree.getCheckedKeys() // 获取 树 选中的值
+        const newobj = Object.assign([], this.$refs.tree.getCheckedKeys()) // 获取 树 选中的值
+        this.saveForm.tAuthMenuIds = newobj.toString()
         this.saveForm.tAuthRoleId = this.roleActive
         this.$confirm('确定保存吗', '提示', {
           confirmButtonText: '确定',
@@ -116,7 +116,7 @@
         }).then(() => {
           update(this.saveForm).then(() => {
             this.$store.dispatch('editMenu').then(() => {
-              location.reload()
+              // location.reload()
             })
             this.menuDataActive()
             this.listLoading = false

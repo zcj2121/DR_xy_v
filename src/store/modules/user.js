@@ -59,7 +59,6 @@ const user = {
           commit('SET_AVATAR', data.rolesValue)
           menuItem().then(res => {
             const datachild = res.list
-            console.log(datachild)
             commit('SET_EDITMENU', datachild)
             resolve(response)
           }).catch(error => {
@@ -99,8 +98,7 @@ const user = {
     editMenu({ commit }) {
       return new Promise((resolve, reject) => {
         menuItem().then(response => {
-          const datachild = response.data
-          console.log(datachild)
+          const datachild = response.list
           commit('SET_EDITMENU', datachild)
           resolve(response)
         }).catch(error => {

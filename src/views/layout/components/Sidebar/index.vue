@@ -27,7 +27,6 @@ export default {
       'editMenu'
     ]),
     routes() {
-      console.log(this.editMenu)
       // return this.$router.options.routes
       return this.editMenu
       // return [

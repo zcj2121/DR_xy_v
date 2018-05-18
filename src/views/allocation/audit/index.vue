@@ -1,16 +1,20 @@
 <template>
   <div class="app-container" id="auditTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入切换流程名称">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.processName" placeholder="请输入切换流程名称">
       </el-input>
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
     </div>
-    <el-table :data="Data.items" v-loading.body="listLoading" element-loading-text="Loading" border fit
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit
               highlight-current-row>
-      <el-table-column label="切换流程名称" prop="name" min-width="100" sortable></el-table-column>
-      <el-table-column label="描述" prop="remark" min-width="120" sortable></el-table-column>
-      <el-table-column label="负责人" prop="leader" width="100" sortable></el-table-column>
-      <el-table-column label="状态" prop="statu" width="75" sortable></el-table-column>
+      <el-table-column label="切换流程名称" prop="process_name" min-width="100" sortable></el-table-column>
+      <el-table-column label="描述" prop="process_title" min-width="120" sortable></el-table-column>
+      <el-table-column label="负责人" prop="user_name" width="100" sortable></el-table-column>
+      <el-table-column class-name="status-col" label="状态" width="75" align="center">
+        <template slot-scope="scope">
+          {{scope.row.process_status | statusFilter}}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="63">
         <template slot-scope="scope">
           <el-button-group>
@@ -23,7 +27,7 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
@@ -34,235 +38,40 @@
       <table class="el-table__body">
         <tr>
           <td class="text-bold" style="width:150px;">切换流程名称</td>
-          <td colspan="2">1.0</td>
+          <td colspan="2">{{detailFrom.process_name}}</td>
           <td class="text-bold" style="width:150px;">负责人</td>
-          <td colspan="2">张三</td>
+          <td colspan="2">{{detailFrom.user_name}}</td>
         </tr>
         <tr>
           <td class="text-bold">切换流程描述</td>
-          <td colspan="5">预案类型</td>
+          <td colspan="5">{{detailFrom.process_title}}</td>
         </tr>
       </table>
       <div id="elStepBox">
-        <div class="el-steps el-steps--vertical">
-          <div class="el-step is-vertical" style="flex-basis: 190px;">
-            <div class="el-step__head is-finish">
-              <div class="el-step__line" style="margin-right: 0px;"><i class="el-step__line-inner" style="transition-delay: 0ms; border-width: 0px; height: 0%;"></i>
-              </div>
-              <div class="el-step__icon is-text">
-                <div class="el-step__icon-inner">1</div>
-              </div>
-            </div>
-            <div class="el-step__main">
-              <div class="el-step__title is-finish">
-                <span>阶段 1</span>
-              </div>
-              <div class="icon-toright"><i class="fa fa-play"></i></div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="el-step is-vertical"  style="flex-basis: 190px;">
-            <div class="el-step__head is-process">
-              <div class="el-step__line" style="margin-right: 0px;"><i class="el-step__line-inner" style="transition-delay: -150ms; border-width: 0px; height: 0%;"></i>
-              </div>
-              <div class="el-step__icon is-text">
-                <div class="el-step__icon-inner">2</div>
-              </div>
-            </div>
-            <div class="el-step__main">
-              <div class="el-step__title is-process">
-                <span>阶段 2</span>
-              </div>
-              <div class="icon-toright"><i class="fa fa-play"></i></div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step__description is-process"></div>
-            </div>
-          </div>
-          <div class="el-step is-vertical"  style="flex-basis: 190px;">
-            <div class="el-step__head is-wait">
-              <div class="el-step__line"><i class="el-step__line-inner"></i></div>
-              <div class="el-step__icon is-text">
-                <div class="el-step__icon-inner">3</div>
-              </div>
-            </div>
-            <div class="el-step__main">
-              <div class="el-step__title is-wait">
-                <span>阶段 3</span>
-              </div>
-              <div class="icon-toright"><i class="fa fa-play"></i></div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step-con">
-                <div class="el-step-con-item" title="切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1">
-                  <div class="el-step-con-item-title">切换步骤sadfasdfasdfasdfasdfasdfasdfasdfsadfasdfasd内容1</div>
-                  <div class="el-step-con-item-btm"><span>手动</span><span style="margin-left:20px;">王五</span></div>
-                </div>
-              </div>
-              <div class="el-step__description is-wait"></div>
-            </div>
-          </div>
-        </div>
+        <org-tree
+          :data="treedata"
+          :horizontal="horizontal"
+          :collapsable="collapsable"
+          :label-class-name="labelClassName"
+          :render-content="renderContent"
+        >
+        </org-tree>
       </div>
       <div class="child-title">审批原因：</div>
       <div>
-        <el-input type="textarea" placeholder="请输入审批原因" :rows="4"></el-input>
+        <el-input type="textarea" placeholder="请输入审批原因" v-model="form.rebutString" :rows="4"></el-input>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="auditClose('allform')">取 消</el-button>
-        <el-button type="primary" @click="auditSave('allform')">确 定</el-button>
+        <el-button type="primary" @click="auditSave(1)">通 过</el-button>
+        <el-button type="primary" @click="auditSave(2)">驳 回</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { findAllapproved, updateStatus, findAllToExamine } from '@/api/allocation/audit'
 
   export default {
     data() {
@@ -273,11 +82,9 @@
         auditShow: false,
         auditName: '1',
         form: {
-          name: '',
-          leader: '',
-          type: '0',
-          remark: '',
-          process: ''
+          id: '',
+          rebutString: '',
+          mark: null
         },
         pageTotal: 0,
         pageSizes: [10, 15, 20],
@@ -285,46 +92,28 @@
           index: 1,
           size: 10
         },
-        Data: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              name: '切换流程一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待审批',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '切换流程一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待审批',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '切换流程一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待审批',
-              type: '总体预案',
-              remark: '描述描述描述'
-            }
-          ]
-        }
+        searchQuery: { // 查询数据
+          processName: ''
+        },
+        detailFrom: {
+          process_name: '',
+          process_title: '',
+          user_name: ''
+        },
+        treedata: {},
+        horizontal: true,
+        collapsable: false,
+        labelClassName: 'bg-white'
       }
     },
     filters: {
       statusFilter(status) {
         const statusMap = {
-          '在线': 'success',
-          '健康': 'gray',
-          '离线': 'danger'
+          0: '待提交',
+          1: '待审批',
+          2: '通过',
+          3: '驳回',
+          4: '待审批'
         }
         return statusMap[status]
       }
@@ -335,11 +124,13 @@
     methods: {
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        findAllapproved(this.searchQuery).then(response => {
+          if (response) {
+            this.data = response.list
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
       handleSizeChange(val) {
@@ -355,13 +146,36 @@
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
+      // 查询 数据
+      search() {
+        this.fetchData()
+      },
       audit(val) {
+        this.form.id = val.id
+        this.detailFrom = {
+          process_name: val.process_name,
+          process_title: val.process_title,
+          user_name: val.user_name
+        }
+        findAllToExamine({ id: val.id }).then(response => {
+          if (response) {
+            this.treedata = response.list
+          }
+        })
         this.auditShow = true
       },
-      auditSave() {
+      auditSave(val) {
+        this.form.mark = val
+        updateStatus(this.form).then(() => {
+          this.fetchData()
+          this.auditShow = false
+        })
       },
       auditClose() {
         this.auditShow = false
+      },
+      renderContent(h, data) {
+        return data.name + '\n' + data.typeName + '   ' + data.userName
       }
     }
   }

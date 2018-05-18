@@ -9,7 +9,7 @@ export function alertBox(_this, msg, url, params) {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    axios.post(axios.baseURL + url + '?id=' + params)
+    axios.get(axios.baseURL + url + '?id=' + params)
       .then(function(response) {
         console.log(response)
         if (response.data.code === 200) {

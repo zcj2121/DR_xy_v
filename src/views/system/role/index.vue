@@ -137,7 +137,9 @@
           this.isEdit = false
         } else if (type === 'edit') {
           this.isEdit = true
-          this.form = Object.assign({}, { id: val.id, tRoleName: val.tRoleName, tRoleValue: val.tRoleValue })
+          if (val) {
+            this.form = Object.assign({}, { id: val.id, tRoleName: val.tRoleName, tRoleValue: val.tRoleValue })
+          }
           this.operateTitle = '编辑角色信息'
         }
         this.formShow = true
