@@ -164,8 +164,8 @@ export default {
           this.detailForm.processName = response.data.processName
           this.detailForm.startTime = response.data.startTime
           this.detailForm.endTime = response.data.endTime
-          if (response.data.data.drmSwitchingStageInstanceDtos) {
-            const defdata = Object.assign({}, response.data.data.drmSwitchingStageInstanceDtos)
+          if (response.data.drmSwitchingStageInstanceDtos) {
+            const defdata = Object.assign({}, response.data.drmSwitchingStageInstanceDtos)
             const arr = []
             for (const i in defdata) {
               const lists = defdata[i].lists
