@@ -9,7 +9,7 @@
         <el-option v-for="item in stageOptions" :key="item.id" v-if='defSearchQuery.process === item.processidLong' :label="item.nameString"
                    :value="item.id"></el-option>
       </el-select>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
                  @click="operate('add')">新增
       </el-button>
@@ -28,7 +28,7 @@
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '/rs/dr/drmSwitchingStep/delete')">删除</el-button>
+            <el-button size="mini" type="primary" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/drmSwitchingStep/delete')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -52,10 +52,10 @@
         <el-form-item label="切换步骤分类：" prop="enabled">
           <el-select v-model="form.stepTypeInteger" placeholder="请选择切换步骤分类" style="width:100%;">
             <el-option value="1" label="手动"></el-option>
-            <el-option value="2" label="自动"></el-option>
+            <el-option value="0" label="自动"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="灾难恢复计划：" prop="enabled" v-if="form.stepTypeInteger === '2'">
+        <el-form-item label="灾难恢复计划：" prop="enabled" v-if="form.stepTypeInteger === '0'">
           <el-select v-model="form.recoveryPlanId" placeholder="请选择灾难恢复计划" style="width:100%;">
             <el-option v-for="item in recoveryPlanIdOptions" :key="item.id" :label="item.name"
                        :value="item.id"></el-option>
@@ -140,6 +140,8 @@
             if (this.defSearchQuery.process === this.stageOptions[i].processidLong) {
               this.defSearchQuery.stage = this.stageOptions[i].id
               return
+            } else {
+              this.defSearchQuery.stage = ''
             }
           }
         },
@@ -213,6 +215,9 @@
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
+      search() {
+        this.fetchData()
+      },
       // 删除、启用等 公共弹框
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
@@ -224,7 +229,7 @@
         this.recoveryPlanIdOptions = []
         this.sortIdIntegerOptions = []
         this.userIdOptions = []
-        disaster().then(response => {
+        disaster({ url: '/vom/api/query/hadr/recoveryplan/' }).then(response => {
           if (response) {
             this.recoveryPlanIdOptions = Object.assign([], response.data)
           }
@@ -236,7 +241,7 @@
         })
         findAllUser().then(response => {
           if (response) {
-            this.userIdOptions = Object.assign([], response.data)
+            this.userIdOptions = Object.assign([], response.userList)
           }
         })
         if (type === 'add') {
@@ -249,7 +254,7 @@
             this.form = Object.assign({}, {
               id: val.id,
               stepNameString: val.stepNameString, // 步骤名
-              stepTypeInteger: val.stepTypeInteger, // 步骤类型
+              stepTypeInteger: (val.stepTypeInteger).toString(), // 步骤类型
               recoveryPlanId: val.recoveryPlanId, // 灾备恢复id
               sortIdInteger: val.sortIdInteger, // 上级步骤id
               stageId: val.stageId, // 阶段id

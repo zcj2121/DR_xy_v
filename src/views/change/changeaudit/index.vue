@@ -1,17 +1,17 @@
 <template>
   <div class="app-container" id="changeauditTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.processName" placeholder="请输入切换流程名称">
       </el-input>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
     </div>
-    <el-table :data="Data.items" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
-      <el-table-column label="切换流程名称" prop="name" sortable></el-table-column>
-      <el-table-column label="描述" prop="remark" sortable></el-table-column>
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
+      <el-table-column label="切换流程名称" prop="process_name" sortable></el-table-column>
+      <el-table-column label="描述" prop="process_title" sortable></el-table-column>
       <el-table-column label="操作" width="63">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认审核通过吗', '123')">审核</el-button>
+            <el-button size="mini" type="primary" @click="operation(scope.row)">审核</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -20,17 +20,28 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
     </el-pagination>
+    <el-dialog
+      title="提示"
+      :visible.sync="auditShow"
+      width="420px"
+      :before-close="handleClose">
+      <span><div class="el-message-box__status el-icon-warning"></div><div style="padding-left: 36px;">确认审核吗</div></span>
+      <span slot="footer" class="dialog-footer">
+    <el-button size="mini" @click="handleClose">取 消</el-button>
+    <el-button size="mini" type="primary" @click="audit(1)">通 过</el-button>
+    <el-button size="mini" type="primary" @click="audit(2)">驳 回</el-button>
+  </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
-  import { alertBox } from '@/utils/alert'
+  import { getAllProcess, updateStatus } from '@/api/change/changeaudit'
   export default {
     data() {
       return {
@@ -43,87 +54,72 @@
           index: 1,
           size: 10
         },
-        Data: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              name: '切换流程一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待提交',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '切换流程一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待审批',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '切换流程一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '驳回',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '切换流程一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '通过',
-              type: '总体预案',
-              remark: '描述描述描述'
-            }
-          ]
+        auditShow: false,
+        thisId: '',
+        searchQuery: { // 查询数据
+          processName: ''
         }
       }
     },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          '在线': 'success',
-          '健康': 'gray',
-          '离线': 'danger'
-        }
-        return statusMap[status]
+    watch: {
+      // 监听 查询条件
+      searchQuery: {
+        handler(searchQuery) {
+          this.search()
+          this.queryPage.index = 1
+        },
+        deep: true
       }
     },
     created() {
       this.fetchData()
     },
     methods: {
+      // 列表数据 分页 搜索
+      // 请求 原始数据
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        getAllProcess(this.searchQuery).then(response => {
+          if (response) {
+            this.data = response.data
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
+      // 每页 条数
       handleSizeChange(val) {
         this.queryPage.size = val
         this.listData()
       },
+      // 第几页
       handleCurrentChange(val) {
         this.queryPage.index = val
         this.listData()
       },
+      // 当前列表 显示数据
       listData() {
         const size = this.queryPage.size
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
-      operation(id, msg, url) {
-        alertBox(this, msg, url, id)
+      // 查询 数据
+      search() {
+        this.fetchData()
+      },
+      operation(val) {
+        this.thisId = val.id
+        this.auditShow = true
+      },
+      handleClose() {
+        this.auditShow = false
+      },
+      audit(val) {
+        updateStatus({ id: this.thisId, mark: val }).then(response => {
+          this.fetchData()
+          this.auditShow = false
+        })
       }
     }
   }

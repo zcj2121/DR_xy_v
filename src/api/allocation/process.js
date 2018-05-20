@@ -4,16 +4,16 @@ import request from '@/utils/request'
 export function getAllProcess(params) { // 切换流程  列表
   return request({
     url: '/rs/dr/drmSwitchingProcess/getAllProcess',
-    method: 'post',
+    method: 'get',
     params
   })
 }
 
-export function findApproveTempkate(params) { // 审批模板 下拉框 数据
+export function findApproveTempkate(data) { // 审批模板 下拉框 数据
   return request({
     url: '/rs/dr/approveTemplateManager/findApproveTempkate',
-    method: 'get',
-    params
+    method: 'post',
+    data
   })
 }
 
@@ -73,11 +73,11 @@ export function enforcement(params) { // 申请执行
   })
 }
 
-export function findAllToExamine(data) { // 查看
+export function findAllToExamine(params) { // 查看
   return request({
     url: '/rs/dr/drmSwitchingProcess/findAllToExamine',
     method: 'get',
-    data
+    params
   })
 }
 // 切换流程管理 API proccess

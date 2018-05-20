@@ -39,7 +39,7 @@
             <template slot-scope="scope">
               <el-button-group>
                 <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-                <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '/rs/dr/groupUserManager/deletePersonById')">删除</el-button>
+                <el-button size="mini" type="primary" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/groupUserManager/deletePersonById')">删除</el-button>
               </el-button-group>
             </template>
           </el-table-column>

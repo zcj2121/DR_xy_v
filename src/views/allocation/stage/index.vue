@@ -10,15 +10,15 @@
                  @click="operate('add')">新增
       </el-button>
     </div>
-    <el-table :data="Data.items" v-loading.body="listLoading" element-loading-text="Loading" border fit
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit
               highlight-current-row>
-      <el-table-column label="切换阶段名称" prop="name" sortable></el-table-column>
-      <el-table-column label="阶段负责人" prop="leader" sortable width="120"></el-table-column>
+      <el-table-column label="切换阶段名称" prop="nameString" sortable></el-table-column>
+      <el-table-column label="阶段负责人" prop="userName" sortable width="120"></el-table-column>
       <el-table-column label="操作" width="100">
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '/rs/dr/drmSwitchingStage/delete')">删除</el-button>
+            <el-button size="mini" type="primary" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/drmSwitchingStage/delete')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -81,26 +81,6 @@
           nameString: '',
           userid: '',
           processidLong: ''
-        },
-        Data: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              name: '切换阶段一',
-              leader: '张三'
-            },
-            {
-              id: 10723,
-              name: '切换阶段一',
-              leader: '张三'
-            },
-            {
-              id: 10723,
-              name: '切换阶段一',
-              leader: '张三'
-            }
-          ]
         }
       }
     },
@@ -119,9 +99,12 @@
     },
     methods: {
       fetchDataProcess() {
-        getAllProcess(this.listQuery).then(response => {
+        getAllProcess(this.searchQuery).then(response => {
           if (response) {
-            this.processNameOptions = response.data
+            if (response.data.length > 0) {
+              this.processNameOptions = response.data
+              this.searchQuery.processName = response.data[0].id
+            }
           }
         })
       },
@@ -129,7 +112,7 @@
         this.listLoading = false
         getAllStage({ id: this.searchQuery.processName }).then(response => {
           if (response) {
-            this.data = response.list
+            this.data = response.data
             this.pageTotal = response.count
             this.listData()
             this.listLoading = false
@@ -160,7 +143,7 @@
         this.useridOptions = []
         findAllUser().then(response => {
           if (response) {
-            this.useridOptions = Object.assign([], response.list)
+            this.useridOptions = Object.assign([], response.userList)
           }
         })
         if (type === 'add') {

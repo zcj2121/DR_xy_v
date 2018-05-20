@@ -33,7 +33,7 @@
                    :total="pageTotal">
     </el-pagination>
     <!--审批弹出框-->
-    <el-dialog title="切换流程审核" id="dialogMitop" width="90%" :visible.sync="auditShow" :modal-append-to-body="false"
+    <el-dialog title="切换流程审核" id="dialogMitop" width="80%" :visible.sync="auditShow" :modal-append-to-body="false"
                @close="auditClose">
       <table class="el-table__body">
         <tr>
@@ -72,8 +72,12 @@
 
 <script>
   import { findAllapproved, updateStatus, findAllToExamine } from '@/api/allocation/audit'
+  import OrgTree from '@/components/org-tree'
 
   export default {
+    components: {
+      OrgTree
+    },
     data() {
       return {
         data: null,
@@ -126,7 +130,7 @@
         this.listLoading = true
         findAllapproved(this.searchQuery).then(response => {
           if (response) {
-            this.data = response.list
+            this.data = response.data
             this.pageTotal = response.count
             this.listData()
             this.listLoading = false
@@ -159,7 +163,8 @@
         }
         findAllToExamine({ id: val.id }).then(response => {
           if (response) {
-            this.treedata = response.list
+            this.treedata = response.data
+            console.log(this.treedata)
           }
         })
         this.auditShow = true

@@ -25,7 +25,7 @@ export function findAllGroup() { // 所有组织 下拉框数据
 export function findAllUserInRoleEnable() { // 所有成员 下拉框数据
   return request({
     url: '/rs/dr/system/usermanager/findAllUserInRoleEnable',
-    method: 'post'
+    method: 'get'
   })
 }
 

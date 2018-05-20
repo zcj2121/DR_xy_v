@@ -13,9 +13,9 @@
         <template slot-scope="scope">
           <el-button-group v-if="scope.row.tRoleValue !== 'supermanager' && scope.row.tRoleValue !== 'query' && scope.row.tRoleValue !== 'operator' && scope.row.tRoleValue !== 'manager'">
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" v-if="scope.row.enable === 1" type="primary" @click="operation(scope.row.id, '确认停用吗', '/rs/dr/system/rolemanager/enableOrNotRole')">停用</el-button>
-            <el-button size="mini" v-else type="primary" @click="operation(scope.row.id, '确认启用吗', '/rs/dr/system/rolemanager/enableOrNotRole')">启用</el-button>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '/rs/dr/system/rolemanager/delete')">删除</el-button>
+            <el-button size="mini" v-if="scope.row.enable === 1" type="primary" @click="operation({ id: scope.row.id }, '确认停用吗', '/rs/dr/system/rolemanager/enableOrNotRole')">停用</el-button>
+            <el-button size="mini" v-else type="primary" @click="operation({ id: scope.row.id }, '确认启用吗', '/rs/dr/system/rolemanager/enableOrNotRole')">启用</el-button>
+            <el-button size="mini" type="primary" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/system/rolemanager/delete')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>

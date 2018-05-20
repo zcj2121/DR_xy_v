@@ -25,13 +25,13 @@ service.interceptors.response.use(
         duration: 2 * 1000
       })
     }
-    if (res.code && res.code !== 20000 && res.code !== 200 && res.code !== 2000) {
+    if (res.code && res.code !== 20000 && res.code !== 200 && res.code !== 2000 && res.code !== '2000' && res.code !== '200') {
       msg(res.msg, 'error')
       return Promise.reject('error')
-    } else if (res.code === 20000 || res.code === 2000) {
+    } else if (res.code === 20000 || res.code === 2000 || res.code === '2000') {
       return response.data
     } else {
-      if (res.code === 200) {
+      if (res.code === 200 || res.code === '200') {
         msg('操作成功！', 'success')
       }
     }

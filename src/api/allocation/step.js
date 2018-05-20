@@ -25,11 +25,11 @@ export function findAllUser(data) { // 负责人 下拉框 数据
   })
 }
 
-export function superStep(data) { // 所有步骤 下拉框 数据
+export function superStep(params) { // 所有步骤 下拉框 数据
   return request({
     url: '/rs/dr/drmSwitchingStep/superStep',
-    method: 'post',
-    data
+    method: 'get',
+    params
   })
 }
 

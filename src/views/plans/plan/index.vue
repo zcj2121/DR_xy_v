@@ -1,31 +1,48 @@
 <template>
   <div class="app-container" id="planTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入预案名称">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.preplanName" placeholder="请输入预案名称">
       </el-input>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-select style="width: 200px;" size="mini" v-model="searchQuery.preStatus" placeholder="请选择状态">
+        <el-option key="" label="全部状态" value=""></el-option>
+        <el-option key="1" label="待提交" value="1"></el-option>
+        <el-option key="2" label="待审批" value="2"></el-option>
+        <el-option key="3" label="通过" value="3"></el-option>
+        <el-option key="4" label="驳回" value="4"></el-option>
+        <el-option key="5" label="发布" value="5"></el-option>
+        <el-option key="0" label="历史" value="0"></el-option>
+      </el-select>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
     </div>
-    <el-table :data="userData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit>
-      <el-table-column label="名称" prop="name" min-width="100" sortable></el-table-column>
-      <el-table-column label="版本" prop="version" width="80" sortable></el-table-column>
-      <el-table-column label="预案类型" prop="type" width="110"sortable></el-table-column>
-      <el-table-column label="负责人" prop="leader" width="100" sortable></el-table-column>
-      <el-table-column label="描述" prop="remark" min-width="120" sortable></el-table-column>
-      <el-table-column label="状态" prop="statu" width="75" sortable></el-table-column>
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit>
+      <el-table-column label="名称" :show-overflow-tooltip="true" prop="preplanName" min-width="100" sortable></el-table-column>
+      <el-table-column label="版本" prop="versionNum" width="80" sortable></el-table-column>
+      <el-table-column class-name="status-col" label="预案类型" width="110">
+        <template slot-scope="scope">
+          {{scope.row.type === 1 ? '专项预案' : '总体预案'}}
+        </template>
+      </el-table-column>
+      <el-table-column label="负责人" prop="userName" width="100" sortable></el-table-column>
+      <el-table-column label="描述" :show-overflow-tooltip="true" prop="preDesc" min-width="120" sortable></el-table-column>
+      <el-table-column class-name="status-col" label="状态" width="75" align="center">
+        <template slot-scope="scope">
+          {{scope.row.preStatus | statusFilter}}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="266">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="detail" v-if="scope.row.statu!=='驳回'">查看</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='驳回'" @click="operateback('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'" @click="setshow(scope.row)">配置流程</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'" @click="operation(scope.row.id, '确认提交审核吗', '123')">提交审核</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='通过'" @click="operation(scope.row.id, '确认发布吗', '123')">发布</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='通过'" @click="operation(scope.row.id, '确认标记为历史吗', '123')">标记为历史</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='通过'" @click="operation(scope.row.id, '确认演练吗', '123')">演练</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='通过'" @click="operation(scope.row.id, '确认撤回吗', '123')">撤回</el-button>
+            <el-button size="mini" type="primary" @click="setshow('detail',scope.row)" v-if="scope.row.preStatus!==4">查看</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===1" @click="operate('edit',scope.row)">编辑</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===4" @click="operate('back',scope.row)">编辑</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===1" @click="setshow('cfg',scope.row)">配置流程</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===1||scope.row.preStatus===4" @click="operationOther({ id: scope.row.id, preStatus: 2 }, '确认提交审核吗')">提交审核</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===1||scope.row.preStatus===4" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/preplanManager/deletePreplan')">删除</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 5 }, '确认发布吗')">发布</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 0 }, '确认标记为历史吗')">标记为历史</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operation({ id: scope.row.id }, '确认演练吗', '/rs/dr/preplanManager/startPreplanDrill')">演练</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operationOther({ id: scope.row.id, preStatus: 4 }, '确认撤回吗')">撤回</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -34,225 +51,222 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
     </el-pagination>
-    <!--新增、编辑 弹出框-->
-    <el-dialog :title="planTitle" width="600px" :visible.sync="formShow" :modal-append-to-body="false" @close="closeDialog">
-      <el-form :model="form" ref="systemBusinessForm" label-position="right" label-width="85px">
-        <el-form-item label="预案名称：" prop="name">
-          <el-input v-model="form.name" placeholder="请输入预案名称"></el-input>
-          <div class="name-repeat" v-if="nameRepeat">名称重复</div>
-        </el-form-item>
-        <el-form-item label="版本号：" prop="remark">
-          <el-input v-model="form.version" placeholder="请输入版本号"></el-input>
-        </el-form-item>
-        <el-form-item label="负责人：" prop="enabled">
-          <el-select v-model="form.leader" placeholder="请选择负责人" style="width:100%;">
-            <el-option v-for="(item,index) in leaderOptions" :key="index" :value="item.value"
-                       :label="item.label"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="预案类型：" prop="enabled">
-          <el-select v-model="form.type" placeholder="请选择预案类型" style="width:100%;">
-            <el-option v-for="(item,index) in typeOptions" :key="index" :value="item.value"
-                       :label="item.label"></el-option>
-          </el-select>
-        </el-form-item>
+    <!--新增、编辑、驳回编辑 弹出框-->
+    <el-dialog :title="planTitle" width="800px" :visible.sync="formShow" :modal-append-to-body="false" @close="closeDialog">
+      <el-form :model="form" ref="systemBusinessForm" label-position="right" label-width="100px">
+        <div class="error-box" v-if="isType === 'back'">
+          <div class="pull-left error-box-title">驳回原因：</div>
+          <div class="pull-left">{{form.rejectAdvice}}</div>
+        </div>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="预案名称：" prop="name">
+              <el-input v-model="form.preplanName" placeholder="请输入预案名称"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="版本号：" prop="remark">
+              <el-input v-model="form.versionNum" placeholder="请输入版本号"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="负责人：" prop="enabled">
+              <el-select v-model="form.userId" placeholder="请选择负责人" style="width:100%;">
+                <el-option v-for="(item,index) in useridOptions" :key="index+'*'" :value="item.id"
+                           :label="item.displayName"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="预案类型：" prop="enabled">
+              <el-select v-model="form.type" placeholder="请选择预案类型" style="width:100%;">
+                <el-option key="0" label="总体预案" value="0"></el-option>
+                <el-option key="1" label="专项预案" value="1"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="预案文件：" prop="enabled">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            ref="upload"
+            action=""
+            :before-upload="beforeUpload"
             :on-preview="handlePreview"
             :on-remove="handleRemove"
-            :limit="1"
             :file-list="fileList"
-            :auto-upload="false">
+            :auto-upload="false"
+            :on-success="uploadSuccess">
             <el-button slot="trigger" size="small" type="primary" @click="addfiles">选取文件</el-button>
+            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
           </el-upload>
         </el-form-item>
         <el-form-item label="描述：" prop="remark">
-          <el-input type="textarea" v-model="form.remark" placeholder="请输入描述"></el-input>
+          <el-input type="textarea" v-model="form.preDesc" placeholder="请输入描述"></el-input>
         </el-form-item>
-        <el-form-item label="所属预案：" prop="enabled">
-          <el-select v-model="form.belongs" placeholder="请选择所属预案" style="width:100%;">
-            <el-option v-for="(item,index) in belongsOptions" :key="index" :value="item.value"
-                       :label="item.label"></el-option>
-          </el-select>
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="所属预案：" prop="enabled">
+              <el-select v-model="form.preplanPid" placeholder="请选择所属预案" style="width:100%;">
+                <el-option v-for="(item,index) in PreplanCanUseParentOptions" :key="index" :value="item.id"
+                           :label="item.preplanName"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="审批流程：" prop="enabled">
+              <el-select v-model="form.approveTemplateId" placeholder="请选择审批流程" style="width:100%;">
+                <el-option v-for="(item,index) in PreplanApproveTemplateOptions" :key="index" :value="item.id"
+                           :label="item.approveName"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <el-form-item label="适用场景：" prop="scene">
           <el-input v-model="form.scene" placeholder="请输入适用场景"></el-input>
         </el-form-item>
       </el-form>
+      <div class="child-title pull-left" v-if="isType === 'back'"><el-button size="mini" type="primary" @click="addSet">创建预案验证执行操作</el-button></div>
+      <div class="is-scrolling-none" v-if="isType === 'back'">
+        <table class="el-table__body">
+          <tr>
+            <td class="text-bold" style="width:100px;">编号</td>
+            <td class="text-bold">预案验证执行操作</td>
+            <td class="text-bold" style="width:155px;">负责人</td>
+            <td class="text-bold" style="width:65px;">操作</td>
+          </tr>
+          <tr v-for="(item, index) in executionList" :key="index">
+            <td>{{index}}</td>
+            <td>
+              <el-input v-model="item.executionName" placeholder="请输入预案操作内容"></el-input>
+            </td>
+            <td>
+              <el-select v-model="item.userId" placeholder="请选择负责人" style="width:100%;">
+                <el-option v-for="(userOption, child) in useridOptions" :key="userOption.id+'+'+index" :value="userOption.id"
+                           :label="userOption.displayName"></el-option>
+              </el-select>
+            </td>
+            <td><el-button size="mini" type="primary" @click="delSet(index)">删除</el-button></td>
+          </tr>
+        </table>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialog('allform')">取 消</el-button>
         <el-button type="primary" @click="save('allform')">确 定</el-button>
       </div>
     </el-dialog>
-    <!--查看 弹出框-->
-    <el-dialog  class="detail-dialog" title="查看预案计划详情" width="80%" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogDetail">
-      <div class="title">预案名称</div>
+    <!--查看、配置预案流程 弹出框-->
+    <el-dialog  class="detail-dialog" :title="setTitle" width="80%" :visible.sync="setShow" :modal-append-to-body="false" @close="closeDialogSet">
+      <div class="title">{{detailForm.preplanName}}</div>
       <div class="is-scrolling-none">
         <table class="el-table__body">
           <tr>
             <td class="text-bold" style="width:100px;">版本号</td>
-            <td colspan="2">1.0</td>
+            <td colspan="2">{{detailForm.versionNum}}</td>
             <td class="text-bold" style="width:100px;">负责人</td>
-            <td colspan="2">张三</td>
+            <td colspan="2">{{detailForm.userName}}</td>
           </tr>
           <tr>
             <td class="text-bold">预案类型</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.type | typesFilter}}</td>
           </tr>
           <tr>
             <td class="text-bold">预案文件</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.fileNameList}}</td>
           </tr>
           <tr>
             <td class="text-bold">描述</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.preDesc}}</td>
           </tr>
           <tr>
             <td class="text-bold">所属预案</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.parentPreplanName}}</td>
           </tr>
           <tr>
             <td class="text-bold">适用场景</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.scene}}</td>
           </tr>
-          <tr style="background: #f7f7f7;">
+          <tr style="background: #f7f7f7;" v-if="isType === 'detail'">
             <td class="text-bold"></td>
-            <td class="text-bold" colspan="4">预案操作</td>
+            <td class="text-bold" colspan="4">预案验证执行操作</td>
             <td class="text-bold" style="width:100px;">负责人</td>
           </tr>
-          <tr>
-            <td>1</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">张三</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">李四</td>
+          <tr v-if="isType === 'detail'" v-for="(item,index) in detailForm.executionList" :key="index">
+            <td>{{index+1}}</td>
+            <td colspan="4">{{item.executionName}}</td>
+            <td style="width:100px;">{{item.userName}}</td>
           </tr>
         </table>
       </div>
-      <div class="child-title">专项预案名称1</div>
-      <div class="is-scrolling-none">
-        <table class="el-table__body">
-          <tr>
-            <td class="text-bold" style="width:100px;">版本号</td>
-            <td colspan="2">1.0</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
-            <td colspan="2">张三</td>
-          </tr>
-          <tr>
-            <td class="text-bold">预案类型</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">预案文件</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">描述</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">所属预案</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">适用场景</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr style="background: #f7f7f7;">
-            <td class="text-bold"></td>
-            <td class="text-bold" colspan="4">预案操作</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">张三</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">李四</td>
-          </tr>
-        </table>
+      <div v-if="isType === 'detail'" v-for="(item,index) in detailForm.childList" :key="index">
+        <div class="child-title">{{item.preplanName}}</div>
+        <div class="is-scrolling-none">
+          <table class="el-table__body">
+            <tr>
+              <td class="text-bold" style="width:100px;">版本号</td>
+              <td colspan="2">{{item.versionNum}}</td>
+              <td class="text-bold" style="width:100px;">负责人</td>
+              <td colspan="2">{{item.userName}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">预案类型</td>
+              <td colspan="5">{{item.type | typesFilter}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">预案文件</td>
+              <td colspan="5">{{item.fileNameList}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">描述</td>
+              <td colspan="5">{{item.preDesc}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">所属预案</td>
+              <td colspan="5">{{item.parentPreplanName}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">适用场景</td>
+              <td colspan="5">{{item.scene}}</td>
+            </tr>
+            <tr style="background: #f7f7f7;">
+              <td class="text-bold"></td>
+              <td class="text-bold" colspan="4">预案验证执行操作</td>
+              <td class="text-bold" style="width:100px;">负责人</td>
+            </tr>
+            <tr v-for="(child,childindex) in item.executionList" :key="index+'-'+childindex">
+              <td>{{childindex+1}}</td>
+              <td colspan="4">{{child.executionName}}</td>
+              <td style="width:100px;">{{child.userName}}</td>
+            </tr>
+          </table>
+        </div>
       </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialogDetail('allform')">关 闭</el-button>
-      </div>
-    </el-dialog>
-    <!--配置预案流程 弹出框-->
-    <el-dialog  class="detail-dialog" title="配置预案流程" width="80%" :visible.sync="setShow" :modal-append-to-body="false" @close="closeDialogSet">
-      <div class="title">预案名称</div>
-      <div class="is-scrolling-none">
-        <table class="el-table__body">
-          <tr>
-            <td class="text-bold" style="width:100px;">版本号</td>
-            <td colspan="2">1.0</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
-            <td colspan="2">张三</td>
-          </tr>
-          <tr>
-            <td class="text-bold">预案类型</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">预案文件</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">描述</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">所属预案</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">适用场景</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr style="background: #f7f7f7;">
-            <td class="text-bold"></td>
-            <td class="text-bold" colspan="4">预案操作</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">张三</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">李四</td>
-          </tr>
-        </table>
-      </div>
-      <div class="child-title" style="text-align: left"><el-button size="mini" type="primary" @click="addSet">添加预案操作</el-button></div>
-      <div class="is-scrolling-none">
+      <div v-if="isType === 'cfg'" class="child-title" style="text-align: left"><el-button size="mini" type="primary" @click="addSet">创建预案验证执行操作</el-button></div>
+      <div v-if="isType === 'cfg'" class="is-scrolling-none">
         <table class="el-table__body">
           <tr>
             <td class="text-bold" style="width:100px;">编号</td>
-            <td class="text-bold">预案操作</td>
+            <td class="text-bold">预案验证执行操作</td>
             <td class="text-bold" style="width:155px;">负责人</td>
             <td class="text-bold" style="width:65px;">操作</td>
           </tr>
-          <tr v-for="(item, index) in setform" :key="index">
-            <td>{{index}}</td>
+          <tr v-for="(item, index) in executionList" :key="index">
+            <td>{{index+1}}</td>
             <td>
-              <el-input v-model="item.setname" placeholder="请输入预案操作内容"></el-input>
+              <el-input v-model="item.executionName" placeholder="请输入预案操作内容"></el-input>
             </td>
             <td>
-              <el-input v-model="item.leader" placeholder="请输入姓名"></el-input>
+              <el-select v-model="item.userId" placeholder="请选择负责人" style="width:100%;">
+                <el-option v-for="(userOption, child) in useridOptions" :key="userOption.id+'-'+child" :value="userOption.id"
+                           :label="userOption.displayName"></el-option>
+              </el-select>
             </td>
             <td><el-button size="mini" type="primary" @click="delSet(index)">删除</el-button></td>
           </tr>
@@ -260,91 +274,14 @@
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialogSet('allform')">关 闭</el-button>
-        <el-button type="primary" @click="saveSet('allform')">确 定</el-button>
-      </div>
-    </el-dialog>
-    <!--驳回 编辑 弹出框-->
-    <el-dialog  class="detail-dialog" title="编辑预案流程" width="80%" :visible.sync="setBackShow" :modal-append-to-body="false" @close="closeDialogSetBack">
-      <div class="error-box">
-        <div class="pull-left error-box-title">驳回原因：</div>
-        <div class="pull-left">驳回原因</div>
-      </div>
-      <el-form :model="form" ref="" label-position="right" label-width="100px">
-        <el-form-item label="预案名称：" prop="name">
-          <el-input v-model="form.name" placeholder="请输入预案名称"></el-input>
-          <div class="name-repeat" v-if="nameRepeat">名称重复</div>
-        </el-form-item>
-        <el-form-item label="版本号：" prop="remark">
-          <el-input v-model="form.version" placeholder="请输入版本号"></el-input>
-        </el-form-item>
-        <el-form-item label="负责人：" prop="enabled">
-          <el-select v-model="form.leader" placeholder="请选择负责人" style="width:100%;">
-            <el-option v-for="(item,index) in leaderOptions" :key="index" :value="item.value"
-                       :label="item.label"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="预案类型：" prop="enabled">
-          <el-select v-model="form.type" placeholder="请选择预案类型" style="width:100%;">
-            <el-option v-for="(item,index) in typeOptions" :key="index" :value="item.value"
-                       :label="item.label"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="预案文件：" prop="enabled">
-          <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :limit="1"
-            :file-list="fileList"
-            :auto-upload="false">
-            <el-button slot="trigger" size="small" type="primary" @click="addfiles">选取文件</el-button>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="描述：" prop="remark">
-          <el-input type="textarea" v-model="form.remark" placeholder="请输入描述"></el-input>
-        </el-form-item>
-        <el-form-item label="所属预案：" prop="enabled">
-          <el-select v-model="form.belongs" placeholder="请选择所属预案" style="width:100%;">
-            <el-option v-for="(item,index) in belongsOptions" :key="index" :value="item.value"
-                       :label="item.label"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="适用场景：" prop="scene">
-          <el-input v-model="form.scene" placeholder="请输入适用场景"></el-input>
-        </el-form-item>
-      </el-form>
-      <div class="child-title"><el-button size="mini" type="primary" @click="addSet">添加预案操作</el-button></div>
-      <div class="is-scrolling-none">
-        <table class="el-table__body">
-          <tr>
-            <td class="text-bold" style="width:100px;">编号</td>
-            <td class="text-bold">预案操作</td>
-            <td class="text-bold" style="width:155px;">负责人</td>
-            <td class="text-bold" style="width:65px;">操作</td>
-          </tr>
-          <tr v-for="(item, index) in setform" :key="index">
-            <td>{{index}}</td>
-            <td>
-              <el-input v-model="item.setname" placeholder="请输入预案操作内容"></el-input>
-            </td>
-            <td>
-              <el-input v-model="item.leader" placeholder="请输入姓名"></el-input>
-            </td>
-            <td><el-button size="mini" type="primary" @click="delSet(index)">删除</el-button></td>
-          </tr>
-        </table>
-      </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialogSetBack('allform')">关 闭</el-button>
-        <el-button type="primary" @click="saveSetBack('allform')">确 定</el-button>
+        <el-button type="primary" @click="saveSet('allform')" v-if="isType === 'cfg'">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { findAllUserInRoleEnable, findPreplanApproveTemplate, findPreplanCanUseParent, savePreplan, updatePreplan, findPreplan, findPreplanById, savePreplanExecution, uploadPreplanFile, changePreplanStatus } from '@/api/plans/plan'
   import { alertBox } from '@/utils/alert'
   export default {
     data() {
@@ -353,163 +290,237 @@
         list: null,
         listLoading: true,
         planTitle: '',
+        setTitle: '',
         formShow: false,
         detailShow: false,
         setShow: false,
         setBackShow: false,
-        nameRepeat: false,
         fileList: [],
+        isType: 'add', // 是否是进行编辑操作
         form: {
-          name: '',
-          version: '',
-          leader: '',
+          preplanName: '',
+          versionNum: '',
+          userId: '',
           type: '0',
-          remark: '',
-          belongs: '',
-          scene: ''
+          fileNameList: [],
+          preDesc: '',
+          preplanPid: '',
+          approveTemplateId: '',
+          scene: '',
+          rejectAdvice: ''
         },
-        setform: [{
-          leader: '',
-          setname: ''
+        thispreplanId: '',
+        executionList: [{
+          preplanId: '',
+          userId: '',
+          executionName: ''
         }],
+        detailForm: {
+          preplanName: '',
+          versionNum: '',
+          userName: '',
+          type: '',
+          fileNameList: [],
+          preDesc: '',
+          parentPreplanName: '',
+          scene: '',
+          childList: []
+        },
         pageTotal: 0,
         pageSizes: [10, 15, 20],
         queryPage: {
           index: 1,
           size: 10
         },
-        role: '',
-        leaderOptions: [
-          {
-            label: '',
-            value: ''
-          },
-          {
-            label: '张三',
-            value: 'zhangsan'
-          },
-          {
-            label: '李四',
-            value: 'lisi'
-          },
-          {
-            label: '王五',
-            value: 'wangwu'
-          },
-          {
-            label: '管理员',
-            value: 'admin'
-          }
-        ],
-        typeOptions: [
-          {
-            label: '总体预案',
-            value: '0'
-          },
-          {
-            label: '专项预案',
-            value: '1'
-          }
-        ],
-        belongsOptions: [
-          {
-            label: '总体预案一',
-            value: '0'
-          },
-          {
-            label: '专项预案二',
-            value: '1'
-          }
-        ],
-        userData: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待提交',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待审批',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '驳回',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '通过',
-              type: '总体预案',
-              remark: '描述描述描述'
-            }
-          ]
-        }
+        searchQuery: { // 查询数据
+          preplanName: '',
+          preStatus: ''
+        },
+        useridOptions: [],
+        PreplanCanUseParentOptions: [],
+        PreplanApproveTemplateOptions: []
       }
     },
     filters: {
+      statusFilter(status) {
+        const statusMap = {
+          1: '待提交',
+          2: '待审批',
+          3: '通过',
+          4: '驳回',
+          5: '发布',
+          0: '历史'
+        }
+        return statusMap[status]
+      },
+      typesFilter(status) {
+        const typesMap = {
+          0: '总体预案',
+          1: '专项预案'
+        }
+        return typesMap[status]
+      }
+    },
+    watch: {
+      // 监听 查询条件
+      searchQuery: {
+        handler(searchQuery) {
+          this.search()
+          this.queryPage.index = 1
+        },
+        deep: true
+      }
     },
     created() {
       this.fetchData()
     },
     methods: {
+      // 列表数据 分页 搜索
+      // 请求 原始数据
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        findPreplan(this.searchQuery).then(response => {
+          if (response) {
+            this.data = response.list
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
+      // 每页 条数
       handleSizeChange(val) {
         this.queryPage.size = val
         this.listData()
       },
+      // 第几页
       handleCurrentChange(val) {
         this.queryPage.index = val
         this.listData()
       },
+      // 当前列表 显示数据
       listData() {
         const size = this.queryPage.size
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
+      // 查询 数据
+      search() {
+        this.fetchData()
+      },
+      // 列表数据 分页 搜索
+      // 删除等 公共弹框
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
       },
+      // 删除等 公共弹框
       operate(type, val) {
+        this.useridOptions = []
+        this.PreplanCanUseParentOptions = []
+        this.PreplanApproveTemplateOptions = []
+        findAllUserInRoleEnable().then(response => {
+          if (response) {
+            this.useridOptions = Object.assign([], response.list)
+          }
+        })
+        findPreplanCanUseParent().then(response => {
+          if (response) {
+            this.PreplanCanUseParentOptions = Object.assign([], response.list)
+          }
+        })
+        findPreplanApproveTemplate().then(response => {
+          if (response) {
+            this.PreplanApproveTemplateOptions = Object.assign([], response.list)
+          }
+        })
         if (type === 'add') {
           this.planTitle = '新增预案计划'
-        } else if (type === 'edit') {
+          this.isType = 'add'
+        } else if (type === 'edit' || type === 'back') {
+          findPreplanById({ id: val.id, flag: 3 }).then(response => {
+            if (response) {
+              this.form = Object.assign({}, {
+                id: val.id,
+                preplanName: response.obj.preplanName,
+                versionNum: response.obj.versionNum,
+                userId: response.obj.userId,
+                type: response.obj.type,
+                fileNameList: response.obj.fileNameList,
+                preDesc: response.obj.preDesc,
+                preplanPid: response.obj.preplanPid,
+                approveTemplateId: response.obj.approveTemplateId,
+                rejectAdvice: response.obj.rejectAdvice,
+                scene: response.obj.scene
+              })
+              this.executionList = Object.assign([], response.obj.executionList)
+            }
+          })
           this.planTitle = '编辑预案计划'
+          if (type === 'edit') {
+            this.isType = 'edit'
+          } else if (type === 'back') {
+            if (!this.executionList[0].preplanId) {
+              this.executionList[0].preplanId = val.id
+            }
+            this.thispreplanId = val.id
+            this.isType = 'back'
+          }
         }
         this.formShow = true
       },
       save(val) {
-      },
-      reset() {
-
+        if (this.isType === 'add') {
+          savePreplan(this.form).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        } else if (this.isType === 'edit') {
+          updatePreplan(this.form).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        } else if (this.isType === 'back') {
+          savePreplanExecution(this.executionList).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        }
       },
       closeDialog() {
+        this.form = {
+          preplanName: '',
+          versionNum: '',
+          userId: '',
+          type: '0',
+          fileNameList: [],
+          preDesc: '',
+          preplanPid: '',
+          approveTemplateId: '',
+          scene: ''
+        }
+        this.executionList = [{
+          preplanId: this.thispreplanId,
+          userId: '',
+          executionName: ''
+        }]
+        this.fileList = []
         this.formShow = false
+      },
+      beforeUpload(file) {
+        console.log(file)
+        const fd = new FormData()
+        fd.append('file', file)
+        uploadPreplanFile(fd).then(res => {
+          console.log(res)
+          this.this.fileList.push(res.name)
+        })
+        return true
+      },
+      submitUpload() {
+        this.$refs.upload.submit()
+      },
+      uploadSuccess(response, file, fileList) {
+        this.this.fileList = fileList
       },
       addfiles() {
         this.fileList = []
@@ -520,35 +531,80 @@
       handlePreview(file) {
         console.log(file)
       },
-      closeDialogDetail() {
-      },
-      detail() {
-        this.detailShow = true
-      },
-      setshow() {
+      setshow(type, val) {
+        if (type === 'detail') {
+          this.isType = 'detail'
+          this.setTitle = '查看预案计划详情'
+        } else if (type === 'cfg') {
+          this.isType = 'cfg'
+          this.setTitle = '配置预案流程'
+        }
+        this.useridOptions = []
+        findAllUserInRoleEnable().then(response => {
+          if (response) {
+            this.useridOptions = Object.assign([], response.list)
+          }
+        })
+        this.thispreplanId = val.id
+        findPreplanById({ id: val.id, flag: 3 }).then(response => {
+          if (response) {
+            this.detailForm = Object.assign({}, response.obj)
+            if (response.obj.executionList === null || response.obj.executionList === [] || response.obj.executionList.length === 0) {
+              this.executionList = [{
+                preplanId: this.thispreplanId,
+                userId: '',
+                executionName: ''
+              }]
+            } else {
+              this.executionList = Object.assign([], response.obj.executionList)
+            }
+          }
+        })
         this.setShow = true
       },
       closeDialogSet() {
+        this.executionList = [{
+          preplanId: this.thispreplanId,
+          userId: '',
+          executionName: ''
+        }]
         this.setShow = false
       },
       saveSet() {
+        console.log(this.executionList)
+        if (this.isType === 'cfg') {
+          savePreplanExecution(this.executionList).then(() => {
+            this.fetchData()
+            this.setShow = false
+          })
+        }
       },
       addSet() {
-        this.setform.push({
-          leader: '',
-          setname: ''
+        this.executionList.push({
+          preplanId: this.thispreplanId,
+          userId: '',
+          executionName: ''
         })
       },
       delSet(index) {
-        this.setform.splice(index, 1)
+        this.executionList.splice(index, 1)
       },
-      operateback() {
-        this.setBackShow = true
-      },
-      closeDialogSetBack() {
-        this.setBackShow = false
-      },
-      saveSetBack() {
+      operationOther(val, msg) {
+        this.$confirm(msg, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          changePreplanStatus(val).then(() => {
+            this.fetchData()
+            this.setShow = false
+          })
+        }).catch(() => {
+          // this.$message({
+          //   type: 'info',
+          //   message: '已取消操作'
+          // })
+        })
       }
     }
   }

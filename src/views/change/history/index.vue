@@ -1,17 +1,16 @@
 <template>
   <div class="app-container" id="historyTable">
-    <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
-      </el-input>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
-    </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
-      <el-table-column label="名称" prop="name" sortable width="160"></el-table-column>
-      <el-table-column label="时间" prop="time" sortable width="152"></el-table-column>
-      <el-table-column label="描述" prop="describe" min-width="220"></el-table-column>
-      <el-table-column class-name="status-col" label="状态" width="110" align="center">
+      <el-table-column label="名称" prop="processName" sortable width="160"></el-table-column>
+      <el-table-column class-name="status-col" label="时间" width="152" :show-overflow-tooltip="true">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.state | statusFilter">{{scope.row.state}}</el-tag>
+          {{scope.row.endTime | dateFilter}}
+        </template>
+      </el-table-column>
+      <el-table-column label="描述" prop="processTitle" min-width="220"></el-table-column>
+      <el-table-column class-name="status-col" label="状态" width="110" :show-overflow-tooltip="true">
+        <template slot-scope="scope">
+          {{scope.row.state | statusFilter}}
         </template>
       </el-table-column>
       <el-table-column label="操作" width="86">
@@ -24,7 +23,7 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
@@ -32,26 +31,42 @@
     <!--查看弹出框-->
     <el-dialog title="查看历史记录" id="dialogMitop" width="90%" :visible.sync="detailShow" :modal-append-to-body="false"
                @close="closeDialog">
-      <div class="title"><span>切换流程一</span> 的报告</div>
+      <div class="title"><span>{{detailForm.processName}}</span> 的报告</div>
       <div style="margin-bottom:5px;">
         <span>
           <span style="font-weight: bold;">执行时间：</span>
-          <span>2018-05-14 15:21:00</span>
+          <span>{{detailForm.startTime | dateFilter}}</span>
         </span>
         <span style="margin-left:20px;">
           <span style="font-weight: bold;">完成时间：</span>
-          <span>2018-05-14 15:21:00</span>
+          <span>{{detailForm.endTime | dateFilter}}</span>
         </span>
       </div>
-      <el-table :data="processData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit :show-overflow-tooltip="true">
-        <el-table-column label="切换阶段" :show-overflow-tooltip="true" prop="stage" min-width="100"></el-table-column>
-        <el-table-column label="切换步骤" :show-overflow-tooltip="true" prop="step" min-width="100"></el-table-column>
-        <el-table-column label="分类" prop="type" width="50"></el-table-column>
-        <el-table-column label="负责人" prop="leader" :show-overflow-tooltip="true" width="78"></el-table-column>
-        <el-table-column label="开始时间" prop="startTime" :show-overflow-tooltip="true" width="151"></el-table-column>
-        <el-table-column label="结束时间" prop="endTime" :show-overflow-tooltip="true" width="151"></el-table-column>
-        <el-table-column label="实际用时(分钟)" prop="time" width="115"></el-table-column>
-        <el-table-column label="结果" prop="statu" width="65"></el-table-column>
+      <el-table :data="detailForm.list" v-loading.body="listLoading" element-loading-text="Loading" border fit :show-overflow-tooltip="true">
+        <el-table-column label="切换阶段" :show-overflow-tooltip="true" prop="stageName" min-width="100"></el-table-column>
+        <el-table-column label="切换步骤" :show-overflow-tooltip="true" prop="stepName" min-width="100"></el-table-column>
+        <el-table-column class-name="status-col" label="分类" width="50" align="center">
+          <template slot-scope="scope">
+            {{scope.row.stepType === 0 ? '自动' : '手动'}}
+          </template>
+        </el-table-column>
+        <el-table-column label="负责人" prop="userName" :show-overflow-tooltip="true" width="78"></el-table-column>
+        <el-table-column class-name="status-col" label="开始时间" :show-overflow-tooltip="true" width="151">
+          <template slot-scope="scope">
+            {{scope.row.startTime | dateFilter}}
+          </template>
+        </el-table-column>
+        <el-table-column class-name="status-col" label="结束时间" :show-overflow-tooltip="true" width="151">
+          <template slot-scope="scope">
+            {{scope.row.endTime | dateFilter}}
+          </template>
+        </el-table-column>
+        <el-table-column label="实际用时(分钟)" prop="times" width="115"></el-table-column>
+        <el-table-column class-name="status-col" label="状态" width="65">
+          <template slot-scope="scope">
+            {{scope.row.state | stepFilter}}
+          </template>
+        </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialog">关 闭</el-button>
@@ -61,200 +76,117 @@
 </template>
 
 <script>
-import { getListHistory } from '@/api/recoverytable'
+import { getAllImplement, getAll } from '@/api/change/history'
+import { formatTime } from '@/utils/index'
 
 export default {
   data() {
     return {
+      data: null,
       list: null,
       listLoading: true,
-      detailShow: false,
       pageTotal: 0,
       pageSizes: [10, 15, 20],
+      detailShow: false,
       queryPage: {
         index: 1,
         size: 10
       },
-      processData: {
-        totalCount: 44,
-        items: [
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤一',
-            leader: '管理是员',
-            statu: '运行中',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤二',
-            leader: '管理员',
-            statu: '运行中',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          },
-          {
-            id: 10723,
-            process: '切换流程一',
-            stage: '阶段一',
-            step: '阶段一步骤三',
-            leader: '管理员',
-            statu: '完成',
-            type: '手动',
-            startTime: '2018-05-14 15:21:00',
-            endTime: '2018-05-14 15:21:00',
-            time: '5'
-          }
-        ]
+      detailForm: {
+        processName: '',
+        startTime: '',
+        endTime: '',
+        list: []
       }
     }
   },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        '在线': 'success',
-        '健康': 'gray',
-        '离线': 'danger',
-        'failover': 'warning'
+        1: '执行中',
+        7: '暂停',
+        8: '完成',
+        10: '终止',
+        0: '未执行'
       }
       return statusMap[status]
+    },
+    stepFilter(states) {
+      const statesMap = {
+        1: '执行中',
+        7: '暂停',
+        8: '完成',
+        10: '终止',
+        0: '未执行'
+      }
+      return statesMap[states]
+    },
+    dateFilter(date) {
+      return formatTime(date, 'yyyy-MM-dd HH:mm:ss')
     }
   },
   created() {
     this.fetchData()
   },
   methods: {
+    // 列表数据 分页 搜索
+    // 请求 原始数据
     fetchData() {
       this.listLoading = true
-      getListHistory(this.listQuery).then(response => {
-        this.data = response.data.items
-        this.pageTotal = response.data.items.length
-        this.listData()
-        this.listLoading = false
+      getAllImplement().then(response => {
+        if (response) {
+          this.data = response.data
+          this.pageTotal = response.count
+          this.listData()
+          this.listLoading = false
+        }
       })
     },
+    // 每页 条数
     handleSizeChange(val) {
       this.queryPage.size = val
       this.listData()
     },
+    // 第几页
     handleCurrentChange(val) {
       this.queryPage.index = val
       this.listData()
     },
+    // 当前列表 显示数据
     listData() {
       const size = this.queryPage.size
       const index = this.queryPage.index
       this.list = this.data.slice(size * (index - 1), size * index)
     },
     detail(val) {
+      getAll({ id: val.id }).then(response => {
+        if (response) {
+          this.detailForm.processName = response.data.processName
+          this.detailForm.startTime = response.data.startTime
+          this.detailForm.endTime = response.data.endTime
+          if (response.data.data.drmSwitchingStageInstanceDtos) {
+            const defdata = Object.assign({}, response.data.data.drmSwitchingStageInstanceDtos)
+            const arr = []
+            for (const i in defdata) {
+              const lists = defdata[i].lists
+              lists.splice(0, 0, defdata[i])
+              for (const j in lists) {
+                arr.push(lists[j])
+              }
+            }
+            this.detailForm.list = arr
+          }
+        }
+      })
       this.detailShow = true
     },
     closeDialog() {
+      this.detailForm = {
+        processName: '',
+        startTime: '',
+        endTime: '',
+        list: []
+      }
       this.detailShow = false
     }
   }

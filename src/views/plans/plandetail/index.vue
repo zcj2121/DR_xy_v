@@ -1,21 +1,29 @@
 <template>
   <div class="app-container" id="plandetailTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入预案名称">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.preplanName" placeholder="请输入预案名称">
       </el-input>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
     </div>
-    <el-table :data="userData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit>
-      <el-table-column label="名称" prop="name" min-width="100" sortable></el-table-column>
-      <el-table-column label="版本" prop="version" width="80" sortable></el-table-column>
-      <el-table-column label="预案类型" prop="type" width="110"sortable></el-table-column>
-      <el-table-column label="负责人" prop="leader" width="100" sortable></el-table-column>
-      <el-table-column label="描述" prop="remark" min-width="120" sortable></el-table-column>
-      <el-table-column label="状态" prop="statu" width="75" sortable></el-table-column>
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit>
+      <el-table-column label="名称" prop="preplanName" min-width="100" sortable></el-table-column>
+      <el-table-column label="版本" prop="versionNum" width="80" sortable></el-table-column>
+      <el-table-column class-name="status-col" label="预案类型" width="110">
+        <template slot-scope="scope">
+          {{scope.row.type === 1 ? '专项预案' : '总体预案'}}
+        </template>
+      </el-table-column>
+      <el-table-column label="负责人" prop="userName" width="100" sortable></el-table-column>
+      <el-table-column label="描述" prop="preDesc" min-width="120" sortable></el-table-column>
+      <el-table-column class-name="status-col" label="状态" width="75" align="center">
+        <template slot-scope="scope">
+          {{scope.row.preStatus | statusFilter}}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="detail">查看</el-button>
+            <el-button size="mini" type="primary" @click="detail(scope.row)">查看</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -24,104 +32,96 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
     </el-pagination>
     <!--查看 弹出框-->
     <el-dialog  class="detail-dialog" title="查看预案计划详情" width="80%" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogDetail">
-      <div class="title">预案名称</div>
+      <div class="title">{{detailForm.preplanName}}</div>
       <div class="is-scrolling-none">
         <table class="el-table__body">
           <tr>
             <td class="text-bold" style="width:100px;">版本号</td>
-            <td colspan="2">1.0</td>
+            <td colspan="2">{{detailForm.versionNum}}</td>
             <td class="text-bold" style="width:100px;">负责人</td>
-            <td colspan="2">张三</td>
+            <td colspan="2">{{detailForm.userName}}</td>
           </tr>
           <tr>
             <td class="text-bold">预案类型</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.type | typesFilter}}</td>
           </tr>
           <tr>
             <td class="text-bold">预案文件</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.fileNameList}}</td>
           </tr>
           <tr>
             <td class="text-bold">描述</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.preDesc}}</td>
           </tr>
           <tr>
             <td class="text-bold">所属预案</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.parentPreplanName}}</td>
           </tr>
           <tr>
             <td class="text-bold">适用场景</td>
-            <td colspan="5">预案类型</td>
+            <td colspan="5">{{detailForm.scene}}</td>
           </tr>
           <tr style="background: #f7f7f7;">
             <td class="text-bold"></td>
-            <td class="text-bold" colspan="4">预案操作</td>
+            <td class="text-bold" colspan="4">预案验证执行操作</td>
             <td class="text-bold" style="width:100px;">负责人</td>
           </tr>
-          <tr>
-            <td>1</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">张三</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">李四</td>
+          <tr v-for="(item,index) in detailForm.executionList" :key="index">
+            <td>{{index}}</td>
+            <td colspan="4">{{item.executionName}}</td>
+            <td style="width:100px;">{{item.userName}}</td>
           </tr>
         </table>
       </div>
-      <div class="child-title">专项预案名称1</div>
-      <div class="is-scrolling-none">
-        <table class="el-table__body">
-          <tr>
-            <td class="text-bold" style="width:100px;">版本号</td>
-            <td colspan="2">1.0</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
-            <td colspan="2">张三</td>
-          </tr>
-          <tr>
-            <td class="text-bold">预案类型</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">预案文件</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">描述</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">所属预案</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr>
-            <td class="text-bold">适用场景</td>
-            <td colspan="5">预案类型</td>
-          </tr>
-          <tr style="background: #f7f7f7;">
-            <td class="text-bold"></td>
-            <td class="text-bold" colspan="4">预案操作</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">张三</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td colspan="4">演练环境准备阶段，XXXXXXXXXX</td>
-            <td style="width:100px;">李四</td>
-          </tr>
-        </table>
+      <div v-for="(item,index) in detailForm.childList" :key="index">
+        <div class="child-title">{{item.preplanName}}</div>
+        <div class="is-scrolling-none">
+          <table class="el-table__body">
+            <tr>
+              <td class="text-bold" style="width:100px;">版本号</td>
+              <td colspan="2">{{item.versionNum}}</td>
+              <td class="text-bold" style="width:100px;">负责人</td>
+              <td colspan="2">{{item.userName}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">预案类型</td>
+              <td colspan="5">{{item.type | typesFilter}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">预案文件</td>
+              <td colspan="5">{{item.fileNameList}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">描述</td>
+              <td colspan="5">{{item.preDesc}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">所属预案</td>
+              <td colspan="5">{{item.parentPreplanName}}</td>
+            </tr>
+            <tr>
+              <td class="text-bold">适用场景</td>
+              <td colspan="5">{{item.scene}}</td>
+            </tr>
+            <tr style="background: #f7f7f7;">
+              <td class="text-bold"></td>
+              <td class="text-bold" colspan="4">预案验证执行操作</td>
+              <td class="text-bold" style="width:100px;">负责人</td>
+            </tr>
+            <tr v-for="(child,childindex) in item.executionList" :key="index+'-'+childindex">
+              <td>{{childindex}}</td>
+              <td colspan="4">{{child.executionName}}</td>
+              <td style="width:100px;">{{child.userName}}</td>
+            </tr>
+          </table>
+        </div>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialogDetail('allform')">关 闭</el-button>
@@ -131,26 +131,17 @@
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { findPreplan, findPreplanById } from '@/api/plans/plandetail'
   export default {
     data() {
       return {
         data: null,
         list: null,
         listLoading: true,
-        planTitle: '',
-        formShow: false,
         detailShow: false,
-        nameRepeat: false,
-        fileList: [],
-        form: {
-          name: '',
-          version: '',
-          leader: '',
-          type: '0',
-          remark: '',
-          belongs: '',
-          scene: ''
+        searchQuery: { // 查询数据
+          preplanName: '',
+          preStatus: 5
         },
         pageTotal: 0,
         pageSizes: [10, 15, 20],
@@ -158,121 +149,92 @@
           index: 1,
           size: 10
         },
-        role: '',
-        leaderOptions: [
-          {
-            label: '',
-            value: ''
-          },
-          {
-            label: '张三',
-            value: 'zhangsan'
-          },
-          {
-            label: '李四',
-            value: 'lisi'
-          },
-          {
-            label: '王五',
-            value: 'wangwu'
-          },
-          {
-            label: '管理员',
-            value: 'admin'
-          }
-        ],
-        typeOptions: [
-          {
-            label: '总体预案',
-            value: '0'
-          },
-          {
-            label: '专项预案',
-            value: '1'
-          }
-        ],
-        belongsOptions: [
-          {
-            label: '总体预案一',
-            value: '0'
-          },
-          {
-            label: '专项预案二',
-            value: '1'
-          }
-        ],
-        userData: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待提交',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待审批',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '驳回',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '通过',
-              type: '总体预案',
-              remark: '描述描述描述'
-            }
-          ]
+        detailForm: {
+          preplanName: '',
+          versionNum: '',
+          userName: '',
+          type: '',
+          fileNameList: [],
+          preDesc: '',
+          parentPreplanName: '',
+          scene: '',
+          childList: []
         }
       }
     },
     filters: {
+      statusFilter(status) {
+        const statusMap = {
+          1: '待提交',
+          2: '待审批',
+          3: '通过',
+          4: '驳回',
+          5: '发布',
+          0: '历史'
+        }
+        return statusMap[status]
+      },
+      typesFilter(status) {
+        const typesMap = {
+          0: '总体预案',
+          1: '专项预案'
+        }
+        return typesMap[status]
+      }
+    },
+    watch: {
+      // 监听 查询条件
+      searchQuery: {
+        handler(searchQuery) {
+          this.search()
+          this.queryPage.index = 1
+        },
+        deep: true
+      }
     },
     created() {
       this.fetchData()
     },
     methods: {
+      // 列表数据 分页 搜索
+      // 请求 原始数据
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        findPreplan(this.searchQuery).then(response => {
+          if (response) {
+            this.data = response.list
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
+      // 每页 条数
       handleSizeChange(val) {
         this.queryPage.size = val
         this.listData()
       },
+      // 第几页
       handleCurrentChange(val) {
         this.queryPage.index = val
         this.listData()
       },
+      // 当前列表 显示数据
       listData() {
         const size = this.queryPage.size
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
-      detail() {
+      // 查询 数据
+      search() {
+        this.fetchData()
+      },
+      detail(val) {
+        findPreplanById({ id: val.id, flag: 3 }).then(response => {
+          if (response) {
+            this.detailForm = Object.assign({}, response.obj)
+          }
+        })
         this.detailShow = true
       },
       closeDialogDetail() {

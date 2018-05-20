@@ -1,21 +1,28 @@
 <template>
   <div class="app-container" id="changeauditTable">
-    <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal">
-      </el-input>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
-    </div>
-    <el-table :data="processData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit :show-overflow-tooltip="true">
-      <el-table-column label="切换流程名称" :show-overflow-tooltip="true" prop="process" min-width="100"></el-table-column>
-      <el-table-column label="切换阶段" :show-overflow-tooltip="true" prop="stage" min-width="100"></el-table-column>
-      <el-table-column label="切换步骤" :show-overflow-tooltip="true" prop="step" min-width="100"></el-table-column>
-      <el-table-column label="开始时间" prop="startTime" :show-overflow-tooltip="true" width="151"></el-table-column>
-      <el-table-column label="实际用时(分钟)" prop="time" width="115"></el-table-column>
-      <el-table-column label="状态" prop="statu" width="65"></el-table-column>
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit :show-overflow-tooltip="true">
+      <el-table-column label="切换流程名称" :show-overflow-tooltip="true" prop="processName" min-width="100"></el-table-column>
+      <el-table-column label="切换阶段" :show-overflow-tooltip="true" prop="stageName" min-width="100"></el-table-column>
+      <el-table-column label="切换步骤" :show-overflow-tooltip="true" prop="stepName" min-width="100"></el-table-column>
+      <el-table-column class-name="status-col" label="创建时间" width="100" :show-overflow-tooltip="true">
+        <template slot-scope="scope">
+          {{scope.row.startTime | dateFilter}}
+        </template>
+      </el-table-column>
+      <el-table-column class-name="status-col" label="完成时间" width="100" :show-overflow-tooltip="true">
+        <template slot-scope="scope">
+          {{scope.row.startTime | dateFilter}}
+        </template>
+      </el-table-column>
+      <el-table-column class-name="status-col" label="状态" width="65">
+        <template slot-scope="scope">
+          {{scope.row.state | statusFilter}}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认完成吗', '123')">确认
+            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认完成吗', '/rs/dr/drmSwitchingProcess/submitArtificial')">确认
             </el-button>
           </el-button-group>
         </template>
@@ -25,7 +32,7 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
@@ -34,8 +41,9 @@
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { getAllTask } from '@/api/change/nottask'
   import { alertBox } from '@/utils/alert'
+  import { formatTime } from '@/utils/index'
   export default {
     data() {
       return {
@@ -48,80 +56,55 @@
           index: 1,
           size: 10
         },
-        processData: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              process: '切换流程一',
-              stage: '阶段一',
-              step: '阶段一步骤一',
-              leader: '管理是员',
-              statu: '运行中',
-              type: '手动',
-              startTime: '2018-05-14 15:21:00',
-              endTime: '2018-05-14 15:21:00',
-              time: '5'
-            },
-            {
-              id: 10723,
-              process: '切换流程一',
-              stage: '阶段一',
-              step: '阶段一步骤二',
-              leader: '管理员',
-              statu: '运行中',
-              type: '手动',
-              startTime: '2018-05-14 15:21:00',
-              endTime: '2018-05-14 15:21:00',
-              time: '5'
-            },
-            {
-              id: 10723,
-              process: '切换流程一',
-              stage: '阶段一',
-              step: '阶段一步骤三',
-              leader: '管理员',
-              statu: '完成',
-              type: '手动',
-              startTime: '2018-05-14 15:21:00',
-              endTime: '2018-05-14 15:21:00',
-              time: '5'
-            }
-          ]
+        thisId: '',
+        searchQuery: { // 查询数据
+          processName: ''
         }
       }
     },
     filters: {
       statusFilter(status) {
         const statusMap = {
-          '在线': 'success',
-          '健康': 'gray',
-          '离线': 'danger'
+          1: '执行中',
+          7: '暂停',
+          8: '完成',
+          10: '终止',
+          0: '未执行'
         }
         return statusMap[status]
+      },
+      dateFilter(date) {
+        return formatTime(date, 'yyyy-MM-dd HH:mm:ss')
       }
     },
     created() {
       this.fetchData()
     },
     methods: {
+      // 列表数据 分页 搜索
+      // 请求 原始数据
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        getAllTask(this.searchQuery).then(response => {
+          if (response) {
+            this.data = response.data
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
+      // 每页 条数
       handleSizeChange(val) {
         this.queryPage.size = val
         this.listData()
       },
+      // 第几页
       handleCurrentChange(val) {
         this.queryPage.index = val
         this.listData()
       },
+      // 当前列表 显示数据
       listData() {
         const size = this.queryPage.size
         const index = this.queryPage.index

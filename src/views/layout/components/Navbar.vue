@@ -3,7 +3,7 @@
     <hamburger class="hamburger-container" :toggleClick="toggleSideBar" :isActive="sidebar.opened"></hamburger>
     <breadcrumb></breadcrumb>
     <div class="right-menu">
-      <el-tooltip class="item" effect="dark" content="通知代办" placement="bottom">
+      <el-tooltip class="item" effect="dark" content="通知待办" placement="bottom">
         <span class="screenfull" @click="goNottask">
           <el-badge :value="badge" class="item">
             <i class="fa fa-bell"></i>

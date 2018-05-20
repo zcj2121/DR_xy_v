@@ -1,24 +1,34 @@
 <template>
   <div class="app-container" id="userTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入审批流程名称">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.approveName" placeholder="请输入审批流程名称">
       </el-input>
-      <el-select style="width: 200px;" size="mini" v-model="process" placeholder="请选择分类">
-        <el-option v-for="item in processOptions" :key="item.value" :label="item.label"
-                   :value="item.value"></el-option>
+      <el-select style="width: 200px;" size="mini" v-model="searchQuery.approveType" placeholder="请选择分类">
+        <el-option key="0" label="全部审批" value=""></el-option>
+        <el-option key="1" label="预案审批" value="1"></el-option>
+        <el-option key="2" label="切换流程" value="2"></el-option>
+        <el-option key="3" label="切换执行" value="3"></el-option>
       </el-select>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
     </div>
-    <el-table :data="userData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit>
-      <el-table-column label="审批流程名称" prop="name" min-width="150" sortable></el-table-column>
-      <el-table-column label="分类" prop="type" width="150" sortable></el-table-column>
-      <el-table-column label="审批人流程" prop="process" min-width="300" sortable></el-table-column>
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit>
+      <el-table-column label="审批流程名称" prop="approveName" min-width="150" sortable></el-table-column>
+      <el-table-column class-name="status-col" label="分类" width="150" align="center">
+        <template slot-scope="scope">
+          {{scope.row.approveType | statusFilter}}
+        </template>
+      </el-table-column>
+      <el-table-column class-name="status-col" label="审批人流程"  min-width="300">
+        <template slot-scope="scope">
+          {{scope.row.userList | processFilter}}
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="101">
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认删除吗', '123')">删除</el-button>
+            <el-button size="mini" type="primary" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/approveTemplateManager/deleteApproveTempkate')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -27,7 +37,7 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
@@ -37,19 +47,19 @@
                @close="operateClose">
       <el-form :model="form" label-position="right" label-width="85px">
         <el-form-item label="名称：" prop="name">
-          <el-input v-model="form.name" placeholder="请输入名称"></el-input>
-          <div class="name-repeat" v-if="nameRepeat">名称重复</div>
+          <el-input v-model="form.approveName" placeholder="请输入名称"></el-input>
         </el-form-item>
         <el-form-item label="审批类型：" prop="enabled">
-          <el-select v-model="form.type" placeholder="请选择审批类型" style="width:100%;">
-            <el-option v-for="item in processOptions" :key="item.value" :label="item.label"
-                       :value="item.value"></el-option>
+          <el-select v-model="form.approveType" placeholder="请选择审批类型" style="width:100%;">
+            <el-option key="1" label="预案审批" value="1"></el-option>
+            <el-option key="2" label="切换流程" value="2"></el-option>
+            <el-option key="3" label="切换执行" value="3"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item :label="index === 0?'审批人：':''" prop="enabled" v-for="(item, index) in form.processList" :key="index">
+        <el-form-item :label="index === 0?'审批人：':''" prop="enabled" v-for="(item, index) in form.userList" :key="index">
           <el-select v-model="item.value" placeholder="请选择审批人" style="width:86.3%;">
-            <el-option v-for="item in userOptions" :key="item.value+index" :label="item.label"
-                       :value="item.value"></el-option>
+            <el-option v-for="userOption in userOptions" :key="userOption.id+'-'+index" :label="userOption.displayName"
+                       :value="userOption.id"></el-option>
           </el-select>
           <el-button v-if="index === 0" class="filter-item" size="mini" style="margin-left: 10px;padding:12px;" type="" @click="add()">添加</el-button>
           <el-button v-else class="filter-item" size="mini" style="margin-left: 10px;padding:12px;" type="" @click="del(index)">删除</el-button>
@@ -64,138 +74,197 @@
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { findAllUserInRoleEnable, saveApproveTemplate, updateApproveTemplate, findApproveTempkate } from '@/api/system/auditall'
   import { alertBox } from '@/utils/alert'
   export default {
     data() {
       return {
-        data: null,
-        list: null,
-        listLoading: true,
-        pageTotal: 0,
-        pageSizes: [10, 15, 20],
+        data: null, // 原始数据
+        list: null, // 列表显示数据
+        listLoading: true, // 加载动画
+        pageTotal: 0, // 数据总条数
+        pageSizes: [10, 15, 20], // 每页显示条数 规则
         queryPage: {
-          index: 1,
-          size: 10
+          index: 1, // 第几页
+          size: 10 // 每页显示条数
         },
-        form: {
-          name: '',
-          type: '',
-          processList: [{
+        searchQuery: { // 查询数据
+          approveName: '',
+          approveType: ''
+        },
+        thisId: '',
+        form: { // 新增编辑 数据
+          approveName: '',
+          approveType: '',
+          userList: [{
             value: ''
           }]
         },
-        operateTitle: '',
-        formShow: false,
-        nameRepeat: false,
-        process: '',
-        processOptions: [
-          {
-            label: '预案审批',
-            value: '1'
-          },
-          {
-            label: '切换流程',
-            value: '2'
-          },
-          {
-            label: '切换执行',
-            value: '3'
-          }
-        ],
-        userOptions: [
-          {
-            label: '张三',
-            value: '1'
-          },
-          {
-            label: '李四',
-            value: '2'
-          },
-          {
-            label: '王五',
-            value: '3'
-          }
-        ],
-        userData: {
-          totalCount: 44,
-          items: [
-            {
-              name: '审批流程名称一',
-              type: '预案审批',
-              process: '刘XX、王XX、【姓名2】、【姓名3】'
-            },
-            {
-              name: '审批流程名称一',
-              type: '切换流程',
-              process: '刘XX、王XX、【姓名2】、【姓名3】'
-            },
-            {
-              name: '审批流程名称一',
-              type: '切换执行',
-              process: '刘XX、王XX、【姓名2】、【姓名3】'
-            }
-          ]
-        }
+        isEdit: false, // 是否是进行编辑操作
+        operateTitle: '', // 新增、编辑 弹出框 标题
+        formShow: false, // 是否 显示 新增、编辑 弹出框
+        userOptions: []
       }
     },
     filters: {
       statusFilter(status) {
         const statusMap = {
-          '在线': 'success',
-          '健康': 'gray',
-          '离线': 'danger'
+          1: '预案审批',
+          2: '切换流程',
+          3: '切换执行'
         }
         return statusMap[status]
+      },
+      processFilter(data) {
+        if (data instanceof Array) {
+          if (data.length > 0) {
+            const arr = []
+            const defarr = Object.assign([], data)
+            for (const i in defarr) {
+              arr.push(defarr[i].displayName)
+            }
+            const processMap = arr.join('→')
+            return processMap
+          } else {
+            return ''
+          }
+        } else {
+          return ''
+        }
+      }
+    },
+    watch: {
+      // 监听 查询条件
+      searchQuery: {
+        handler(searchQuery) {
+          this.search()
+          this.queryPage.index = 1
+        },
+        deep: true
       }
     },
     created() {
       this.fetchData()
     },
     methods: {
+      // 列表数据 分页 搜索
+      // 请求 原始数据
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        findApproveTempkate(this.searchQuery).then(response => {
+          if (response) {
+            this.data = response.list
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
+      // 每页 条数
       handleSizeChange(val) {
         this.queryPage.size = val
         this.listData()
       },
+      // 第几页
       handleCurrentChange(val) {
         this.queryPage.index = val
         this.listData()
       },
+      // 当前列表 显示数据
       listData() {
         const size = this.queryPage.size
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
+      // 查询 数据
+      search() {
+        this.fetchData()
+      },
+      // 列表数据 分页 搜索
+      // 删除、启用等 公共弹框
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
       },
+      // 删除、启用等 公共弹框
+      // 新增、修改 操作
+      // 弹出框 打开
       operate(type, val) {
+        this.userOptions = []
+        findAllUserInRoleEnable().then(response => {
+          this.userOptions = response.list
+        })
         if (type === 'add') {
           this.operateTitle = '新增审批模板'
+          this.isEdit = false
         } else if (type === 'edit') {
+          this.isEdit = true
+          this.thisId = val.id
+          if (val) {
+            this.form.approveName = val.approveName
+            this.form.approveType = val.approveType
+            if (val.userList) {
+              const arr = []
+              for (const i in val.userList) {
+                arr.push({
+                  value: val.userList[i].id
+                })
+              }
+              this.form.userList = Object.assign([], arr)
+            }
+          }
           this.operateTitle = '编辑审批模板'
         }
         this.formShow = true
       },
+      // 弹出框 关闭
       operateClose() {
         this.formShow = false
+        this.form = {
+          approveName: '',
+          approveType: '',
+          userList: [{
+            value: ''
+          }]
+        }
       },
+      // 新增、修改 操作
       add() {
-        this.form.processList.push({
+        this.form.userList.push({
           value: ''
         })
       },
       del(index) {
-        this.form.processList.splice(index, 1)
+        this.form.userList.splice(index, 1)
+      },
+      // 点击保存
+      save() {
+        const arr = []
+        const defArr = Object.assign([], this.form.userList)
+        for (const i in defArr) {
+          arr.push(defArr[i].value)
+        }
+        if (this.isEdit === false) {
+          saveApproveTemplate({
+            approveName: this.form.approveName,
+            approveType: this.form.approveType,
+            userList: arr
+          }).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        } else {
+          updateApproveTemplate(
+            {
+              id: this.thisId,
+              approveName: this.form.approveName,
+              approveType: this.form.approveType,
+              userList: arr
+            }
+          ).then(() => {
+            this.fetchData()
+            this.formShow = false
+          })
+        }
       }
     }
   }

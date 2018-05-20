@@ -1,20 +1,24 @@
 <template>
   <div class="app-container" id="plandrillTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="pageTotal" placeholder="请输入预案名称">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.preplanName" placeholder="请输入预案名称">
       </el-input>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
     </div>
-    <el-table :data="userData.items" v-loading.body="listLoading" element-loading-text="Loading" border fit>
-      <el-table-column label="名称" prop="name" min-width="100" sortable></el-table-column>
-      <el-table-column label="版本" prop="version" width="80" sortable></el-table-column>
-      <el-table-column label="预案类型" prop="type" width="110"sortable></el-table-column>
-      <el-table-column label="负责人" prop="leader" width="100" sortable></el-table-column>
-      <el-table-column label="描述" prop="remark" min-width="120" sortable></el-table-column>
+    <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit>
+      <el-table-column label="名称" prop="preplanName" min-width="100" sortable></el-table-column>
+      <el-table-column label="版本" prop="versionNum" width="80" sortable></el-table-column>
+      <el-table-column class-name="status-col" label="预案类型" width="110">
+        <template slot-scope="scope">
+          {{scope.row.type === 1 ? '专项预案' : '总体预案'}}
+        </template>
+      </el-table-column>
+      <el-table-column label="负责人" prop="userName" width="100" sortable></el-table-column>
+      <el-table-column label="描述" prop="preDesc" min-width="120" sortable></el-table-column>
       <el-table-column label="操作" width="85">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="detail">演练视图</el-button>
+            <el-button size="mini" type="primary" @click="detail(scope.row)">演练视图</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -23,7 +27,7 @@
                    @size-change="handleSizeChange"
                    @current-change="handleCurrentChange"
                    :current-page="queryPage.index"
-                   :page-sizes="[10, 20, 30, 40, 50,1000]"
+                   :page-sizes="pageSizes"
                    :page-size="queryPage.size"
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
@@ -33,458 +37,32 @@
       <div class="title">预案演练验证</div>
       <div class="view-box-detail">
         <el-row class="panel-group" :gutter="20">
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
+          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col" v-for="(item, index) in detailForm" :key="index">
             <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-ok">
-                已完成
+              <div class="card-panel-icon-wrapper" :class="item.state === 1 ? 'icon-ok' : 'icon-no'">
+                {{item.state === 1 ? '已完成' : '待完成'}}
               </div>
               <div class="card-panel-description">
                 <div class="card-row-over">
                   <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
+                  <span :title="item.executionName">{{item.executionName}}</span>
                 </div>
                 <div class="card-row-over">
                   <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
+                  <span :title="item.userName">{{item.userName}}</span>
                 </div>
                 <div class="card-row-over">
                   <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
+                  <span :title="item.telPhone">{{item.telPhone}}</span>
                 </div>
               </div>
             </div>
           </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-ok">
-                已完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col">
-            <div class='card-panel'>
-              <div class="card-panel-icon-wrapper icon-no">
-                待完成
-              </div>
-              <div class="card-panel-description">
-                <div class="card-row-over">
-                  <span>预案操作：</span>
-                  <span title="演练流程XXXXXX">演练流程XXXXXX</span>
-                </div>
-                <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
-                  <span title="李四">李四</span>
-                </div>
-                <div class="card-row-over">
-                  <span>联系电话：</span>
-                  <span title="157111111">157111111</span>
-                </div>
-              </div>
-            </div>
-          </el-col>
-
         </el-row>
-        <div class="log-box">
+        <div class="log-box" v-if="thisNoStart.userName">
           <div class="log-box-title">演练日志</div>
           <div class="msg-box">
-            <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a @click="goLoginAudit">http://XXXXXX.com/login</a></span></div>
-            <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
-            <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
-            <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
-            <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
-            <div><span>消息通知：</span><span>李XX，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a href="">http://XXXXXX.com/login</a></span></div>
+            <div><span>消息通知：</span><span><span style="font-weight: bold;">{{thisNoStart.userName}}</span>，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a @click="goLoginAudit">http://vbs.login.com</a></span></div>
           </div>
         </div>
       </div>
@@ -496,26 +74,17 @@
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  import { findPreplan, findAllExecutionByPreplanId } from '@/api/plans/plandrill'
   export default {
     data() {
       return {
         data: null,
         list: null,
         listLoading: true,
-        planTitle: '',
-        formShow: false,
         detailShow: false,
-        nameRepeat: false,
-        fileList: [],
-        form: {
-          name: '',
-          version: '',
-          leader: '',
-          type: '0',
-          remark: '',
-          belongs: '',
-          scene: ''
+        searchQuery: { // 查询数据
+          preplanName: '',
+          isDrill: 1
         },
         pageTotal: 0,
         pageSizes: [10, 15, 20],
@@ -523,121 +92,73 @@
           index: 1,
           size: 10
         },
-        role: '',
-        leaderOptions: [
-          {
-            label: '',
-            value: ''
-          },
-          {
-            label: '张三',
-            value: 'zhangsan'
-          },
-          {
-            label: '李四',
-            value: 'lisi'
-          },
-          {
-            label: '王五',
-            value: 'wangwu'
-          },
-          {
-            label: '管理员',
-            value: 'admin'
-          }
-        ],
-        typeOptions: [
-          {
-            label: '总体预案',
-            value: '0'
-          },
-          {
-            label: '专项预案',
-            value: '1'
-          }
-        ],
-        belongsOptions: [
-          {
-            label: '总体预案一',
-            value: '0'
-          },
-          {
-            label: '专项预案二',
-            value: '1'
-          }
-        ],
-        userData: {
-          totalCount: 44,
-          items: [
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待提交',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '待审批',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '驳回',
-              type: '总体预案',
-              remark: '描述描述描述'
-            },
-            {
-              id: 10723,
-              name: '预案计划一',
-              version: '2.0',
-              leader: '管理员',
-              statu: '通过',
-              type: '总体预案',
-              remark: '描述描述描述'
-            }
-          ]
+        detailForm: [],
+        thisNoStart: {
+          userName: ''
         }
       }
     },
     filters: {
     },
+    watch: {
+      // 监听 查询条件
+      searchQuery: {
+        handler(searchQuery) {
+          this.search()
+          this.queryPage.index = 1
+        },
+        deep: true
+      }
+    },
     created() {
       this.fetchData()
     },
     methods: {
+      // 列表数据 分页 搜索
+      // 请求 原始数据
       fetchData() {
         this.listLoading = true
-        getList(this.listQuery).then(response => {
-          this.data = response.data.items
-          this.pageTotal = response.data.items.length
-          this.listData()
-          this.listLoading = false
+        findPreplan(this.searchQuery).then(response => {
+          if (response) {
+            this.data = response.list
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
+          }
         })
       },
+      // 每页 条数
       handleSizeChange(val) {
         this.queryPage.size = val
         this.listData()
       },
+      // 第几页
       handleCurrentChange(val) {
         this.queryPage.index = val
         this.listData()
       },
+      // 当前列表 显示数据
       listData() {
         const size = this.queryPage.size
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
       },
-      detail() {
+      // 查询 数据
+      search() {
+        this.fetchData()
+      },
+      detail(val) {
+        findAllExecutionByPreplanId({ id: val.id }).then(response => {
+          if (response) {
+            this.detailForm = Object.assign([], response.list)
+            for (const i in response.list) {
+              if (response.list[i].state !== 1) {
+                this.thisNoStart = response.list[i]
+                return
+              }
+            }
+          }
+        })
         this.detailShow = true
       },
       closeDialogDetail() {

@@ -21,21 +21,21 @@
       <el-table-column label="操作" width="226">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" v-if="scope.row.statu!=='驳回'" @click="detail(scope.row)">查看
+            <el-button size="mini" type="primary" v-if="scope.row.process_status!==3" @click="detail(scope.row)">查看
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='驳回'" @click="detailBack(scope.row)">查看驳回建议
+            <el-button size="mini" type="primary" v-if="scope.row.process_status===3" @click="detailBack(scope.row)">查看驳回建议
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'"
+            <el-button size="mini" type="primary" v-if="scope.row.process_status=== 0||scope.row.process_status===3"
                        @click="operate('edit',scope.row)">编辑
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'"
-                       @click="operation(scope.row.id, '确认提交吗', '/rs/dr/drmSwitchingProcess/submission')">提交
+            <el-button size="mini" type="primary" v-if="scope.row.process_status=== 0||scope.row.process_status===3"
+                       @click="operation({ id: scope.row.id }, '确认提交吗', '/rs/dr/drmSwitchingProcess/submission')">提交
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='通过'"
+            <el-button size="mini" type="primary" v-if="scope.row.process_status===2"
                        @click="run(scope.row)">申请执行
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.statu==='待提交'||scope.row.statu==='驳回'"
-                       @click="operation(scope.row.id, '确认删除吗', '/rs/dr/drmSwitchingProcess/delete')">删除
+            <el-button size="mini" type="primary" v-if="scope.row.process_status=== 0||scope.row.process_status===3"
+                       @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/drmSwitchingProcess/delete')">删除
             </el-button>
           </el-button-group>
         </template>
@@ -217,9 +217,9 @@
     methods: {
       fetchData() {
         this.listLoading = true
-        getAllProcess(this.listQuery).then(response => {
+        getAllProcess(this.searchQuery).then(response => {
           if (response) {
-            this.data = response.list
+            this.data = response.data
             this.pageTotal = response.count
             this.listData()
             this.listLoading = false
@@ -247,6 +247,7 @@
         alertBox(this, msg, url, id)
       },
       detail(val) {
+        console.log(val)
         this.detailFrom = {
           process_name: val.process_name,
           process_title: val.process_title,
@@ -254,7 +255,7 @@
         }
         findAllToExamine({ id: val.id }).then(response => {
           if (response) {
-            this.treedata = response.list
+            this.treedata = response.data
           }
         })
         this.detailShow = true
@@ -267,7 +268,7 @@
         this.rebutStringOptions = []
         findAllUser().then(response => {
           if (response) {
-            this.useridOptions = Object.assign([], response.list)
+            this.useridOptions = Object.assign([], response.userList)
           }
         })
         findApproveTempkate({ approveType: 2 }).then(response => {
@@ -286,7 +287,7 @@
               process_name: val.process_name,
               process_title: val.process_title,
               userid: val.userid,
-              rebutString: val.rebutString
+              rebutString: parseInt(val.rebutString)
             })
           }
           this.operateTitle = '编辑流程信息'
