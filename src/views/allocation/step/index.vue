@@ -6,7 +6,7 @@
                    :value="item.id"></el-option>
       </el-select>
       <el-select style="width: 200px;" size="mini" v-model="defSearchQuery.stage" placeholder="请选择切换阶段">
-        <el-option v-for="item in stageOptions" :key="item.id" v-if='defSearchQuery.process === item.processidLong' :label="item.nameString"
+        <el-option v-for="item in stageOptions" :key="item.id" :label="item.nameString"
                    :value="item.id"></el-option>
       </el-select>
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
@@ -62,7 +62,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="上一步骤：" prop="enabled">
-          <el-select v-model="form.sortIdInteger" placeholder="请选择场上一步骤" style="width:100%;">
+          <el-select v-model="form.sortIdInteger" placeholder="请选择上一步骤" style="width:100%;">
+            <el-option label="无" value=""></el-option>
             <el-option v-for="item in sortIdIntegerOptions" :key="item.id" :label="item.stepNameString"
                        :value="item.id"></el-option>
           </el-select>
@@ -83,7 +84,7 @@
 </template>
 
 <script>
-  import { getallStep, disaster, findAllUser, superStep, insert, update } from '@/api/allocation/step'
+  import { getAllSteps, getAllProcess, getStages, disaster, findAllUser, superStep, showStep, insert, update } from '@/api/allocation/step'
   import { alertBox } from '@/utils/alert'
 
   export default {
@@ -120,29 +121,32 @@
           sortIdInteger: '', // 上级步骤id
           stageId: '', // 阶段id
           userId: '' // 负责人id
-        },
-        stepData: [],
-        stageData: [],
-        defData: []
+        }
       }
     },
     watch: {
       // 监听 查询条件
       defSearchQuery: {
         handler(defSearchQuery) {
-          this.isShowData(defSearchQuery)
+          if (this.defSearchQuery.stage) {
+            this.fetchData()
+          }
         },
         deep: true
       },
       'defSearchQuery.process': {
         handler(process) {
           for (const i in this.stageOptions) {
-            if (this.defSearchQuery.process === this.stageOptions[i].processidLong) {
+            if (process === this.stageOptions[i].id) {
               this.defSearchQuery.stage = this.stageOptions[i].id
               return
             } else {
               this.defSearchQuery.stage = ''
+              console.log(this.defSearchQuery.stage)
             }
+          }
+          if (this.defSearchQuery.process) {
+            this.processstageData()
           }
         },
         deep: true
@@ -158,49 +162,40 @@
       }
     },
     created() {
-      this.fetchData()
+      this.processData()
+      // this.processstageData()
     },
     methods: {
+      processData() {
+        getAllProcess().then(response => {
+          if (response) {
+            this.processOptions = response.data
+            this.defSearchQuery.process = response.data[0].id
+          }
+        })
+      },
+      processstageData() {
+        getStages({ processid: this.defSearchQuery.process }).then(response => {
+          if (response) {
+            this.stageOptions = response.data
+            this.defSearchQuery.stage = response.data[0].id
+          }
+        })
+      },
       fetchData() {
         this.listLoading = true
-        getallStep(this.searchQuery).then(response => {
+        getAllSteps({
+          stageid: this.defSearchQuery.stage,
+          stepName: ''
+        }).then(response => {
           if (response) {
-            this.stepData = []
-            const stageData = []
-            const defData = Object.assign([], response.data)
-            for (const i in defData) {
-              const stageDefData = defData[i].drmSwitchingStageDtos
-              for (const j in stageDefData) {
-                stageData.push(stageDefData[j])
-                const stepDefDate = stageDefData[j].map.drmSwitchingStepDtos
-                for (const k in stepDefDate) {
-                  this.stepData.push(stepDefDate[k])
-                }
-              }
-            }
-            this.processOptions = defData
-            this.stageOptions = stageData
-            this.defSearchQuery = {
-              process: this.processOptions[0].id,
-              stage: this.stageOptions[0].id
-            }
+            this.data = response.data
+            this.pageTotal = response.count
+            this.listData()
+            this.listLoading = false
           }
           this.listLoading = false
         })
-      },
-      isShowData(defSearchQuery) {
-        if (defSearchQuery.process && defSearchQuery.stage) {
-          this.data = []
-          for (const j in this.stepData) {
-            if (defSearchQuery.stage === this.stepData[j].stageId) {
-              this.data.push(this.stepData[j])
-            }
-          }
-        } else {
-          this.data = []
-        }
-        this.listData()
-        this.pageTotal = this.data.length
       },
       handleSizeChange(val) {
         this.queryPage.size = val
@@ -234,21 +229,26 @@
             this.recoveryPlanIdOptions = Object.assign([], response.data)
           }
         })
-        superStep().then(response => {
-          if (response) {
-            this.sortIdIntegerOptions = Object.assign([], response.data)
-          }
-        })
         findAllUser().then(response => {
           if (response) {
             this.userIdOptions = Object.assign([], response.userList)
           }
         })
         if (type === 'add') {
+          superStep({ stageid: this.defSearchQuery.stage }).then(response => {
+            if (response) {
+              this.sortIdIntegerOptions = Object.assign([], response.data)
+            }
+          })
           this.operateTitle = '新增切换步骤信息'
           this.form.stageId = this.defSearchQuery.stage
           this.isEdit = false
         } else if (type === 'edit') {
+          showStep({ stageid: this.defSearchQuery.stage }).then(response => {
+            if (response) {
+              this.sortIdIntegerOptions = Object.assign([], response.data)
+            }
+          })
           this.isEdit = true
           if (val) {
             this.form = Object.assign({}, {

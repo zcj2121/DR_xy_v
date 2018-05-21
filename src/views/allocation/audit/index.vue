@@ -180,7 +180,11 @@
         this.auditShow = false
       },
       renderContent(h, data) {
-        return data.name + '\n' + data.typeName + '   ' + data.userName
+        if (data.typeName) {
+          return data.name + '\n' + data.typeName + '   ' + data.userName
+        } else {
+          return data.name + '\n' + data.userName
+        }
       }
     }
   }

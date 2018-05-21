@@ -10,7 +10,7 @@ export function retrieve() { // 角色列表
 
 export function menuAPI() { // 查询 所有菜单数据 树
   return request({
-    url: '/dr/data/menu.do',
+    url: '/rs/dr/system/menu/getMenus',
     method: 'get'
   })
 }

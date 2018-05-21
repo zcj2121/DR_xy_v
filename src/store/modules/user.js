@@ -8,7 +8,8 @@ const user = {
     userId: '',
     rolesValue: '',
     roles: '',
-    editMenu: ''
+    editMenu: '',
+    executionId: ''
   },
 
   mutations: {
@@ -29,6 +30,9 @@ const user = {
     },
     SET_EDITMENU: (state, editMenu) => {
       state.editMenu = editMenu
+    },
+    SET_EXECUTIONID: (state, executionId) => {
+      state.executionId = executionId
     }
   },
 
@@ -53,10 +57,12 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo(state.token).then(response => {
           const data = response.data
+          // const department = response.department
           commit('SET_ROLES', data.roles)
           commit('SET_NAME', data.displayName)
           commit('SET_USER_ID', data.userId)
           commit('SET_AVATAR', data.rolesValue)
+          commit('SET_EXECUTIONID', data.department)
           menuItem().then(res => {
             const datachild = res.list
             commit('SET_EDITMENU', datachild)

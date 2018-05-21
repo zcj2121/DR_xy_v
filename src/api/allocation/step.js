@@ -1,9 +1,25 @@
 import request from '@/utils/request'
 
 // 切换步骤管理 API step
-export function getallStep(params) { // 切换步骤  列表
+export function getAllSteps(params) { // 切换步骤  列表
   return request({
-    url: '/rs/dr/drmSwitchingStep/getallStep',
+    url: '/rs/dr/drmSwitchingStep/getAllSteps',
+    method: 'get',
+    params
+  })
+}
+
+export function getAllProcess(params) { // 切换流程 下拉框 数据
+  return request({
+    url: '/rs/dr/drmSwitchingStage/getAllProcess',
+    method: 'post',
+    params
+  })
+}
+
+export function getStages(params) { // 切换阶段 下拉框 数据
+  return request({
+    url: '/rs/dr/drmSwitchingStep/getStages',
     method: 'get',
     params
   })
@@ -28,6 +44,14 @@ export function findAllUser(data) { // 负责人 下拉框 数据
 export function superStep(params) { // 所有步骤 下拉框 数据
   return request({
     url: '/rs/dr/drmSwitchingStep/superStep',
+    method: 'get',
+    params
+  })
+}
+
+export function showStep(params) { // 修改时  所对应的步骤 下拉框 数据
+  return request({
+    url: '/rs/dr/drmSwitchingStep/showStep',
     method: 'get',
     params
   })

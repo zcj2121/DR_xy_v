@@ -4,6 +4,7 @@ const getters = {
   avatar: state => state.user.avatar,
   name: state => state.user.name,
   roles: state => state.user.roles,
-  editMenu: state => state.user.editMenu
+  editMenu: state => state.user.editMenu,
+  executionId: state => state.user.executionId
 }
 export default getters

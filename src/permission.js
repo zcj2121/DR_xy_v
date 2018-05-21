@@ -24,10 +24,18 @@ router.beforeEach((to, from, next) => {
         })
       } else {
         next()
+        // if (store.getters.executionId) {
+        //   if (to.path === '/confirm') {
+        //     next()
+        //   } else {
+        //     next('/confirm')
+        //   }
+        // }
       }
     }
   } else {
     if (whiteList.indexOf(to.path) !== -1) {
+      console.log(store.getters.executionId)
       next()
     } else {
       next('/login')

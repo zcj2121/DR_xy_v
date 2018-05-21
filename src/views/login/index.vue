@@ -59,8 +59,12 @@ export default {
         password: [{ required: true, trigger: 'blur', validator: validatePass }]
       },
       loading: false,
-      pwdType: 'password'
+      pwdType: 'password',
+      thisId: ''
     }
+  },
+  created() {
+    this.nowUrl()
   },
   methods: {
     showPwd() {
@@ -86,6 +90,11 @@ export default {
           return false
         }
       })
+    },
+    nowUrl() {
+      const url = window.location.href
+      const thisid = url.split('auditId=')[1]
+      this.thisId = thisid
     }
   }
 }

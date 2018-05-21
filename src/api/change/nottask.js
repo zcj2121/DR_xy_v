@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 待办任务 API nottask
 export function getAllTask(params) { // 待办任务 列表
   return request({
-    url: '/rs/dr/drmSwitchingProcess/getAllTask',
+    url: '/dr/switchingProcess/getAllTask.do',
     method: 'get',
     params
   })

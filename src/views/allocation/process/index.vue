@@ -18,7 +18,7 @@
           {{scope.row.process_status | statusFilter}}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="226">
+      <el-table-column label="操作" width="232">
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" v-if="scope.row.process_status!==3" @click="detail(scope.row)">查看
@@ -67,7 +67,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="审批流程：" prop="enabled">
-          <el-select v-model="form.rebutString" placeholder="请选择审批流程" style="width:100%;">
+          <el-select v-model="form.approvalidLong" placeholder="请选择审批流程" style="width:100%;">
             <el-option v-for="item in rebutStringOptions" :key="item.id" :label="item.approveName"
                        :value="item.id"></el-option>
           </el-select>
@@ -158,7 +158,7 @@
           process_name: '',
           process_title: '',
           userid: '',
-          rebutString: ''
+          approvalidLong: ''
         },
         pageTotal: 0,
         pageSizes: [10, 15, 20],
@@ -196,7 +196,8 @@
           1: '待审批',
           2: '通过',
           3: '驳回',
-          4: '待审批'
+          4: '通过',
+          5: '通过'
         }
         return statusMap[status]
       }
@@ -287,7 +288,7 @@
               process_name: val.process_name,
               process_title: val.process_title,
               userid: val.userid,
-              rebutString: parseInt(val.rebutString)
+              approvalidLong: parseInt(val.approvalidLong)
             })
           }
           this.operateTitle = '编辑流程信息'
@@ -299,7 +300,7 @@
           process_name: '',
           process_title: '',
           userid: '',
-          rebutString: ''
+          approvalidLong: ''
         }
       },
       save() {
@@ -346,7 +347,11 @@
         })
       },
       renderContent(h, data) {
-        return data.name + '\n' + data.typeName + '   ' + data.userName
+        if (data.typeName) {
+          return data.name + '\n' + data.typeName + '   ' + data.userName
+        } else {
+          return data.name + '\n' + data.userName
+        }
       }
     }
   }

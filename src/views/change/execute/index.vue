@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.processName" placeholder="请输入切换流程名称">
       </el-input>
-      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="operation({ id: 1}, '确认开始执行吗', '/rs/dr/drmProcessExecution/start')">搜索</el-button>
+      <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
     </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit
               highlight-current-row>
@@ -53,7 +53,7 @@
         <el-table-column label="切换步骤" :show-overflow-tooltip="true" prop="stepName" min-width="100"></el-table-column>
         <el-table-column class-name="status-col" label="分类" width="50" align="center">
           <template slot-scope="scope">
-            {{scope.row.stepType === 0 ? '自动' : '手动'}}
+            {{scope.row.stepType && scope.row.stepType === 0 ? '自动' : '手动'}}
           </template>
         </el-table-column>
         <el-table-column label="负责人" prop="userName" :show-overflow-tooltip="true" width="78"></el-table-column>
@@ -76,13 +76,13 @@
         <el-table-column label="操作" width="104">
           <template slot-scope="scope">
             <el-button-group>
-              <el-button size="mini" type="primary" v-if="scope.row.statu==='暂停'"
+              <el-button size="mini" type="primary" v-if="scope.row.statu===3"
                          @click="operation({ id: scope.row.id }, '确认恢复执行吗', '/rs/dr/drmProcessExecution/startStep', 'detailDefFun')">恢复
               </el-button>
-              <el-button size="mini" type="primary" v-if="scope.row.statu==='异常'"
+              <el-button size="mini" type="primary" v-if="scope.row.taskStatus===1"
                          @click="operation({ id: scope.row.id }, '确认跳过执行吗', '/rs/dr/drmProcessExecution/skipStep', 'detailDefFun')">跳过
               </el-button>
-              <el-button size="mini" type="primary" v-if="scope.row.statu==='异常'||scope.row.statu==='回退'"
+              <el-button size="mini" type="primary" v-if="scope.row.taskStatus===1"
                          @click="operation({ id: scope.row.id }, '确认重试吗', '/rs/dr/drmProcessExecution/retryStep', 'detailDefFun')">重试
               </el-button>
             </el-button-group>
@@ -99,7 +99,7 @@
 <script>
   import { getExecutionProcess, getAll } from '@/api/change/execute'
   import { alertBox } from '@/utils/alert'
-  import { formatTime } from '@/utils/index'
+  import { formatDate } from '@/utils/index'
 
   export default {
     data() {
@@ -130,6 +130,7 @@
           1: '执行中',
           7: '暂停',
           8: '完成',
+          9: '历史',
           10: '终止',
           0: '未执行'
         }
@@ -138,15 +139,31 @@
       stepFilter(states) {
         const statesMap = {
           1: '执行中',
-          7: '暂停',
-          8: '完成',
-          10: '终止',
+          3: '暂停',
+          4: '跳过',
+          2: '完成',
+          5: '终止',
           0: '未执行'
         }
         return statesMap[states]
       },
-      dateFilter(date) {
-        return formatTime(date, 'yyyy-MM-dd HH:mm:ss')
+      dateFilter(time) {
+        if (time) {
+          const date = new Date(time)
+          return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
+        } else {
+          return ''
+        }
+      }
+    },
+    watch: {
+      // 监听 查询条件
+      searchQuery: {
+        handler(searchQuery) {
+          this.search()
+          this.queryPage.index = 1
+        },
+        deep: true
       }
     },
     created() {

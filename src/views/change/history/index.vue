@@ -77,7 +77,7 @@
 
 <script>
 import { getAllImplement, getAll } from '@/api/change/history'
-import { formatTime } from '@/utils/index'
+import { formatDate } from '@/utils/index'
 
 export default {
   data() {
@@ -121,8 +121,13 @@ export default {
       }
       return statesMap[states]
     },
-    dateFilter(date) {
-      return formatTime(date, 'yyyy-MM-dd HH:mm:ss')
+    dateFilter(time) {
+      if (time) {
+        const date = new Date(time)
+        return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
+      } else {
+        return ''
+      }
     }
   },
   created() {

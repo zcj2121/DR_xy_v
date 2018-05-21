@@ -30,7 +30,7 @@
           {{scope.row.preStatus | statusFilter}}
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="266">
+      <el-table-column label="操作" width="272">
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="setshow('detail',scope.row)" v-if="scope.row.preStatus!==4">查看</el-button>
@@ -42,7 +42,7 @@
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 5 }, '确认发布吗')">发布</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 0 }, '确认标记为历史吗')">标记为历史</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operation({ id: scope.row.id }, '确认演练吗', '/rs/dr/preplanManager/startPreplanDrill')">演练</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operationOther({ id: scope.row.id, preStatus: 4 }, '确认撤回吗')">撤回</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operationOther({ id: scope.row.id, preStatus: 3 }, '确认撤回吗')">撤回</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -107,6 +107,7 @@
             <el-button slot="trigger" size="small" type="primary" @click="addfiles">选取文件</el-button>
             <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
           </el-upload>
+          <div style="background: rgb(102, 255, 51)">{{fileNameShow}}</div>
         </el-form-item>
         <el-form-item label="描述：" prop="remark">
           <el-input type="textarea" v-model="form.preDesc" placeholder="请输入描述"></el-input>
@@ -338,7 +339,8 @@
         },
         useridOptions: [],
         PreplanCanUseParentOptions: [],
-        PreplanApproveTemplateOptions: []
+        PreplanApproveTemplateOptions: [],
+        fileNameShow: ''
       }
     },
     filters: {
@@ -453,6 +455,7 @@
                 scene: response.obj.scene
               })
               this.executionList = Object.assign([], response.obj.executionList)
+              this.fileNameShow = response.obj.fileNameList[0]
             }
           })
           this.planTitle = '编辑预案计划'
@@ -504,15 +507,17 @@
           executionName: ''
         }]
         this.fileList = []
+        this.fileNameShow = ''
         this.formShow = false
       },
       beforeUpload(file) {
-        console.log(file)
         const fd = new FormData()
         fd.append('file', file)
-        uploadPreplanFile(fd).then(res => {
-          console.log(res)
-          this.this.fileList.push(res.name)
+        uploadPreplanFile(fd).then(response => {
+          if (response) {
+            this.this.fileList.push(response.data.name)
+            this.fileNameShow = response.data.newName
+          }
         })
         return true
       },
@@ -520,7 +525,7 @@
         this.$refs.upload.submit()
       },
       uploadSuccess(response, file, fileList) {
-        this.this.fileList = fileList
+        // this.this.fileList = fileList
       },
       addfiles() {
         this.fileList = []
@@ -571,7 +576,6 @@
         this.setShow = false
       },
       saveSet() {
-        console.log(this.executionList)
         if (this.isType === 'cfg') {
           savePreplanExecution(this.executionList).then(() => {
             this.fetchData()

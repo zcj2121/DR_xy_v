@@ -75,7 +75,8 @@ export default {
         if (valid) {
           this.loading = true
           this.$router.push({ path: '/confirm' })
-          this.$store.dispatch('Login', this.loginForm).then(() => {
+          this.$store.dispatch('Login', this.loginForm).then((res) => {
+            console.log(res)
             this.loading = false
             this.$router.push({ path: '/confirm' })
           }).catch(() => {

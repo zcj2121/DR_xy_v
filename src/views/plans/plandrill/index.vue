@@ -93,6 +93,7 @@
           size: 10
         },
         detailForm: [],
+        thisId: '',
         thisNoStart: {
           userName: ''
         }
@@ -148,6 +149,7 @@
         this.fetchData()
       },
       detail(val) {
+        this.thisId = val.id
         findAllExecutionByPreplanId({ id: val.id }).then(response => {
           if (response) {
             this.detailForm = Object.assign([], response.list)
@@ -165,7 +167,10 @@
         this.detailShow = false
       },
       goLoginAudit() {
-        this.$router.push({ path: '/loginaudit' })
+        this.$store.dispatch('LogOut').then(() => {
+          this.$router.push({ path: '/login', query: { auditId: this.thisId }})
+        })
+        this.$router.push({ path: '/login', query: { auditId: this.thisId }})
       }
     }
   }

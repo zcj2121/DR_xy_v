@@ -47,15 +47,24 @@
 export default {
   data() {
     return {
+      thisId: ''
     }
   },
   computed: {
+  },
+  created() {
+    this.nowUrl()
   },
   methods: {
     confirmSave() {
       this.$store.dispatch('LogOut').then(() => {
         location.reload() // 为了重新实例化vue-router对象 避免bug
       })
+    },
+    nowUrl() {
+      const url = window.location.href
+      const thisid = url.split('auditId=')[1]
+      this.thisId = thisid
     }
   }
 }

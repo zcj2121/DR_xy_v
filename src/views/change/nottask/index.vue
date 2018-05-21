@@ -22,7 +22,7 @@
       <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="operation(scope.row.id, '确认完成吗', '/rs/dr/drmSwitchingProcess/submitArtificial')">确认
+            <el-button size="mini" type="primary" v-if="scope.row.state !== 8" @click="operation({id: scope.row.id}, '确认完成吗', '/rs/dr/drmSwitchingProcess/submitArtificial')">确认
             </el-button>
           </el-button-group>
         </template>
@@ -43,7 +43,7 @@
 <script>
   import { getAllTask } from '@/api/change/nottask'
   import { alertBox } from '@/utils/alert'
-  import { formatTime } from '@/utils/index'
+  import { formatDate } from '@/utils/index'
   export default {
     data() {
       return {
@@ -73,8 +73,13 @@
         }
         return statusMap[status]
       },
-      dateFilter(date) {
-        return formatTime(date, 'yyyy-MM-dd HH:mm:ss')
+      dateFilter(time) {
+        if (time) {
+          const date = new Date(time)
+          return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
+        } else {
+          return ''
+        }
       }
     },
     created() {
