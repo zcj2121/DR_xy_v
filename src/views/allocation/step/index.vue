@@ -63,7 +63,7 @@
         </el-form-item>
         <el-form-item label="上一步骤：" prop="enabled">
           <el-select v-model="form.sortIdInteger" placeholder="请选择上一步骤" style="width:100%;">
-            <el-option label="无" value=""></el-option>
+            <el-option label="无" value='0'></el-option>
             <el-option v-for="item in sortIdIntegerOptions" :key="item.id" :label="item.stepNameString"
                        :value="item.id"></el-option>
           </el-select>
@@ -118,7 +118,7 @@
           stepNameString: '', // 步骤名
           stepTypeInteger: '1', // 步骤类型
           recoveryPlanId: '', // 灾备恢复id
-          sortIdInteger: '', // 上级步骤id
+          sortIdInteger: '0', // 上级步骤id
           stageId: '', // 阶段id
           userId: '' // 负责人id
         }
@@ -126,7 +126,7 @@
     },
     watch: {
       // 监听 查询条件
-      defSearchQuery: {
+      'defSearchQuery.stage': {
         handler(defSearchQuery) {
           if (this.defSearchQuery.stage) {
             this.fetchData()
@@ -136,15 +136,14 @@
       },
       'defSearchQuery.process': {
         handler(process) {
-          for (const i in this.stageOptions) {
-            if (process === this.stageOptions[i].id) {
-              this.defSearchQuery.stage = this.stageOptions[i].id
-              return
-            } else {
-              this.defSearchQuery.stage = ''
-              console.log(this.defSearchQuery.stage)
-            }
-          }
+          // for (const i in this.stageOptions) {
+          //   if (process === this.stageOptions[i].id) {
+          //     this.defSearchQuery.stage = this.stageOptions[i].id
+          //     return
+          //   } else {
+          //     this.defSearchQuery.stage = ''
+          //   }
+          // }
           if (this.defSearchQuery.process) {
             this.processstageData()
           }
@@ -167,6 +166,7 @@
     },
     methods: {
       processData() {
+        this.processOptions = []
         getAllProcess().then(response => {
           if (response) {
             this.processOptions = response.data
@@ -175,6 +175,7 @@
         })
       },
       processstageData() {
+        this.stageOptions = []
         getStages({ processid: this.defSearchQuery.process }).then(response => {
           if (response) {
             this.stageOptions = response.data
@@ -184,6 +185,7 @@
       },
       fetchData() {
         this.listLoading = true
+        this.data = []
         getAllSteps({
           stageid: this.defSearchQuery.stage,
           stepName: ''
@@ -237,16 +239,29 @@
         if (type === 'add') {
           superStep({ stageid: this.defSearchQuery.stage }).then(response => {
             if (response) {
-              this.sortIdIntegerOptions = Object.assign([], response.data)
+              const defdata = Object.assign([], response.data)
+              for (const i in defdata) {
+                this.sortIdIntegerOptions.push({
+                  id: (defdata[i].id).toString(),
+                  stepNameString: defdata[i].stepNameString
+                })
+              }
             }
           })
           this.operateTitle = '新增切换步骤信息'
           this.form.stageId = this.defSearchQuery.stage
           this.isEdit = false
         } else if (type === 'edit') {
-          showStep({ stageid: this.defSearchQuery.stage }).then(response => {
+          val.sortIdInteger = val.sortIdInteger.toString()
+          showStep({ stageid: this.defSearchQuery.stage, id: val.id }).then(response => {
             if (response) {
-              this.sortIdIntegerOptions = Object.assign([], response.data)
+              const defdata = Object.assign([], response.data)
+              for (const i in defdata) {
+                this.sortIdIntegerOptions.push({
+                  id: (defdata[i].id).toString(),
+                  stepNameString: defdata[i].stepNameString
+                })
+              }
             }
           })
           this.isEdit = true
@@ -256,7 +271,7 @@
               stepNameString: val.stepNameString, // 步骤名
               stepTypeInteger: (val.stepTypeInteger).toString(), // 步骤类型
               recoveryPlanId: val.recoveryPlanId, // 灾备恢复id
-              sortIdInteger: val.sortIdInteger, // 上级步骤id
+              sortIdInteger: (val.sortIdInteger).toString(), // 上级步骤id
               stageId: val.stageId, // 阶段id
               userId: val.userId // 负责人id
             })
@@ -279,6 +294,7 @@
       },
       // 点击保存
       save() {
+        this.form.sortIdInteger = parseInt(this.form.sortIdInteger)
         if (this.isEdit === true) {
           update(this.form).then(() => {
             this.fetchData()

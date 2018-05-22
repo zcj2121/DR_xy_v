@@ -87,28 +87,32 @@
           <el-col :span="12">
             <el-form-item label="预案类型：" prop="enabled">
               <el-select v-model="form.type" placeholder="请选择预案类型" style="width:100%;">
-                <el-option key="0" label="总体预案" value="0"></el-option>
-                <el-option key="1" label="专项预案" value="1"></el-option>
+                <el-option key="0" label="总体预案" value='0'></el-option>
+                <el-option key="1" label="专项预案" value='1'></el-option>
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="预案文件：" prop="enabled">
-          <el-upload
-            class="upload-demo"
-            ref="upload"
-            action=""
-            :before-upload="beforeUpload"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :file-list="fileList"
-            :auto-upload="false"
-            :on-success="uploadSuccess">
-            <el-button slot="trigger" size="small" type="primary" @click="addfiles">选取文件</el-button>
-            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-          </el-upload>
-          <div style="background: rgb(102, 255, 51)">{{fileNameShow}}</div>
-        </el-form-item>
+        <el-row>
+        <el-col :span="12">
+          <el-form-item label="预案文件：" prop="enabled">
+            <el-upload
+              class="upload-demo"
+              ref="upload"
+              action=""
+              :before-upload="beforeUpload"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              :file-list="fileList"
+              :auto-upload="false"
+              :on-success="uploadSuccess">
+              <el-button slot="trigger" size="small" type="primary" @click="addfiles">选取文件</el-button>
+              <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+            </el-upload>
+            <div class="dwon-class" v-if="fileNameShow"><a :href="downUrl + fileNameDown" :download="fileNameShow">{{fileNameShow | fileFilter}}</a></div>
+          </el-form-item>
+        </el-col>
+        </el-row>
         <el-form-item label="描述：" prop="remark">
           <el-input type="textarea" v-model="form.preDesc" placeholder="请输入描述"></el-input>
         </el-form-item>
@@ -180,7 +184,9 @@
           </tr>
           <tr>
             <td class="text-bold">预案文件</td>
-            <td colspan="5">{{detailForm.fileNameList}}</td>
+            <td colspan="5">
+              <a class="dwon-class" :download="detailForm.fileNameList[0]" :href="downUrl+ detailForm.fileNameList[0]" v-if="detailForm.fileNameList && detailForm.fileNameList.length > 0">{{detailForm.fileNameList[0] | fileFilter}}</a>
+            </td>
           </tr>
           <tr>
             <td class="text-bold">描述</td>
@@ -222,7 +228,9 @@
             </tr>
             <tr>
               <td class="text-bold">预案文件</td>
-              <td colspan="5">{{item.fileNameList}}</td>
+              <td colspan="5">
+                <a class="dwon-class" :download="item.fileNameList[0]" :href="downUrl+ item.fileNameList[0]" v-if="item.fileNameList && item.fileNameList.length > 0">{{item.fileNameList[0] | fileFilter}}</a>
+              </td>
             </tr>
             <tr>
               <td class="text-bold">描述</td>
@@ -282,8 +290,8 @@
 </template>
 
 <script>
-  import { findAllUserInRoleEnable, findPreplanApproveTemplate, findPreplanCanUseParent, savePreplan, updatePreplan, findPreplan, findPreplanById, savePreplanExecution, uploadPreplanFile, changePreplanStatus } from '@/api/plans/plan'
-  import { alertBox } from '@/utils/alert'
+  import { findAllUserInRoleEnable, findPreplanApproveTemplate, findPreplanCanUseParent, savePreplan, updatePreplan, findPreplan, findPreplanById, savePreplanExecution, uploadPreplanFile, changePreplanStatus, downPreplanFile } from '@/api/plans/plan'
+  import { alertBox, downURL } from '@/utils/alert'
   export default {
     data() {
       return {
@@ -340,7 +348,9 @@
         useridOptions: [],
         PreplanCanUseParentOptions: [],
         PreplanApproveTemplateOptions: [],
-        fileNameShow: ''
+        fileNameShow: '',
+        fileNameDown: '',
+        downUrl: downURL() + '/dr/downPreplanFile.do?fileName='
       }
     },
     filters: {
@@ -361,6 +371,11 @@
           1: '专项预案'
         }
         return typesMap[status]
+      },
+      fileFilter(file) {
+        const str_before = file.split('[')[0]
+        const str_after = file.split(']')[1]
+        return str_before + str_after
       }
     },
     watch: {
@@ -446,8 +461,8 @@
                 preplanName: response.obj.preplanName,
                 versionNum: response.obj.versionNum,
                 userId: response.obj.userId,
-                type: response.obj.type,
-                fileNameList: response.obj.fileNameList,
+                type: (response.obj.type).toString(),
+                fileNameList: [],
                 preDesc: response.obj.preDesc,
                 preplanPid: response.obj.preplanPid,
                 approveTemplateId: response.obj.approveTemplateId,
@@ -455,7 +470,9 @@
                 scene: response.obj.scene
               })
               this.executionList = Object.assign([], response.obj.executionList)
+              // this.fileList.push({ name: response.obj.fileNameList[0], url: '' })
               this.fileNameShow = response.obj.fileNameList[0]
+              this.fileNameDown = response.obj.fileNameList[0]
             }
           })
           this.planTitle = '编辑预案计划'
@@ -473,11 +490,13 @@
       },
       save(val) {
         if (this.isType === 'add') {
+          this.form.type = parseInt(this.form.type)
           savePreplan(this.form).then(() => {
             this.fetchData()
             this.formShow = false
           })
         } else if (this.isType === 'edit') {
+          this.form.type = parseInt(this.form.type)
           updatePreplan(this.form).then(() => {
             this.fetchData()
             this.formShow = false
@@ -508,6 +527,7 @@
         }]
         this.fileList = []
         this.fileNameShow = ''
+        this.fileNameDown = ''
         this.formShow = false
       },
       beforeUpload(file) {
@@ -515,8 +535,11 @@
         fd.append('file', file)
         uploadPreplanFile(fd).then(response => {
           if (response) {
-            this.this.fileList.push(response.data.name)
-            this.fileNameShow = response.data.newName
+            console.log((response.data[0]).toString())
+            // this.fileList.push({ name: response.data[1], url: '' })
+            this.fileNameShow = response.data[1]
+            this.fileNameDown = response.data[0]
+            this.form.fileNameList.push(response.data[0])
           }
         })
         return true
@@ -535,6 +558,8 @@
       },
       handlePreview(file) {
         console.log(file)
+        downPreplanFile({ fileName: file.name }).then(response => {
+        })
       },
       setshow(type, val) {
         if (type === 'detail') {

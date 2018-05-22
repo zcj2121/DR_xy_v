@@ -35,7 +35,7 @@ export function uploadPreplanFile(data) { // 预案文档上传
 
 export function downPreplanFile(params) { // 预案文档下载
   return request({
-    url: 'downPreplanFile.do？fileName=',
+    url: '/dr/downPreplanFile.do',
     method: 'get',
     params
   })

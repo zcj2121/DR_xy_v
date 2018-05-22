@@ -11,9 +11,9 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/hatech': {
-        // target: 'http://47.98.55.66:8090/archetype-ui-dr',
+        target: 'http://47.98.55.66:8090/archetype-ui-dr',
         // target: 'http://vbs.fhave.com:8088/archetype-ui-dr',
-        target: 'http://192.168.199.212:8088/archetype-ui-dr',
+        // target: 'http://192.168.199.212:8088/archetype-ui-dr',
         changeOrigin: true,
         pathRewrite: {
           '^/hatech': ''

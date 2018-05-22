@@ -24,18 +24,15 @@
                 :modal-append-to-body="false" @close='closeDialogs'>
       <el-table :data="childlist" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
         <el-table-column label="序号" prop="task_order" sortable width="75" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column class-name="status-col" label="步骤类型" width="105">
+        <el-table-column class-name="status-col" label="步骤类型">
           <template slot-scope="scope">
             {{scope.row.action | statusFilter }}
           </template>
         </el-table-column>
-        <el-table-column label="内容" prop="state" sortable min-width="180" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column label="动作" prop="describe" sortable width="75" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column label="描述" prop="describe" min-width="180" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column label="计划时间" prop="time" sortable width="152" :show-overflow-tooltip=true></el-table-column>
-        <el-table-column class-name="status-col" label="状态" width="90">
+        <el-table-column label="动作" prop="action" sortable :show-overflow-tooltip=true></el-table-column>
+        <el-table-column class-name="status-col" label="超时时间" width="100">
           <template slot-scope="scope">
-            {{scope.row.state === 1 ? '运行中' : '未运行'}}
+            {{scope.row | timeoutFilter }}
           </template>
         </el-table-column>
         <!--<el-table-column label="操作" width="204">-->
@@ -89,6 +86,24 @@ export default {
       } else {
         return ''
       }
+    },
+    timeoutFilter(row) {
+      if (row) {
+        var index = null
+        var arrValue = []
+        if (row.param_name) {
+          const names = row.param_name
+          const arr = names.split(',')
+          index = arr.findIndex(child => child === 'TIMEOUT')
+        }
+        if (row.param_value) {
+          const value = row.param_value
+          arrValue = value.split(',')
+        }
+        return arrValue[index]
+      } else {
+        return ''
+      }
     }
   },
   created() {
@@ -129,7 +144,6 @@ export default {
       retrieve({ url: '/vom/api/query/hadr/recoveryplan/' + val.encoded_id + '/task' }).then(response => {
         if (response) {
           this.childlist = Object.assign([], response.result)
-          console.log(this.childlist)
         }
       })
       this.detailShow = true

@@ -14,9 +14,6 @@ const service = axios.create({
 // respone拦截器
 service.interceptors.response.use(
   response => {
-    /**
-     * code为非20000是抛错 可结合自己业务进行修改
-     */
     const res = response.data
     const msg = (msg, type) => {
       Message({
@@ -25,15 +22,20 @@ service.interceptors.response.use(
         duration: 2 * 1000
       })
     }
-    if (res.code && res.code !== 20000 && res.code !== 200 && res.code !== 2000 && res.code !== '2000' && res.code !== '200') {
-      msg(res.msg, 'error')
-      return Promise.reject('error')
-    } else if (res.code === 20000 || res.code === 2000 || res.code === '2000') {
-      return response.data
-    } else {
-      if (res.code === 200 || res.code === '200') {
-        msg('操作成功！', 'success')
+    if (res.code) {
+      if (res.code && res.code !== 20000 && res.code !== 200 && res.code !== 2000 && res.code !== '2000' && res.code !== '200') {
+        msg(res.msg, 'error')
+        return Promise.reject('error')
+      } else if (res.code === 20000 || res.code === 2000 || res.code === '2000') {
+        return response.data
+      } else {
+        if (res.code === 200 || res.code === '200') {
+          msg('操作成功！', 'success')
+          return response.data
+        }
       }
+    } else {
+      return response.data
     }
   },
   error => {

@@ -109,6 +109,7 @@
         })
       },
       fetchData() {
+        this.list = []
         this.listLoading = false
         getAllStage({ id: this.searchQuery.processName }).then(response => {
           if (response) {

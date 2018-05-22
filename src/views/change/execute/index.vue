@@ -21,7 +21,7 @@
             <el-button size="mini" type="primary" v-if="scope.row.state===0"
                        @click="operation({ id: scope.row.id }, '确认开始执行吗', '/rs/dr/drmProcessExecution/start')">开始
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.state!==0"><a href="#/bigscreen" target="_blank">大屏</a>
+            <el-button size="mini" type="primary" v-if="scope.row.state!==0"><a @click="isRest" href="#/bigscreen" target="_blank">大屏</a>
             </el-button>
             <el-button size="mini" type="primary" v-if="scope.row.state===8||scope.row.statu===10"
                        @click="operation({ id: scope.row.id }, '确认完成执行吗', '/rs/dr/drmProcessExecution/completeProcess')">完毕
@@ -53,7 +53,7 @@
         <el-table-column label="切换步骤" :show-overflow-tooltip="true" prop="stepName" min-width="100"></el-table-column>
         <el-table-column class-name="status-col" label="分类" width="50" align="center">
           <template slot-scope="scope">
-            {{scope.row.stepType && scope.row.stepType === 0 ? '自动' : '手动'}}
+            {{scope.row.stepType | stepTypeFilter}}
           </template>
         </el-table-column>
         <el-table-column label="负责人" prop="userName" :show-overflow-tooltip="true" width="78"></el-table-column>
@@ -73,16 +73,16 @@
             {{scope.row.state | stepFilter}}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="104">
+        <el-table-column label="操作" width="170">
           <template slot-scope="scope">
             <el-button-group>
-              <el-button size="mini" type="primary" v-if="scope.row.statu===3"
+              <el-button size="mini" type="primary" v-if="scope.row.state===3"
                          @click="operation({ id: scope.row.id }, '确认恢复执行吗', '/rs/dr/drmProcessExecution/startStep', 'detailDefFun')">恢复
               </el-button>
-              <el-button size="mini" type="primary" v-if="scope.row.taskStatus===1"
+              <el-button size="mini" type="primary" v-if="scope.row.state===13"
                          @click="operation({ id: scope.row.id }, '确认跳过执行吗', '/rs/dr/drmProcessExecution/skipStep', 'detailDefFun')">跳过
               </el-button>
-              <el-button size="mini" type="primary" v-if="scope.row.taskStatus===1"
+              <el-button size="mini" type="primary" v-if="scope.row.state===13"
                          @click="operation({ id: scope.row.id }, '确认重试吗', '/rs/dr/drmProcessExecution/retryStep', 'detailDefFun')">重试
               </el-button>
             </el-button-group>
@@ -143,9 +143,18 @@
           4: '跳过',
           2: '完成',
           5: '终止',
-          0: '未执行'
+          0: '未执行',
+          13: '异常',
+          14: '正常'
         }
         return statesMap[states]
+      },
+      stepTypeFilter(stepType) {
+        const stepTypeMap = {
+          1: '手动',
+          0: '自动'
+        }
+        return stepTypeMap[stepType]
       },
       dateFilter(time) {
         if (time) {
@@ -162,6 +171,14 @@
         handler(searchQuery) {
           this.search()
           this.queryPage.index = 1
+        },
+        deep: true
+      },
+      detailShow: {
+        handler(detailShow) {
+          if (this.detailShow === true) {
+            this.timeInts()
+          }
         },
         deep: true
       }
@@ -203,8 +220,8 @@
       search() {
         this.fetchData()
       },
-      operation(id, msg, url) {
-        alertBox(this, msg, url, id)
+      operation(id, msg, url, deffun) {
+        alertBox(this, msg, url, id, deffun)
       },
       detail(val) {
         this.thisIdbox = val
@@ -212,6 +229,7 @@
         this.detailDefFun()
       },
       closeDialog() {
+        this.fetchData()
         this.detailForm = {
           processName: '',
           id: '',
@@ -239,6 +257,12 @@
             }
           }
         })
+      },
+      isRest() {
+        location.reload()
+      },
+      timeInts() {
+        setInterval(this.detailDefFun, 5000)
       }
     }
   }

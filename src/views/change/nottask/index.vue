@@ -14,7 +14,7 @@
           {{scope.row.startTime | dateFilter}}
         </template>
       </el-table-column>
-      <el-table-column class-name="status-col" label="状态" width="65">
+      <el-table-column class-name="status-col" label="状态" width="100">
         <template slot-scope="scope">
           {{scope.row.state | statusFilter}}
         </template>
@@ -22,7 +22,7 @@
       <el-table-column label="操作" width="62">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" v-if="scope.row.state !== 8" @click="operation({id: scope.row.id}, '确认完成吗', '/rs/dr/drmSwitchingProcess/submitArtificial')">确认
+            <el-button size="mini" type="primary" v-if="scope.row.state !== 2" @click="operation({id: scope.row.id}, '确认完成吗', '/rs/dr/drmSwitchingProcess/submitArtificial')">确认
             </el-button>
           </el-button-group>
         </template>
@@ -66,10 +66,7 @@
       statusFilter(status) {
         const statusMap = {
           1: '执行中',
-          7: '暂停',
-          8: '完成',
-          10: '终止',
-          0: '未执行'
+          2: '执行完毕'
         }
         return statusMap[status]
       },

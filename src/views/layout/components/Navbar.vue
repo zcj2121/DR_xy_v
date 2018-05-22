@@ -55,10 +55,19 @@
       ...mapGetters([
         'sidebar',
         'avatar',
-        'name'
+        'name',
+        'executionId'
       ])
     },
+    created() {
+      this.toCon()
+    },
     methods: {
+      toCon() {
+        if (this.executionId) {
+          this.$router.push({ path: '/confirm' })
+        }
+      },
       screenfullChange() {
         const isPullscreen = fullscreen()
         if (isPullscreen === true) {

@@ -54,7 +54,9 @@
           </tr>
           <tr>
             <td class="text-bold">预案文件</td>
-            <td colspan="5">{{detailForm.fileNameList}}</td>
+            <td colspan="5">
+              <a class="dwon-class" :download="detailForm.fileNameList[0]" :href="downUrl+ detailForm.fileNameList[0]" v-if="detailForm.fileNameList && detailForm.fileNameList.length > 0">{{detailForm.fileNameList[0] | fileFilter}}</a>
+            </td>
           </tr>
           <tr>
             <td class="text-bold">描述</td>
@@ -96,7 +98,9 @@
             </tr>
             <tr>
               <td class="text-bold">预案文件</td>
-              <td colspan="5">{{item.fileNameList}}</td>
+              <td colspan="5">
+                <a class="dwon-class" :download="item.fileNameList[0]" :href="downUrl+ item.fileNameList[0]" v-if="item.fileNameList && item.fileNameList.length > 0">{{item.fileNameList[0] | fileFilter}}</a>
+              </td>
             </tr>
             <tr>
               <td class="text-bold">描述</td>
@@ -132,6 +136,7 @@
 
 <script>
   import { findPreplan, findPreplanById } from '@/api/plans/plandetail'
+  import { downURL } from '@/utils/alert'
   export default {
     data() {
       return {
@@ -159,7 +164,8 @@
           parentPreplanName: '',
           scene: '',
           childList: []
-        }
+        },
+        downUrl: downURL + '/dr/downPreplanFile.do?fileName='
       }
     },
     filters: {
@@ -180,6 +186,11 @@
           1: '专项预案'
         }
         return typesMap[status]
+      },
+      fileFilter(file) {
+        const str_before = file.split('[')[0]
+        const str_after = file.split(']')[1]
+        return str_before + str_after
       }
     },
     watch: {

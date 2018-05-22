@@ -57,12 +57,12 @@ const user = {
       return new Promise((resolve, reject) => {
         getInfo(state.token).then(response => {
           const data = response.data
-          // const department = response.department
+          const executionId = response.executionId
           commit('SET_ROLES', data.roles)
           commit('SET_NAME', data.displayName)
           commit('SET_USER_ID', data.userId)
           commit('SET_AVATAR', data.rolesValue)
-          commit('SET_EXECUTIONID', data.department)
+          commit('SET_EXECUTIONID', executionId)
           menuItem().then(res => {
             const datachild = res.list
             commit('SET_EDITMENU', datachild)

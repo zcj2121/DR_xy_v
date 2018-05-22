@@ -47,7 +47,7 @@
         <el-table-column label="切换步骤" :show-overflow-tooltip="true" prop="stepName" min-width="100"></el-table-column>
         <el-table-column class-name="status-col" label="分类" width="50" align="center">
           <template slot-scope="scope">
-            {{scope.row.stepType === 0 ? '自动' : '手动'}}
+            {{scope.row.stepType | stepTypeFilter}}
           </template>
         </el-table-column>
         <el-table-column label="负责人" prop="userName" :show-overflow-tooltip="true" width="78"></el-table-column>
@@ -103,23 +103,29 @@ export default {
   filters: {
     statusFilter(status) {
       const statusMap = {
-        1: '执行中',
-        7: '暂停',
-        8: '完成',
-        10: '终止',
-        0: '未执行'
+        9: '完成'
       }
       return statusMap[status]
     },
     stepFilter(states) {
       const statesMap = {
         1: '执行中',
-        7: '暂停',
-        8: '完成',
-        10: '终止',
-        0: '未执行'
+        3: '暂停',
+        4: '跳过',
+        2: '完成',
+        5: '终止',
+        0: '未执行',
+        13: '异常',
+        14: '正常'
       }
       return statesMap[states]
+    },
+    stepTypeFilter(stepType) {
+      const stepTypeMap = {
+        1: '手动',
+        0: '自动'
+      }
+      return stepTypeMap[stepType]
     },
     dateFilter(time) {
       if (time) {

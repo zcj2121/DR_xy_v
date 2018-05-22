@@ -45,6 +45,7 @@
         menuList: [],
         menuActive: [],
         defMenuActive: [],
+        defMenuData: [],
         defaultProps: {
           children: 'sumMenuList',
           label: 'menuName'
@@ -83,30 +84,58 @@
         menuAPI().then(response => {
           if (response) {
             this.menuList = Object.assign([], response.list)
+            this.defMenuData = Object.assign([], response.list)
             this.menuDataActive()
             this.listLoading = false
           }
         })
       },
       menuDataActive() {
+        this.$refs.tree.setCheckedKeys([])
         retrieveActive({ tAuthValue: this.roleActive }).then(response => {
           if (response) {
             const defData = response.list
             const arr = []
+            // const childArr = []
+            // for (const i in defData) {
+            //   childArr.push(defData[i].tMenuParent)
+            // }
+            // const aaa = Array.from(new Set(childArr))
             for (const i in defData) {
               if (defData[i].checked === true) {
                 arr.push(defData[i].id)
               }
+              // for (const j in aaa) {
+              //   if (defData[i].tMenuParent === aaa[j]) {
+              //     if (defData[i].checked !== true) {
+              //       arr.splice(arr.findIndex(item => item === aaa[j]), 1)
+              //     }
+              //   }
+              // }
             }
             this.menuActive = Object.assign([], arr)
             this.defMenuActive = Object.assign([], arr)
-            this.$refs.tree.setCheckedKeys(this.defMenuActive)
+            console.log(this.defMenuActive)
+            this.reset()
             this.listLoading = false
           }
         })
       },
       save() {
         const newobj = Object.assign([], this.$refs.tree.getCheckedKeys()) // 获取 树 选中的值
+        // for (const i in this.defMenuData) {
+        //   // const defMenuChild = this.defMenuData[i].sumMenuList
+        //   const defMenuChildId = this.defMenuData[i].id
+        //   newobj.push(defMenuChildId)
+        //   // for (const j in defMenuChild) {
+        //   //   for (const k in newobj) {
+        //   //     if (defMenuChild[j].id === newobj[k]) {
+        //   //       newobj.push(defMenuChildId)
+        //   //     }
+        //   //   }
+        //   // }
+        // }
+        // const bbb = Array.from(new Set(newobj))
         this.saveForm.tAuthMenuIds = newobj.toString()
         this.saveForm.tAuthRoleId = this.roleActive
         this.$confirm('确定保存吗', '提示', {
@@ -114,12 +143,12 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
+          this.menuDataActive()
           update(this.saveForm).then(() => {
             this.$store.dispatch('editMenu').then(() => {
               // location.reload()
             })
             this.menuDataActive()
-            this.listLoading = false
           })
         }).catch(() => {
           // _this.$message({
@@ -129,6 +158,7 @@
         })
       },
       reset() {
+        console.log('123')
         this.$refs.tree.setCheckedKeys(this.defMenuActive) // 设置选中值
       }
     }

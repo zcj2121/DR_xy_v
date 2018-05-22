@@ -1,7 +1,9 @@
 import axios from 'axios'
 
-// axios.baseURL = process.env.BASE_API
-axios.baseURL = 'hatech'
+// const changeUrl = process.env.BASE_API
+const changeUrl = 'hatech'
+
+axios.baseURL = changeUrl
 
 export function alertBox(_this, msg, url, params, otherfun) {
   _this.$confirm(msg, '提示', {
@@ -18,7 +20,7 @@ export function alertBox(_this, msg, url, params, otherfun) {
             message: response.data.msg
           })
           if (otherfun === 'detailDefFun') {
-            this.detailDefFun()
+            _this.detailDefFun()
           } else {
             _this.fetchData()
             if (_this.groupTree) {
@@ -44,4 +46,8 @@ export function alertBox(_this, msg, url, params, otherfun) {
     //   message: '已取消操作'
     // })
   })
+}
+
+export function downURL() {
+  return changeUrl
 }
