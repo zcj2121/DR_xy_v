@@ -78,6 +78,7 @@
       // 列表数据 分页 搜索
       // 请求 原始数据
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         getAllProcess(this.searchQuery).then(response => {
           if (response) {

@@ -63,6 +63,7 @@ export default {
   },
   methods: {
     fetchData() {
+      this.queryPage.index = 1
       this.listLoading = true
       getList(this.listQuery).then(response => {
         this.data = response.data.items

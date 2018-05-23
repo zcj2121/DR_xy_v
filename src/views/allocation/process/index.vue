@@ -217,6 +217,7 @@
     },
     methods: {
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         getAllProcess(this.searchQuery).then(response => {
           if (response) {

@@ -169,7 +169,6 @@
           index: 1,
           size: 10
         },
-        thisPage: null,
         detailShow: false,
         radio3: 4,
         isLoadingTree: false, // 是否加载节点树
@@ -289,13 +288,14 @@
         })
       },
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         this.listQuery.groupId = this.isChecked
         this.data = []
         orgtableList(this.listQuery).then(response => {
           if (response) {
             this.data = response.groupUserDtoList
-            this.pageTotal = response.count
+            this.pageTotal = response.groupUserDtoList.length
             this.listData()
             this.listLoading = false
           }
@@ -306,7 +306,6 @@
         this.listData()
       },
       handleCurrentChange(val) {
-        this.thisPage = val
         this.queryPage.index = val
         this.listData()
       },
@@ -314,6 +313,9 @@
         const size = this.queryPage.size
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
+        // if (this.list.length === 0 && this.queryPage.index > 1) {
+        //   this.list = this.data.slice(size * (index - 2), size * index)
+        // }
       },
       search() {
         this.fetchData()

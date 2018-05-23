@@ -128,9 +128,9 @@
           </table>
         </div>
       </div>
-      <div class="child-title">审批原因：</div>
+      <div class="child-title">审批意见：</div>
       <div>
-        <el-input type="textarea" placeholder="请输入审批原因" v-model="form.rejectAdvice":rows="4"></el-input>
+        <el-input type="textarea" placeholder="请输入审批意见" v-model="form.rejectAdvice":rows="4"></el-input>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialogAudit('allform')">关 闭</el-button>
@@ -222,6 +222,7 @@
       // 列表数据 分页 搜索
       // 请求 原始数据
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         findPreplan(this.searchQuery).then(response => {
           if (response) {
@@ -270,11 +271,28 @@
         this.auditShow = false
       },
       auditSave(preStatus) {
-        this.form.preStatus = preStatus
-        updatePreplanState(this.form).then(() => {
-          this.fetchData()
-          this.auditShow = false
-        })
+        if (preStatus === 4) {
+          if (!this.form.rejectAdvice) {
+            this.$message.error('请输入审批意见')
+          } else {
+            updatePreplanState({
+              id: this.form.id,
+              preStatus: 4,
+              rejectAdvice: this.form.rejectAdvice
+            }).then(() => {
+              this.fetchData()
+              this.auditShow = false
+            })
+          }
+        } else {
+          updatePreplanState({
+            id: this.form.id,
+            preStatus: 3
+          }).then(() => {
+            this.fetchData()
+            this.auditShow = false
+          })
+        }
       }
     }
   }

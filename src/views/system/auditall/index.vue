@@ -121,7 +121,9 @@
             const arr = []
             const defarr = Object.assign([], data)
             for (const i in defarr) {
-              arr.push(defarr[i].displayName)
+              if (defarr[i]) {
+                arr.push(defarr[i].displayName)
+              }
             }
             const processMap = arr.join('→')
             return processMap
@@ -137,8 +139,8 @@
       // 监听 查询条件
       searchQuery: {
         handler(searchQuery) {
-          this.search()
           this.queryPage.index = 1
+          this.search()
         },
         deep: true
       }
@@ -150,6 +152,7 @@
       // 列表数据 分页 搜索
       // 请求 原始数据
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         findApproveTempkate(this.searchQuery).then(response => {
           if (response) {
@@ -175,6 +178,9 @@
         const size = this.queryPage.size
         const index = this.queryPage.index
         this.list = this.data.slice(size * (index - 1), size * index)
+        // if (this.list.length === 0 && this.queryPage.index > 1) {
+        //   this.list = this.data.slice(size * (index - 2), size * index)
+        // }
       },
       // 查询 数据
       search() {

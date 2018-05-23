@@ -22,106 +22,107 @@
           data: [
             {
               id: 1,
-              name: '某某公司',
+              name: '指挥组',
               pid: 0,
+              leader: '张某某',
+              Fleader: '李某某',
+              member: [
+                { name: '刘某某' },
+                { name: '刘某某' },
+                { name: '刘某某' },
+                { name: '刘某某' }
+              ],
+              number: 6,
               children: [
                 {
                   id: 2,
-                  name: '研发中心',
+                  name: '协调组',
                   pid: 1,
-                  children: [
-                    {
-                      id: 5,
-                      name: 'APP开发部',
-                      pid: 2,
-                      children: [
-                        {
-                          id: 10,
-                          name: 'IOS小组',
-                          pid: 5,
-                          children: []
-                        },
-                        {
-                          id: 11,
-                          name: 'Android小组',
-                          pid: 5,
-                          children: []
-                        },
-                        {
-                          id: 12,
-                          name: 'H5小组',
-                          pid: 5,
-                          children: []
-                        }
-                      ]
-                    },
-                    {
-                      id: 6,
-                      name: '管理认证',
-                      pid: 2,
-                      children: [
-                        {
-                          id: 13,
-                          name: '国际性管理认证',
-                          pid: 6,
-                          children: []
-                        }
-                      ]
-                    }
-                  ]
+                  leader: '张某某',
+                  Fleader: '李某某',
+                  member: [
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' }
+                  ],
+                  number: 6,
+                  children: []
                 },
                 {
                   id: 3,
-                  name: '风控部',
+                  name: '通讯网络组',
                   pid: 1,
-                  children: [
-                    {
-                      id: 7,
-                      name: '催收部门',
-                      pid: 3,
-                      children: [
-                        {
-                          id: 14,
-                          name: '呼小组',
-                          pid: 7,
-                          children: []
-                        }
-                      ]
-                    },
-                    {
-                      id: 8,
-                      name: '信用评审部',
-                      pid: 3,
-                      children: [
-                        {
-                          id: 15,
-                          name: '信用卡小组',
-                          pid: 8,
-                          children: []
-                        }
-                      ]
-                    }
-                  ]
+                  leader: '张某某',
+                  Fleader: '李某某',
+                  member: [
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' }
+                  ],
+                  number: 6,
+                  children: []
                 },
                 {
                   id: 4,
-                  name: '运营部',
+                  name: '系统组',
                   pid: 1,
-                  children: [
-                    {
-                      id: 9,
-                      name: '线上运营',
-                      pid: 4,
-                      children: [
-                        {
-                          id: 16,
-                          name: 'BD小组',
-                          pid: 9,
-                          children: []
-                        }
-                      ]
-                    }
-                  ]
+                  leader: '张某某',
+                  Fleader: '李某某',
+                  member: [
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' }
+                  ],
+                  number: 6,
+                  children: []
+                },
+                {
+                  id: 5,
+                  name: '存储组',
+                  pid: 1,
+                  leader: '张某某',
+                  Fleader: '李某某',
+                  member: [
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' }
+                  ],
+                  number: 6,
+                  children: []
+                },
+                {
+                  id: 6,
+                  name: '应用组',
+                  pid: 1,
+                  leader: '张某某',
+                  Fleader: '李某某',
+                  member: [
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' }
+                  ],
+                  number: 6,
+                  children: []
+                },
+                {
+                  id: 7,
+                  name: '后勤组',
+                  pid: 1,
+                  leader: '张某某',
+                  Fleader: '李某某',
+                  member: [
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' },
+                    { name: '刘某某' }
+                  ],
+                  number: 6,
+                  children: []
                 }
               ]
             }

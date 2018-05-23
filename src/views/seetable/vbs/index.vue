@@ -24,7 +24,7 @@
     <el-dialog title="查看服务组列表" width="600px" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogs">
       <el-table :data="childlist" element-loading-text="Loading" border fit highlight-current-row>
         <el-table-column label="服务组名称" prop="name" sortable></el-table-column>
-        <el-table-column label="状态" prop="sgstate" width="110" sortable></el-table-column>
+        <el-table-column label="状态" prop="display_state" width="110" sortable></el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialogs">关 闭</el-button>
@@ -56,14 +56,6 @@ export default {
     }
   },
   filters: {
-    statusFilter(status) {
-      const statusMap = {
-        '在线': 'success',
-        '健康': 'gray',
-        '离线': 'danger'
-      }
-      return statusMap[status]
-    },
     typesFilter(types) {
       const typesMap = {
         1: '在线',
@@ -79,6 +71,7 @@ export default {
     // 列表数据 分页 搜索
     // 请求 原始数据
     fetchData() {
+      this.queryPage.index = 1
       this.listLoading = true
       retrieve(this.listQuery).then(response => {
         if (response) {
@@ -106,7 +99,7 @@ export default {
       this.list = this.data.slice(size * (index - 1), size * index)
     },
     detail(val) {
-      retrieve({ url: '/vom/api/query/hadr/vbs/' + val.encoded_id + '/sg' }).then(response => {
+      retrieve({ url: 'vom/api/query/hadr/vbs/' + val + '/sg' }).then(response => {
         if (response) {
           this.childlist = Object.assign([], response.result)
         }

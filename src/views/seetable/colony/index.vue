@@ -26,7 +26,7 @@
         <el-table-column label="服务组名称" prop="name" sortable></el-table-column>
         <el-table-column class-name="status-col" label="状态" width="110" align="center">
           <template slot-scope="scope">
-            {{scope.row.state === 1 ? '运行中' : '未运行'}}
+            {{scope.row.display_state}}
           </template>
         </el-table-column>
       </el-table>
@@ -61,15 +61,6 @@ export default {
     }
   },
   filters: {
-    statusFilter(status) {
-      const statusMap = {
-        '在线': 'success',
-        '健康': 'gray',
-        '离线': 'danger',
-        'failover': 'warning'
-      }
-      return statusMap[status]
-    },
     typesFilter(types) {
       const typesMap = {
         1: '在线',
@@ -85,6 +76,7 @@ export default {
     // 列表数据 分页 搜索
     // 请求 原始数据
     fetchData() {
+      this.queryPage.index = 1
       this.listLoading = true
       retrieve(this.listQuery).then(response => {
         if (response) {

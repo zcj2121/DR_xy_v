@@ -35,7 +35,6 @@ router.beforeEach((to, from, next) => {
     }
   } else {
     if (whiteList.indexOf(to.path) !== -1) {
-      console.log(store.getters.executionId)
       next()
     } else {
       next('/login')

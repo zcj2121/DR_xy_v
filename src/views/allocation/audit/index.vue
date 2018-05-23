@@ -127,6 +127,7 @@
     },
     methods: {
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         findAllapproved(this.searchQuery).then(response => {
           if (response) {

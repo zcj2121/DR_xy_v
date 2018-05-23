@@ -23,7 +23,7 @@
             </el-button>
             <el-button size="mini" type="primary" v-if="scope.row.state!==0"><a @click="isRest" href="#/bigscreen" target="_blank">大屏</a>
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.state===8||scope.row.statu===10"
+            <el-button size="mini" type="primary" v-if="scope.row.state===8||scope.row.state===10"
                        @click="operation({ id: scope.row.id }, '确认完成执行吗', '/rs/dr/drmProcessExecution/completeProcess')">完毕
             </el-button>
           </el-button-group>
@@ -45,7 +45,7 @@
       <div class="title pull-left">{{detailForm.processName}}</div>
       <span class="pull-right" style="margin-bottom: 5px;">
         <el-button size="mini" type="primary" @click="operation({ id: detailForm.id}, '确认暂停执行吗', '/rs/dr/drmProcessExecution/stopProcess', 'detailDefFun')">暂停</el-button>
-        <el-button size="mini" type="primary" @click="operation({ id: detailForm.id}, '确认停止执行吗', '/rs/dr/drmProcessExecution/stopitProcess', 'detailDefFun')">停止</el-button>
+        <el-button size="mini" type="primary" @click="operation({ id: detailForm.id}, '确认终止执行吗', '/rs/dr/drmProcessExecution/stopitProcess', 'detailDefFun')">终止</el-button>
         <!--<el-button size="mini" type="primary" @click="operation({ id: detailForm.id}, '确认一键回退吗', '123', 'detailDefFun')">一键回退</el-button>-->
       </span>
       <el-table :data="detailForm.list" v-loading.body="listLoading" element-loading-text="Loading" border fit :show-overflow-tooltip="true">
@@ -190,6 +190,7 @@
       // 列表数据 分页 搜索
       // 请求 原始数据
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         getExecutionProcess(this.searchQuery).then(response => {
           if (response) {

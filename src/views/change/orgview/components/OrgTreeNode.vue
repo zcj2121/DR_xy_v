@@ -9,19 +9,15 @@
                 <span>{{model.name}}</span>
                 <i class="fa opened" :class="!isShow&&model.children.length>0?'fa-plus':'fa-minus'"></i>
               </div>
-              <div class="org-item-class"><span>组&nbsp;&nbsp;长：</span>张胜男</div>
-              <div class="org-item-class"><span>副组长：</span>张胜男</div>
+              <div class="org-item-class"><span>组&nbsp;&nbsp;长：</span>{{model.leader}}</div>
+              <div class="org-item-class"><span>副组长：</span>{{model.Fleader}}</div>
               <div class="org-item-class"><span style="display: block;float: left;">成&nbsp;&nbsp;员：</span>
                 <span style="float: left">
-                  <div>张胜男</div>
-                  <div>张胜男</div>
-                  <div>张胜男</div>
-                  <div>张胜男</div>
-                  <div>张胜男</div>
+                  <div v-for="(item, index) in model.member" :key="index">{{item.name}}</div>
                 </span>
               </div>
               <div class="ort-item-footer">
-                总人数：6人
+                总人数：{{model.number}}人
               </div>
             </a>
           </div>

@@ -39,11 +39,11 @@ service.interceptors.response.use(
     }
   },
   error => {
-    Message({
-      message: '服务器响应失败，请重试！',
-      type: 'error',
-      duration: 2 * 1000
-    })
+    // Message({
+    //   message: '服务器响应失败，请重试！',
+    //   type: 'error',
+    //   duration: 2 * 1000
+    // })
     return Promise.reject(error)
   }
 )

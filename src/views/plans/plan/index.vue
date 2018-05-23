@@ -86,7 +86,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="预案类型：" prop="enabled">
-              <el-select v-model="form.type" placeholder="请选择预案类型" style="width:100%;">
+              <el-select v-model="form.type" placeholder="请选择预案类型" style="width:100%;" @change="typeChange">
                 <el-option key="0" label="总体预案" value='0'></el-option>
                 <el-option key="1" label="专项预案" value='1'></el-option>
               </el-select>
@@ -119,7 +119,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="所属预案：" prop="enabled">
-              <el-select v-model="form.preplanPid" placeholder="请选择所属预案" style="width:100%;">
+              <el-select v-model="form.preplanPid" placeholder="请选择所属预案" style="width:100%;" :disabled="form.type === '0'">
                 <el-option v-for="(item,index) in PreplanCanUseParentOptions" :key="index" :value="item.id"
                            :label="item.preplanName"></el-option>
               </el-select>
@@ -373,9 +373,13 @@
         return typesMap[status]
       },
       fileFilter(file) {
-        const str_before = file.split('[')[0]
-        const str_after = file.split(']')[1]
-        return str_before + str_after
+        if (file.indexOf('[') !== -1 && file.indexOf(']') !== -1) {
+          const str_before = file.split('[')[0]
+          const str_after = file.split(']')[1]
+          return str_before + str_after
+        } else {
+          return file
+        }
       }
     },
     watch: {
@@ -395,6 +399,7 @@
       // 列表数据 分页 搜索
       // 请求 原始数据
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         findPreplan(this.searchQuery).then(response => {
           if (response) {
@@ -497,6 +502,9 @@
           })
         } else if (this.isType === 'edit') {
           this.form.type = parseInt(this.form.type)
+          if (this.form.type === 0) {
+            this.form.preplanPid = 0
+          }
           updatePreplan(this.form).then(() => {
             this.fetchData()
             this.formShow = false
@@ -535,7 +543,6 @@
         fd.append('file', file)
         uploadPreplanFile(fd).then(response => {
           if (response) {
-            console.log((response.data[0]).toString())
             // this.fileList.push({ name: response.data[1], url: '' })
             this.fileNameShow = response.data[1]
             this.fileNameDown = response.data[0]
@@ -634,6 +641,11 @@
           //   message: '已取消操作'
           // })
         })
+      },
+      typeChange() {
+        if (this.form.type === '0') {
+          this.form.preplanPid = ''
+        }
       }
     }
   }

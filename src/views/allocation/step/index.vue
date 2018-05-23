@@ -184,6 +184,7 @@
         })
       },
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         this.data = []
         getAllSteps({

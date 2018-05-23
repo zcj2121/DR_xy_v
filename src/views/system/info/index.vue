@@ -90,7 +90,7 @@
 </template>
 
 <script>
-  import { getList } from '@/api/seetable'
+  // import { getList } from '@/api/seetable'
   export default {
     data() {
       return {
@@ -115,8 +115,8 @@
     },
     methods: {
       fetchData() {
-        getList(this.listQuery).then(response => {
-        })
+        // getList(this.listQuery).then(response => {
+        // })
         this.form = {
           emailServer: 'smtp.163.com',
           email: 'abc123@163.com',

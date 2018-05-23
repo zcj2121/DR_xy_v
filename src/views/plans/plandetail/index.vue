@@ -146,7 +146,7 @@
         detailShow: false,
         searchQuery: { // 查询数据
           preplanName: '',
-          preStatus: 5
+          preStatus: 3
         },
         pageTotal: 0,
         pageSizes: [10, 15, 20],
@@ -210,6 +210,7 @@
       // 列表数据 分页 搜索
       // 请求 原始数据
       fetchData() {
+        this.queryPage.index = 1
         this.listLoading = true
         findPreplan(this.searchQuery).then(response => {
           if (response) {
