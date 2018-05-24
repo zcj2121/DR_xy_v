@@ -11,9 +11,9 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/hatech': {
-        target: 'http://47.98.55.66:8090/archetype-ui-dr',
-        // target: 'http://vbs.fhave.com:8088/archetype-ui-dr',
-        // target: 'http://192.168.199.212:8088/archetype-ui-dr',
+        // target: 'http://47.98.55.66:8090/archetype-ui-dr', //阿里云 远程 测试
+        // target: 'http://192.168.1.150:8082/vom',  //公司 本地 测试
+        target: 'http://vbs.fhave.com:8088/vom',
         changeOrigin: true,
         pathRewrite: {
           '^/hatech': ''
