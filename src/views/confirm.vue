@@ -48,7 +48,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { getPreplanExecution, finishPreplanTask } from '@/api/plans/plandrill'
-import { downURL } from '@/utils/alert'
+import { downURL } from '@/utils/request'
 export default {
   data() {
     return {

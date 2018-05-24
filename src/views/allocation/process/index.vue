@@ -29,13 +29,13 @@
                        @click="operate('edit',scope.row)">编辑
             </el-button>
             <el-button size="mini" type="primary" v-if="scope.row.process_status=== 0||scope.row.process_status===3"
-                       @click="operation({ id: scope.row.id }, '确认提交吗', '/rs/dr/drmSwitchingProcess/submission')">提交
+                       @click="operation({ id: scope.row.id }, '确认提交吗', '/dr/switchingProcess/submission.do')">提交
             </el-button>
             <el-button size="mini" type="primary" v-if="scope.row.process_status===2"
                        @click="run(scope.row)">申请执行
             </el-button>
             <el-button size="mini" type="primary" v-if="scope.row.process_status=== 0||scope.row.process_status===3"
-                       @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/drmSwitchingProcess/delete')">删除
+                       @click="operationOther({ id: scope.row.id }, '/rs/dr/drmSwitchingProcess/verifyingdelete' , '/rs/dr/drmSwitchingProcess/delete')">删除
             </el-button>
           </el-button-group>
         </template>
@@ -52,21 +52,27 @@
     </el-pagination>
     <!--新增、编辑 弹出框-->
     <el-dialog :title="operateTitle" width="600px" :visible.sync="formShow" :modal-append-to-body="false"
-               @close="operateClose">
-      <el-form :model="form" label-position="right" label-width="100px">
-        <el-form-item label="流程名称：" prop="name">
+               @close="operateClose('formAll')">
+      <el-form :model="form" ref="formAll" label-position="right" label-width="110px">
+        <el-form-item label="流程名称：" prop="process_name" :rules="[
+                { required: true, message: '请输入流程名称', trigger: 'blur' }
+              ]">
           <el-input v-model="form.process_name" placeholder="请输入流程名称"></el-input>
         </el-form-item>
         <el-form-item label="流程描述：" prop="remark">
           <el-input type="textarea" v-model="form.process_title" placeholder="请输入流程描述"></el-input>
         </el-form-item>
-        <el-form-item label="流程负责人：" prop="enabled">
+        <el-form-item label="流程负责人：" prop="userid" :rules="[
+                { required: true, message: '请选择流程负责人', trigger: 'change' }
+              ]">
           <el-select v-model="form.userid" placeholder="请选择流程负责人" style="width:100%;">
             <el-option v-for="item in useridOptions" :key="item.id" :label="item.displayName"
                        :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="审批流程：" prop="enabled">
+        <el-form-item label="审批流程：" prop="approvalidLong" :rules="[
+                { required: true, message: '请选择审批流程', trigger: 'change' }
+              ]">
           <el-select v-model="form.approvalidLong" placeholder="请选择审批流程" style="width:100%;">
             <el-option v-for="item in rebutStringOptions" :key="item.id" :label="item.approveName"
                        :value="item.id"></el-option>
@@ -74,8 +80,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="operateClose('allform')">取 消</el-button>
-        <el-button type="primary" @click="save('allform')">确 定</el-button>
+        <el-button @click="operateClose('formAll')">取 消</el-button>
+        <el-button type="primary" @click="save('formAll')">确 定</el-button>
       </div>
     </el-dialog>
     <!--查看弹出框-->
@@ -117,9 +123,11 @@
     </el-dialog>
     <!--申请执行 弹出框-->
     <el-dialog title="申请执行" width="400px" :visible.sync="runShow" :modal-append-to-body="false"
-               @close="runClose">
-      <el-form label-position="right" label-width="85px">
-        <el-form-item label="审批流程：">
+               @close="runClose('formRun')">
+      <el-form :model="runForm" label-position="right"ref="formRun" label-width="95px">
+        <el-form-item label="审批流程：" prop="approvalid" :rules="[
+                { required: true, message: '请选择审批流程', trigger: 'change' }
+              ]">
           <el-select placeholder="请选择审批流程" v-model="runForm.approvalid" style="width:100%;">
             <el-option v-for="item in approvalidOptions" :key="item.id" :label="item.approveName"
                        :value="item.id"></el-option>
@@ -127,8 +135,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="runClose('allform')">取 消</el-button>
-        <el-button type="primary" @click="runSave('allform')">确 定</el-button>
+        <el-button @click="runClose('formRun')">取 消</el-button>
+        <el-button type="primary" @click="runSave('formRun')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -136,7 +144,7 @@
 
 <script>
   import { getAllProcess, findApproveTempkate, findAllUser, insert, update, getRebut, enforcement, findAllToExamine } from '@/api/allocation/process'
-  import { alertBox } from '@/utils/alert'
+  import { alertBox, alertOtherBox } from '@/utils/request'
   import OrgTree from '@/components/org-tree'
 
   export default {
@@ -248,8 +256,10 @@
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
       },
+      operationOther(id, url, makeurl) {
+        alertOtherBox(this, url, makeurl, id)
+      },
       detail(val) {
-        console.log(val)
         this.detailFrom = {
           process_name: val.process_name,
           process_title: val.process_title,
@@ -263,6 +273,7 @@
         this.detailShow = true
       },
       closeDialog() {
+        this.treedata = []
         this.detailShow = false
       },
       operate(type, val) {
@@ -296,7 +307,8 @@
         }
         this.formShow = true
       },
-      operateClose() {
+      operateClose(formName) {
+        this.$refs[formName].resetFields()
         this.form = {
           process_name: '',
           process_title: '',
@@ -304,16 +316,28 @@
           approvalidLong: ''
         }
       },
-      save() {
+      save(formName) {
         if (this.isEdit === true) {
-          update(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              update(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         } else {
-          insert(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              insert(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         }
       },
@@ -337,14 +361,21 @@
         })
         this.runShow = true
       },
-      runClose() {
+      runClose(formName) {
+        this.$refs[formName].resetFields()
         this.runForm.approvalid = ''
         this.runShow = false
       },
-      runSave() {
-        enforcement(this.runForm).then(response => {
-          this.fetchData()
-          this.runShow = false
+      runSave(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            enforcement(this.runForm).then(response => {
+              this.fetchData()
+              this.runShow = false
+            })
+          } else {
+            return false
+          }
         })
       },
       renderContent(h, data) {

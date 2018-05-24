@@ -43,20 +43,26 @@
                    :total="pageTotal">
     </el-pagination>
     <!--新增、编辑 弹出框-->
-    <el-dialog :title="operateTitle" width="600px" :visible.sync="formShow" :modal-append-to-body="false"
-               @close="operateClose">
-      <el-form :model="form" label-position="right" label-width="85px">
-        <el-form-item label="名称：" prop="name">
+    <el-dialog :title="operateTitle" width="610px" :visible.sync="formShow" :modal-append-to-body="false"
+               @close="operateClose('formAll')">
+      <el-form :model="form" ref="formAll" label-position="right" label-width="95px">
+        <el-form-item label="名称：" prop="approveName" :rules="[
+                { required: true, message: '请输入名称', trigger: 'blur' }
+              ]">
           <el-input v-model="form.approveName" placeholder="请输入名称"></el-input>
         </el-form-item>
-        <el-form-item label="审批类型：" prop="enabled">
+        <el-form-item label="审批类型：" prop="approveType" :rules="[
+                { required: true, message: '请选择审批类型', trigger: 'change' }
+              ]">
           <el-select v-model="form.approveType" placeholder="请选择审批类型" style="width:100%;">
             <el-option key="1" label="预案审批" value="1"></el-option>
             <el-option key="2" label="切换流程" value="2"></el-option>
             <el-option key="3" label="切换执行" value="3"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item :label="index === 0?'审批人：':''" prop="enabled" v-for="(item, index) in form.userList" :key="index">
+        <el-form-item :label="index === 0?'审批人：':''" :prop="'userList.' + index + '.value'" v-for="(item, index) in form.userList" :key="index" :rules="[
+                { required: true, message: '请选择审批人', trigger: 'change' }
+              ]">
           <el-select v-model="item.value" placeholder="请选择审批人" style="width:86.3%;">
             <el-option v-for="userOption in userOptions" :key="userOption.id+'-'+index" :label="userOption.displayName"
                        :value="userOption.id"></el-option>
@@ -66,8 +72,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="operateClose('allform')">取 消</el-button>
-        <el-button type="primary" @click="save('allform')">确 定</el-button>
+        <el-button @click="operateClose('formAll')">取 消</el-button>
+        <el-button type="primary" @click="save('formAll')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -75,7 +81,7 @@
 
 <script>
   import { findAllUserInRoleEnable, saveApproveTemplate, updateApproveTemplate, findApproveTempkate } from '@/api/system/auditall'
-  import { alertBox } from '@/utils/alert'
+  import { alertBox } from '@/utils/request'
   export default {
     data() {
       return {
@@ -207,7 +213,7 @@
           this.thisId = val.id
           if (val) {
             this.form.approveName = val.approveName
-            this.form.approveType = val.approveType
+            this.form.approveType = (val.approveType).toString()
             if (val.userList) {
               const arr = []
               for (const i in val.userList) {
@@ -223,7 +229,8 @@
         this.formShow = true
       },
       // 弹出框 关闭
-      operateClose() {
+      operateClose(formName) {
+        this.$refs[formName].resetFields()
         this.formShow = false
         this.form = {
           approveName: '',
@@ -243,32 +250,44 @@
         this.form.userList.splice(index, 1)
       },
       // 点击保存
-      save() {
+      save(formName) {
         const arr = []
         const defArr = Object.assign([], this.form.userList)
         for (const i in defArr) {
           arr.push(defArr[i].value)
         }
         if (this.isEdit === false) {
-          saveApproveTemplate({
-            approveName: this.form.approveName,
-            approveType: this.form.approveType,
-            userList: arr
-          }).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              saveApproveTemplate({
+                approveName: this.form.approveName,
+                approveType: this.form.approveType,
+                userList: arr
+              }).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         } else {
-          updateApproveTemplate(
-            {
-              id: this.thisId,
-              approveName: this.form.approveName,
-              approveType: this.form.approveType,
-              userList: arr
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              updateApproveTemplate(
+                {
+                  id: this.thisId,
+                  approveName: this.form.approveName,
+                  approveType: this.form.approveType,
+                  userList: arr
+                }
+              ).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
             }
-          ).then(() => {
-            this.fetchData()
-            this.formShow = false
           })
         }
       }

@@ -136,7 +136,7 @@
 
 <script>
   import { findPreplan, findPreplanById } from '@/api/plans/plandetail'
-  import { downURL } from '@/utils/alert'
+  import { downURL } from '@/utils/request'
   export default {
     data() {
       return {

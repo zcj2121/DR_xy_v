@@ -3,7 +3,7 @@
     <el-row>
       <el-col :span="6">
         <span class="tabel-title">组织列表</span>
-        <span class="pull-right" style="margin-right: 20px;"><el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" @click="handleAddTop">添加顶级组织</el-button></span>
+        <span class="pull-right" style="margin-right: 20px;"><el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" @click="handleAddTop">新增顶级组织</el-button></span>
         <div class="menu-left">
           <div class="expand">
               <el-tree ref="expandMenuList" class="expand-tree"
@@ -57,65 +57,66 @@
     </el-row>
 
     <!--弹出框-->
-    <el-dialog title="新增组织" width="500px" :visible.sync="orgShow"
-               :modal-append-to-body="false" @close='closeOrg("orgform")'>
-      <el-form :model="orgForm" ref="orgform" label-position="right" label-width="95px">
-        <el-form-item label="组织名称：" prop="facilityType">
+    <el-dialog :title="orgTitle" width="500px" :visible.sync="orgShow"
+               :modal-append-to-body="false" @close='closeOrg("formAll")'>
+      <el-form :model="orgForm" ref="formAll" label-position="right" label-width="95px">
+        <el-form-item label="组织名称：" prop="groupName" :rules="[
+                { required: true, message: '请输入组织名称', trigger: 'blur' }
+              ]">
           <el-input v-model="orgForm.groupName" placeholder="请输入组织名称"></el-input>
         </el-form-item>
-        <el-form-item label="组织描述：" prop="oid">
+        <el-form-item label="组织描述：" prop="groupDesc" :rules="[
+                { required: true, message: '请输入组织描述', trigger: 'blur' }
+              ]">
           <el-input v-model="orgForm.groupDesc" placeholder="请输入组织描述"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="closeOrg('orgform')">取 消</el-button>
-        <el-button type="primary" @click="saveOrg('orgform')">确 定</el-button>
+        <el-button @click="closeOrg('formAll')">取 消</el-button>
+        <el-button type="primary" @click="saveOrg('formAll')">确 定</el-button>
 
       </div>
     </el-dialog>
     <!--弹出框-->
     <el-dialog :title="operateTitle" width="500px" :visible.sync="operateShow"
-               :modal-append-to-body="false" @close='closeOperate("form")'>
-      <el-form :model="form" ref="form" label-position="right" label-width="95px">
-        <el-form-item label="组织名称：" prop="facilityType">
+               :modal-append-to-body="false" @close='closeOperate("otherForm")'>
+      <el-form :model="form" ref="otherForm" label-position="right" label-width="95px">
+        <el-form-item label="组织名称：" prop="groupId" :rules="[
+                { required: true, message: '请选择组织名称', trigger: 'change' }
+              ]">
           <el-select v-model="form.groupId" placeholder="请选择组织名称" style="width:100%;">
             <el-option v-for="(item, index) in groupIdOptions" :value="item.id" :label="item.groupName" :key="index"></el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="成员姓名：" prop="facilityType">
+        <el-form-item label="成员姓名：" prop="displayName" :rules="[
+                { required: true, message: '请输入搜索内容', trigger: 'blur' }
+              ]">
           <el-autocomplete
-            v-model="autocomplete"
+            v-model="form.displayName"
             :fetch-suggestions="querySearchAsync"
-            placeholder="请输入内容"
+            placeholder="请输入搜索内容"
             @select="handleSelect" style="width: 100%" :disabled="isFormEdit"
           ></el-autocomplete>
         </el-form-item>
-        <el-form-item label="职务：" prop="facilityType">
+        <el-form-item label="职务：" prop="personPost" :rules="[
+                { required: true, message: '请选择职务', trigger: 'change' }
+              ]">
           <el-select v-model="form.personPost" placeholder="请选择职务" style="width:100%;">
             <el-option value="组长" label="组长"></el-option>
             <el-option value="副组长" label="副组长"></el-option>
             <el-option value="成员" label="成员"></el-option>
           </el-select>
         </el-form-item>
-        <div v-if="isFormEdit">
-          <el-form-item label="手机号码：" prop="oid">
-            <el-input v-model="form.telphone" placeholder="请输入手机号码"></el-input>
-          </el-form-item>
-          <el-form-item label="邮箱：" prop="oid">
-            <el-input v-model="form.email" placeholder="请输入邮箱"></el-input>
-          </el-form-item>
-          <el-form-item label="部门：" prop="oid">
-            <el-input v-model="form.department" placeholder="请输入部门"></el-input>
-          </el-form-item>
-        </div>
-        <el-form-item label="职责：" prop="oid">
+        <el-form-item label="职责：" prop="personDuty" :rules="[
+                { required: true, message: '请输入职责', trigger: 'blur' }
+              ]">
           <el-input type="textarea" :rows="2" v-model="form.personDuty" placeholder="请输入职责"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="closeOperate('form')">取 消</el-button>
-        <el-button type="primary" @click="saveOperate('form')">确 定</el-button>
+        <el-button @click="closeOperate('otherForm')">取 消</el-button>
+        <el-button type="primary" @click="saveOperate('otherForm')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -123,7 +124,7 @@
 
 <script>
   import { orgtableList, findAllGroupToTree, saveOrUpdateGroup, deleteGroupById, findAllUserInRoleEnable, findAllGroup, saveOrUpdatePerson } from '@/api/system/orgtable'
-  import { alertBox } from '@/utils/alert'
+  import { alertBox } from '@/utils/request'
   import TreeRender from './tree_render'
 
   export default {
@@ -146,13 +147,13 @@
           groupName: ''
         },
         modelTitle: '',
+        orgTitle: '',
         orgShow: false,
         isAdd: '',
         isFormEdit: false,
         isChecked: '',
         groupIdOptions: [],
         userIdOptions: [],
-        autocomplete: '',
         timeout: null,
         operateTitle: '',
         operateShow: false,
@@ -239,9 +240,11 @@
         })
       },
       handleAddTop() { // 增加顶级节点
+        this.orgTitle = '新增顶级组织'
         this.orgShow = true
       },
-      closeOrg() { // 关闭
+      closeOrg(formName) { // 关闭
+        this.$refs[formName].resetFields()
         this.orgShow = false
         this.orgForm = {
           groupParent: '0',
@@ -253,7 +256,7 @@
       handleAdd(s, d, n) { // 增加节点
         this.orgShow = true
         this.orgForm.groupParent = d.id
-        this.modelTitle = '新增组织'
+        this.orgTitle = '新增组织'
         this.isAdd = 'add'
         // 展开节点
         if (!n.expanded) {
@@ -262,7 +265,7 @@
       },
       handleEdit(s, d, n) { // 编辑节点
         this.orgShow = true
-        this.modelTitle = '编辑组织'
+        this.orgTitle = '编辑组织'
         this.isAdd = 'eidt'
         this.orgForm = Object.assign({}, { id: d.id, groupParent: d.groupParent, groupDesc: d.groupDesc, groupName: d.groupName })
       },
@@ -280,11 +283,17 @@
           return false
         })
       },
-      saveOrg() { // 保存
-        saveOrUpdateGroup(this.orgForm).then(response => {
-          this.groupTree()
-          this.orgShow = false
-        }).catch(() => {
+      saveOrg(formName) { // 保存
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            saveOrUpdateGroup(this.orgForm).then(response => {
+              this.groupTree()
+              this.orgShow = false
+            }).catch(() => {
+            })
+          } else {
+            return false
+          }
         })
       },
       fetchData() {
@@ -347,17 +356,18 @@
         })
         if (type === 'add') {
           this.isFormEdit = false
-          this.autocomplete = ''
+          this.form.displayName = ''
           this.operateTitle = '新增成员信息'
         } else if (type === 'edit') {
           this.isFormEdit = true
           this.form = Object.assign({}, row)
-          this.autocomplete = row.displayName
+          this.form.displayName = row.displayName
           this.operateTitle = '编辑成员信息'
         }
         this.operateShow = true
       },
-      closeOperate() {
+      closeOperate(formName) {
+        this.$refs[formName].resetFields()
         this.operateShow = false
         this.form = {
           groupId: '',
@@ -368,12 +378,18 @@
           displayName: ''
         }
       },
-      saveOperate() {
-        saveOrUpdatePerson(this.form).then(response => {
-          this.groupTree()
-          this.fetchData()
-          this.operateShow = false
-        }).catch(() => {
+      saveOperate(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            saveOrUpdatePerson(this.form).then(response => {
+              this.groupTree()
+              this.fetchData()
+              this.operateShow = false
+            }).catch(() => {
+            })
+          } else {
+            return false
+          }
         })
       },
       querySearchAsync(queryString, cb) {

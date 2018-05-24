@@ -27,3 +27,14 @@ export function validatAlphabets(str) {
   return reg.test(str)
 }
 
+/* 手机号码*/
+export function validatePhone(str) {
+  const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
+  return reg.test(str)
+}
+
+/* 手机号码*/
+export function userNamePhone(str) {
+  const reg = /^(?!_)(?!.*?_$)[a-zA-Z0-9_]+$/
+  return reg.test(str)
+}

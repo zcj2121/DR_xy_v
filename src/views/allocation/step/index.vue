@@ -28,7 +28,7 @@
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/drmSwitchingStep/delete')">删除</el-button>
+            <el-button size="mini" type="primary" @click="operationOther({ id: scope.row.id }, '/rs/dr/drmSwitchingStep/verifyingdelete', '/rs/dr/drmSwitchingStep/delete')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -44,18 +44,24 @@
     </el-pagination>
     <!--新增、编辑 弹出框-->
     <el-dialog :title="operateTitle" width="600px" :visible.sync="formShow" :modal-append-to-body="false"
-               @close="operateClose">
-      <el-form :model="form" label-position="right" label-width="110px">
-        <el-form-item label="切换步骤内容：" prop="name">
-          <el-input v-model="form.stepNameString" placeholder="请输入切换步骤内容"></el-input>
+               @close="operateClose('formAll')">
+      <el-form :model="form" ref="formAll" label-position="right" label-width="120px">
+        <el-form-item label="切换步骤名称：" prop="stepNameString" :rules="[
+                { required: true, message: '请输入切换步骤名称', trigger: 'blur' }
+              ]">
+          <el-input v-model="form.stepNameString" placeholder="请输入切换步骤名称"></el-input>
         </el-form-item>
-        <el-form-item label="切换步骤分类：" prop="enabled">
+        <el-form-item label="切换步骤分类：" prop="stepTypeInteger" :rules="[
+                { required: true, message: '请选择切换步骤分类', trigger: 'change' }
+              ]">
           <el-select v-model="form.stepTypeInteger" placeholder="请选择切换步骤分类" style="width:100%;">
             <el-option value="1" label="手动"></el-option>
             <el-option value="0" label="自动"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="灾难恢复计划：" prop="enabled" v-if="form.stepTypeInteger === '0'">
+        <el-form-item label="灾难恢复计划：" prop="recoveryPlanId" v-if="form.stepTypeInteger === '0'" :rules="[
+                { required: true, message: '请选择灾难恢复计划', trigger: 'change' }
+              ]">
           <el-select v-model="form.recoveryPlanId" placeholder="请选择灾难恢复计划" style="width:100%;">
             <el-option v-for="item in recoveryPlanIdOptions" :key="item.id" :label="item.name"
                        :value="item.id"></el-option>
@@ -68,7 +74,9 @@
                        :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="负责人：" prop="enabled">
+        <el-form-item label="负责人：" prop="userId" :rules="[
+                { required: true, message: '请选择负责人', trigger: 'change' }
+              ]">
           <el-select v-model="form.userId" placeholder="请选择负责人" style="width:100%;">
             <el-option v-for="item in userIdOptions" :key="item.id" :label="item.displayName"
                        :value="item.id"></el-option>
@@ -76,8 +84,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="operateClose('allform')">取 消</el-button>
-        <el-button type="primary" @click="save('allform')">确 定</el-button>
+        <el-button @click="operateClose('formAll')">取 消</el-button>
+        <el-button type="primary" @click="save('formAll')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -85,7 +93,7 @@
 
 <script>
   import { getAllSteps, getAllProcess, getStages, disaster, findAllUser, superStep, showStep, insert, update } from '@/api/allocation/step'
-  import { alertBox } from '@/utils/alert'
+  import { alertBox, alertOtherBox } from '@/utils/request'
 
   export default {
     data() {
@@ -178,8 +186,10 @@
         this.stageOptions = []
         getStages({ processid: this.defSearchQuery.process }).then(response => {
           if (response) {
-            this.stageOptions = response.data
-            this.defSearchQuery.stage = response.data[0].id
+            if (response.data.length > 0) {
+              this.stageOptions = response.data
+              this.defSearchQuery.stage = response.data[0].id
+            }
           }
         })
       },
@@ -219,6 +229,9 @@
       // 删除、启用等 公共弹框
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
+      },
+      operationOther(id, url, makeurl) {
+        alertOtherBox(this, url, makeurl, id)
       },
       // 删除、启用等 公共弹框
       // 新增、修改 操作
@@ -282,29 +295,43 @@
         this.formShow = true
       },
       // 弹出框 关闭
-      operateClose() {
+      operateClose(formName) {
+        this.$refs[formName].resetFields()
         this.formShow = false
         this.form = {
           stepNameString: '', // 步骤名
           stepTypeInteger: '1', // 步骤类型
           recoveryPlanId: '', // 灾备恢复id
-          sortIdInteger: '', // 上级步骤id
+          sortIdInteger: '0', // 上级步骤id
           stageId: this.defSearchQuery.stage, // 阶段id
           userId: '' // 负责人id
         }
       },
       // 点击保存
-      save() {
-        this.form.sortIdInteger = parseInt(this.form.sortIdInteger)
+      save(formName) {
         if (this.isEdit === true) {
-          update(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              this.form.sortIdInteger = parseInt(this.form.sortIdInteger)
+              update(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         } else {
-          insert(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              this.form.sortIdInteger = parseInt(this.form.sortIdInteger)
+              insert(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         }
       }

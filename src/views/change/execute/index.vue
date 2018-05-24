@@ -98,7 +98,7 @@
 
 <script>
   import { getExecutionProcess, getAll } from '@/api/change/execute'
-  import { alertBox } from '@/utils/alert'
+  import { alertBox } from '@/utils/request'
   import { formatDate } from '@/utils/index'
 
   export default {
@@ -121,7 +121,8 @@
         detailForm: {
           processName: '',
           list: []
-        }
+        },
+        intervalid: null
       }
     },
     filters: {
@@ -177,7 +178,7 @@
       detailShow: {
         handler(detailShow) {
           if (this.detailShow === true) {
-            this.timeInts()
+            this.intervalid = setInterval(this.detailDefFun, 5000)
           }
         },
         deep: true
@@ -236,6 +237,7 @@
           id: '',
           list: []
         }
+        clearInterval(this.intervalid)
         this.detailShow = false
       },
       detailDefFun() {
@@ -261,9 +263,6 @@
       },
       isRest() {
         location.reload()
-      },
-      timeInts() {
-        setInterval(this.detailDefFun, 5000)
       }
     }
   }

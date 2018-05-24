@@ -42,7 +42,7 @@
 
 <script>
   import { getAllTask } from '@/api/change/nottask'
-  import { alertBox } from '@/utils/alert'
+  import { alertBox } from '@/utils/request'
   import { formatDate } from '@/utils/index'
   export default {
     data() {

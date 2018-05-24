@@ -128,9 +128,9 @@
           </table>
         </div>
       </div>
-      <div class="child-title">审批意见：</div>
+      <div class="child-title">驳回意见：</div>
       <div>
-        <el-input type="textarea" placeholder="请输入审批意见" v-model="form.rejectAdvice":rows="4"></el-input>
+        <el-input type="textarea" placeholder="请输入驳回意见" v-model="form.rejectAdvice":rows="4"></el-input>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialogAudit('allform')">关 闭</el-button>
@@ -143,7 +143,7 @@
 
 <script>
   import { findPreplan, findPreplanById, updatePreplanState } from '@/api/plans/planaudit'
-  import { downURL } from '@/utils/alert'
+  import { downURL } from '@/utils/request'
   export default {
     data() {
       return {
@@ -273,7 +273,7 @@
       auditSave(preStatus) {
         if (preStatus === 4) {
           if (!this.form.rejectAdvice) {
-            this.$message.error('请输入审批意见')
+            this.$message.error('请输入驳回意见')
           } else {
             updatePreplanState({
               id: this.form.id,

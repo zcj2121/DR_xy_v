@@ -31,18 +31,22 @@
     </el-pagination>
     <!--新增、编辑 弹出框-->
     <el-dialog :title="operateTitle" width="500px" :visible.sync="formShow" :modal-append-to-body="false"
-               @close="operateClose">
-      <el-form :model="form" label-position="right" label-width="85px">
-        <el-form-item label="角色名称：" prop="name">
+               @close="operateClose('formAll')">
+      <el-form :model="form" ref="formAll" label-position="right" label-width="95px">
+        <el-form-item label="角色名称：" prop="tRoleName" :rules="[
+                { required: true, message: '请输入角色名称', trigger: 'blur' }
+              ]">
           <el-input v-model="form.tRoleName" placeholder="请输入角色名称"></el-input>
         </el-form-item>
-        <el-form-item label="角色键值：" prop="enabled">
+        <el-form-item label="角色键值：" prop="tRoleValue" :rules="[
+                { required: true, message: '请输入角色键值', trigger: 'blur' }
+              ]">
           <el-input v-model="form.tRoleValue" placeholder="请输入角色键值"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="operateClose('allform')">取 消</el-button>
-        <el-button type="primary" @click="save('allform')">确 定</el-button>
+        <el-button @click="operateClose('formAll')">取 消</el-button>
+        <el-button type="primary" @click="save('formAll')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -50,7 +54,7 @@
 
 <script>
   import { retrieve, creat, update } from '@/api/system/role'
-  import { alertBox } from '@/utils/alert'
+  import { alertBox } from '@/utils/request'
   export default {
     data() {
       return {
@@ -146,7 +150,8 @@
         this.formShow = true
       },
       // 弹出框 关闭
-      operateClose() {
+      operateClose(formName) {
+        this.$refs[formName].resetFields()
         this.formShow = false
         this.form = {
           tRoleName: '',
@@ -154,16 +159,28 @@
         }
       },
       // 点击保存
-      save() {
+      save(formName) {
         if (this.isEdit === true) {
-          update(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              update(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         } else {
-          creat(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              creat(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         }
       }

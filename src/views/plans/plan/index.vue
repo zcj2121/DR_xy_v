@@ -57,27 +57,33 @@
                    :total="pageTotal">
     </el-pagination>
     <!--新增、编辑、驳回编辑 弹出框-->
-    <el-dialog :title="planTitle" width="800px" :visible.sync="formShow" :modal-append-to-body="false" @close="closeDialog">
-      <el-form :model="form" ref="systemBusinessForm" label-position="right" label-width="100px">
+    <el-dialog :title="planTitle" width="800px" :visible.sync="formShow" :modal-append-to-body="false" @close="closeDialog('formAll')">
+      <el-form :model="form" ref="formAll" label-position="right" label-width="100px">
         <div class="error-box" v-if="isType === 'back'">
           <div class="pull-left error-box-title">驳回原因：</div>
           <div class="pull-left">{{form.rejectAdvice}}</div>
         </div>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="预案名称：" prop="name">
+            <el-form-item label="预案名称：" prop="preplanName" :rules="[
+                { required: true, message: '请输入预案名称', trigger: 'blur' }
+              ]">
               <el-input v-model="form.preplanName" placeholder="请输入预案名称"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="版本号：" prop="remark">
+            <el-form-item label="版本号：" prop="versionNum" :rules="[
+                { required: true, message: '请输入版本号', trigger: 'blur' }
+              ]">
               <el-input v-model="form.versionNum" placeholder="请输入版本号"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="负责人：" prop="enabled">
+            <el-form-item label="负责人：" prop="userId" :rules="[
+                { required: true, message: '请选择负责人', trigger: 'change' }
+              ]">
               <el-select v-model="form.userId" placeholder="请选择负责人" style="width:100%;">
                 <el-option v-for="(item,index) in useridOptions" :key="index+'*'" :value="item.id"
                            :label="item.displayName"></el-option>
@@ -85,7 +91,9 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="预案类型：" prop="enabled">
+            <el-form-item label="预案类型：" prop="type" :rules="[
+                { required: true, message: '请选择预案类型', trigger: 'change' }
+              ]">
               <el-select v-model="form.type" placeholder="请选择预案类型" style="width:100%;" @change="typeChange">
                 <el-option key="0" label="总体预案" value='0'></el-option>
                 <el-option key="1" label="专项预案" value='1'></el-option>
@@ -126,7 +134,9 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="审批流程：" prop="enabled">
+            <el-form-item label="审批流程：" prop="approveTemplateId" :rules="[
+                { required: true, message: '请选择审批流程', trigger: 'change' }
+              ]">
               <el-select v-model="form.approveTemplateId" placeholder="请选择审批流程" style="width:100%;">
                 <el-option v-for="(item,index) in PreplanApproveTemplateOptions" :key="index" :value="item.id"
                            :label="item.approveName"></el-option>
@@ -148,7 +158,7 @@
             <td class="text-bold" style="width:65px;">操作</td>
           </tr>
           <tr v-for="(item, index) in executionList" :key="index">
-            <td>{{index}}</td>
+            <td>{{index+1}}</td>
             <td>
               <el-input v-model="item.executionName" placeholder="请输入预案操作内容"></el-input>
             </td>
@@ -163,8 +173,8 @@
         </table>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="closeDialog('allform')">取 消</el-button>
-        <el-button type="primary" @click="save('allform')">确 定</el-button>
+        <el-button @click="closeDialog('formAll')">取 消</el-button>
+        <el-button type="primary" @click="save('formAll')">确 定</el-button>
       </div>
     </el-dialog>
     <!--查看、配置预案流程 弹出框-->
@@ -291,7 +301,7 @@
 
 <script>
   import { findAllUserInRoleEnable, findPreplanApproveTemplate, findPreplanCanUseParent, savePreplan, updatePreplan, findPreplan, findPreplanById, savePreplanExecution, uploadPreplanFile, changePreplanStatus, downPreplanFile } from '@/api/plans/plan'
-  import { alertBox, downURL } from '@/utils/alert'
+  import { alertBox, downURL } from '@/utils/request'
   export default {
     data() {
       return {
@@ -474,7 +484,15 @@
                 rejectAdvice: response.obj.rejectAdvice,
                 scene: response.obj.scene
               })
-              this.executionList = Object.assign([], response.obj.executionList)
+              if (response.obj.executionList === null || response.obj.executionList === [] || response.obj.executionList.length === 0) {
+                this.executionList = [{
+                  preplanId: this.thispreplanId,
+                  userId: '',
+                  executionName: ''
+                }]
+              } else {
+                this.executionList = Object.assign([], response.obj.executionList)
+              }
               // this.fileList.push({ name: response.obj.fileNameList[0], url: '' })
               this.fileNameShow = response.obj.fileNameList[0]
               this.fileNameDown = response.obj.fileNameList[0]
@@ -493,30 +511,64 @@
         }
         this.formShow = true
       },
-      save(val) {
+      save(formName) {
         if (this.isType === 'add') {
-          this.form.type = parseInt(this.form.type)
-          savePreplan(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              this.form.type = parseInt(this.form.type)
+              savePreplan(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         } else if (this.isType === 'edit') {
-          this.form.type = parseInt(this.form.type)
-          if (this.form.type === 0) {
-            this.form.preplanPid = 0
-          }
-          updatePreplan(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              this.form.type = parseInt(this.form.type)
+              if (this.form.type === 0) {
+                this.form.preplanPid = 0
+              }
+              updatePreplan(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         } else if (this.isType === 'back') {
-          savePreplanExecution(this.executionList).then(() => {
-            this.fetchData()
-            this.formShow = false
+          if (this.executionList.length < 1) {
+            this.$message.error('请配置预案验证执行操作和负责人')
+            return
+          } else {
+            for (const i in this.executionList) {
+              if (!this.executionList[i].executionName) {
+                this.$message.error('请输入预案验证执行操作')
+                return
+              }
+              if (!this.executionList[i].userId) {
+                this.$message.error('请选择负责人')
+                return
+              }
+            }
+          }
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              savePreplanExecution(this.executionList).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         }
       },
-      closeDialog() {
+      closeDialog(formName) {
+        this.$refs[formName].resetFields()
         this.form = {
           preplanName: '',
           versionNum: '',
@@ -609,6 +661,21 @@
       },
       saveSet() {
         if (this.isType === 'cfg') {
+          if (this.executionList.length < 1) {
+            this.$message.error('请配置预案验证执行操作和负责人')
+            return
+          } else {
+            for (const i in this.executionList) {
+              if (!this.executionList[i].executionName) {
+                this.$message.error('请输入预案验证执行操作')
+                return
+              }
+              if (!this.executionList[i].userId) {
+                this.$message.error('请选择负责人')
+                return
+              }
+            }
+          }
           savePreplanExecution(this.executionList).then(() => {
             this.fetchData()
             this.setShow = false

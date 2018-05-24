@@ -12,11 +12,11 @@
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
     </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
-      <el-table-column label="用户名" prop="userName" sortable></el-table-column>
-      <el-table-column label="显示昵称" prop="displayName" sortable></el-table-column>
-      <el-table-column label="手机号码" prop="telphone" sortable></el-table-column>
-      <el-table-column label="电子邮箱" prop="email" sortable></el-table-column>
-      <el-table-column label="权限" prop="permission" sortable></el-table-column>
+      <el-table-column label="用户名" prop="userName" :show-overflow-tooltip="true" sortable></el-table-column>
+      <el-table-column label="显示昵称" prop="displayName" :show-overflow-tooltip="true" sortable></el-table-column>
+      <el-table-column label="手机号码" prop="telphone" :show-overflow-tooltip="true" sortable></el-table-column>
+      <el-table-column label="电子邮箱" prop="email" :show-overflow-tooltip="true" sortable></el-table-column>
+      <el-table-column label="权限" prop="permission" :show-overflow-tooltip="true" sortable></el-table-column>
       <el-table-column label="操作" width="164">
         <template slot-scope="scope">
           <el-button-group>
@@ -37,25 +37,34 @@
                    :total="pageTotal">
     </el-pagination>
     <!--新增、编辑 弹出框-->
-    <el-dialog :title="operateTitle" width="500px" :visible.sync="formShow" :modal-append-to-body="false"
-               @close="operateClose">
-      <el-form :model="form" label-position="right" label-width="85px">
-        <el-form-item label="用户名：" prop="name">
+    <el-dialog :title="operateTitle" width="530px" :visible.sync="formShow" :modal-append-to-body="false"
+               @close="operateClose('formAll')">
+      <el-form :model="form" ref="formAll" :rules="rules" label-position="right" label-width="95px">
+        <el-form-item label="用户名：" prop="userName">
           <el-input v-model="form.userName" placeholder="请输入用户名"></el-input>
         </el-form-item>
-        <el-form-item label="显示昵称：" prop="enabled">
+        <el-form-item label="显示昵称：" prop="displayName" :rules="[
+                { required: true, message: '请输入显示昵称', trigger: 'blur' }
+              ]">
           <el-input v-model="form.displayName" placeholder="请输入显示昵称"></el-input>
         </el-form-item>
-        <el-form-item label="部门：" prop="enabled">
+        <el-form-item label="部门：" prop="department" :rules="[
+                { required: true, message: '请输入部门', trigger: 'blur' }
+              ]">
           <el-input v-model="form.department" placeholder="请输入部门"></el-input>
         </el-form-item>
-        <el-form-item label="手机号码：" prop="enabled">
+        <el-form-item label="手机号码：" prop="telphone">
           <el-input v-model="form.telphone" placeholder="请输入手机号码"></el-input>
         </el-form-item>
-        <el-form-item label="电子邮箱：" prop="enabled">
+        <el-form-item label="电子邮箱：" prop="email" :rules="[
+            { required: true, message: '请输入电子邮箱', trigger: 'blur' },
+            { type: 'email', message: '请输入正确的电子邮箱', trigger: ['blur', 'change'] }
+          ]">
           <el-input v-model="form.email" placeholder="请输入电子邮箱"></el-input>
         </el-form-item>
-        <el-form-item label="权限：" prop="enabled">
+        <el-form-item label="权限：" prop="permission" :rules="[
+                { required: true, message: '请选择权限', trigger: 'change' }
+              ]">
           <el-select v-model="form.permission" placeholder="请选择权限" style="width:100%;">
             <el-option v-for="item in roleDataOptions" :key="item.tRoleValue" :label="item.tRoleName"
                        :value="item.tRoleValue"></el-option>
@@ -63,8 +72,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="operateClose('allform')">取 消</el-button>
-        <el-button type="primary" @click="save('allform')">确 定</el-button>
+        <el-button @click="operateClose('formAll')">取 消</el-button>
+        <el-button type="primary" @click="save('formAll')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -72,7 +81,27 @@
 
 <script>
   import { retrieve, retrieveRole, creat, update } from '@/api/system/user'
-  import { alertBox } from '@/utils/alert'
+  import { validatePhone, userNamePhone } from '@/utils/validate'
+  import { alertBox } from '@/utils/request'
+
+  var validUserName = (rule, value, callback) => {
+    if (!value) {
+      callback(new Error('请输入用户名'))
+    } else if (!userNamePhone(value)) {
+      callback(new Error('请输入正确的用户名，字母、数字、下划线、并不能以下划线开头结尾'))
+    } else {
+      callback()
+    }
+  }
+  var validPhone = (rule, value, callback) => {
+    if (!value) {
+      callback(new Error('请输入手机号码'))
+    } else if (!validatePhone(value)) {
+      callback(new Error('请输入正确的11位手机号码'))
+    } else {
+      callback()
+    }
+  }
   export default {
     data() {
       return {
@@ -100,7 +129,15 @@
         isEdit: false, // 是否是进行编辑操作
         operateTitle: '', // 新增、编辑 弹出框 标题
         formShow: false, // 是否 显示 新增、编辑 弹出框
-        roleDataOptions: []
+        roleDataOptions: [],
+        rules: {
+          userName: [
+            { required: true, trigger: 'blur', validator: validUserName } // 这里需要用到全局变量
+          ],
+          telphone: [
+            { required: true, trigger: 'blur', validator: validPhone } // 这里需要用到全局变量
+          ]
+        }
       }
     },
     watch: {
@@ -193,7 +230,8 @@
         this.formShow = true
       },
       // 弹出框 关闭
-      operateClose() {
+      operateClose(formName) {
+        this.$refs[formName].resetFields()
         this.formShow = false
         this.form = {
           userName: '',
@@ -205,16 +243,28 @@
         }
       },
       // 点击保存
-      save() {
+      save(formName) {
         if (this.isEdit === true) {
-          update(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              update(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         } else {
-          creat(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              creat(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         }
       }

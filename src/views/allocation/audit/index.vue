@@ -57,9 +57,9 @@
         >
         </org-tree>
       </div>
-      <div class="child-title">审批原因：</div>
+      <div class="child-title">驳回原因：</div>
       <div>
-        <el-input type="textarea" placeholder="请输入审批原因" v-model="form.rebutString" :rows="4"></el-input>
+        <el-input type="textarea" placeholder="请输入驳回原因" v-model="form.rebutString" :rows="4"></el-input>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="auditClose('allform')">取 消</el-button>
@@ -171,11 +171,28 @@
         this.auditShow = true
       },
       auditSave(val) {
-        this.form.mark = val
-        updateStatus(this.form).then(() => {
-          this.fetchData()
-          this.auditShow = false
-        })
+        if (val === 2) {
+          if (!this.form.rebutString) {
+            this.$message.error('请输入驳回意见')
+          } else {
+            updateStatus({
+              id: this.form.id,
+              mark: 2,
+              rebutString: this.form.rebutString
+            }).then(() => {
+              this.fetchData()
+              this.auditShow = false
+            })
+          }
+        } else {
+          updateStatus({
+            id: this.form.id,
+            mark: 1
+          }).then(() => {
+            this.fetchData()
+            this.auditShow = false
+          })
+        }
       },
       auditClose() {
         this.auditShow = false

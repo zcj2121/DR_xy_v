@@ -44,7 +44,7 @@
     data() {
       return {
         screenfullShow: false,
-        badge: 5
+        badge: 0
       }
     },
     components: {

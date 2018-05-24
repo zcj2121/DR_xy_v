@@ -67,7 +67,7 @@ export function getRebut(params) { // 查看驳回意见
 
 export function enforcement(params) { // 申请执行
   return request({
-    url: '/rs/dr/drmSwitchingProcess/enforcement',
+    url: '/dr/switchingProcess/enforcement.do',
     method: 'get',
     params
   })

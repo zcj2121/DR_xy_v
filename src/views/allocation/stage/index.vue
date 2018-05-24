@@ -18,7 +18,7 @@
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="operate('edit',scope.row)">编辑</el-button>
-            <el-button size="mini" type="primary" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/drmSwitchingStage/delete')">删除</el-button>
+            <el-button size="mini" type="primary" @click="operationOther({ id: scope.row.id }, '/rs/dr/drmSwitchingStage/verifyingdelete', '/rs/dr/drmSwitchingStage/delete')">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -34,12 +34,16 @@
     </el-pagination>
     <!--新增、编辑 弹出框-->
     <el-dialog :title="operateTitle" width="600px" :visible.sync="formShow" :modal-append-to-body="false"
-               @close="operateClose">
-      <el-form :model="form" label-position="right" label-width="120px">
-        <el-form-item label="切换阶段名称：" prop="name">
+               @close="operateClose('formAll')">
+      <el-form :model="form" ref="formAll" label-position="right" label-width="120px">
+        <el-form-item label="切换阶段名称：" prop="nameString" :rules="[
+                { required: true, message: '请输入切换阶段名称', trigger: 'blur' }
+              ]">
           <el-input v-model="form.nameString" placeholder="请输入切换阶段名称"></el-input>
         </el-form-item>
-        <el-form-item label="阶段负责人：" prop="enabled">
+        <el-form-item label="阶段负责人：" prop="userid" :rules="[
+                { required: true, message: '请选择阶段负责人', trigger: 'change' }
+              ]">
           <el-select v-model="form.userid" placeholder="请选择阶段负责人" style="width:100%;">
             <el-option v-for="item in useridOptions" :key="item.id" :label="item.displayName"
                        :value="item.id"></el-option>
@@ -47,8 +51,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="operateClose('allform')">取 消</el-button>
-        <el-button type="primary" @click="save('allform')">确 定</el-button>
+        <el-button @click="operateClose('formAll')">取 消</el-button>
+        <el-button type="primary" @click="save('formAll')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -56,7 +60,7 @@
 
 <script>
   import { getAllProcess, getAllStage, findAllUser, update, insert } from '@/api/allocation/stage'
-  import { alertBox } from '@/utils/alert'
+  import { alertBox, alertOtherBox } from '@/utils/request'
   export default {
     data() {
       return {
@@ -141,6 +145,9 @@
       operation(id, msg, url) {
         alertBox(this, msg, url, id)
       },
+      operationOther(id, url, makeurl) {
+        alertOtherBox(this, url, makeurl, id)
+      },
       operate(type, val) {
         this.useridOptions = []
         findAllUser().then(response => {
@@ -166,7 +173,8 @@
         }
         this.formShow = true
       },
-      operateClose() {
+      operateClose(formName) {
+        this.$refs[formName].resetFields()
         this.formShow = false
         this.form = {
           nameString: '',
@@ -174,16 +182,28 @@
           processidLong: ''
         }
       },
-      save() {
+      save(formName) {
         if (this.isEdit === true) {
-          update(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              update(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         } else {
-          insert(this.form).then(() => {
-            this.fetchData()
-            this.formShow = false
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              insert(this.form).then(() => {
+                this.fetchData()
+                this.formShow = false
+              })
+            } else {
+              return false
+            }
           })
         }
       }
