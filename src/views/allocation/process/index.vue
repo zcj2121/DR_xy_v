@@ -384,9 +384,9 @@
       },
       renderContent(h, data) {
         if (data.typeName) {
-          return data.name + '\n' + data.typeName + '   ' + data.userName
+          return `${data.name}\n${data.typeName}  ${data.userName}`
         } else {
-          return data.name + '\n' + data.userName
+          return `${data.name}\n${data.userName}`
         }
       }
     }
