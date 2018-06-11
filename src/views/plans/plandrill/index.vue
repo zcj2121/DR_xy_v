@@ -15,10 +15,11 @@
       </el-table-column>
       <el-table-column label="负责人" prop="userName" width="100" sortable></el-table-column>
       <el-table-column label="描述" prop="preDesc" min-width="120" sortable></el-table-column>
-      <el-table-column label="操作" width="85">
+      <el-table-column label="操作" width="130">
         <template slot-scope="scope">
           <el-button-group>
             <el-button size="mini" type="primary" @click="detail(scope.row)">演练视图</el-button>
+            <el-button size="mini" type="primary" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/preplanManager/deletePreplan')" v-if="scope.row.isDrill === 2">删除</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -36,7 +37,7 @@
     <el-dialog  class="detail-dialog" title="查看演练视图" width="80%" :visible.sync="detailShow" :modal-append-to-body="false" @close="closeDialogDetail">
       <div class="title">预案演练验证</div>
       <div class="view-box-detail">
-        <el-row class="panel-group" :gutter="20">
+        <el-row class="panel-group" :gutter="20" v-if="detailForm.length > 0">
           <el-col :xs="8" :sm="8" :lg="6" class="card-panel-col" v-for="(item, index) in detailForm" :key="index">
             <div class='card-panel'>
               <div class="card-panel-icon-wrapper" :class="item.state === 1 ? 'icon-ok' : 'icon-no'">
@@ -59,12 +60,13 @@
             </div>
           </el-col>
         </el-row>
-        <div class="log-box" v-if="thisNoStart.userName">
+        <div class="log-box" v-if="thisNoStart.userName&&detailForm.length>0">
           <div class="log-box-title">演练日志</div>
           <div class="msg-box">
             <div><span>消息通知：</span><span><span style="font-weight: bold;">{{thisNoStart.userName}}</span>，您好，请您尽快登陆灾备系统完成【配置的预案流程内容】，登录地址：<a @click="goLoginAudit">http://vbs.login.com</a></span></div>
           </div>
         </div>
+        <div class="no-detail-show" v-if="detailForm.length === 0">暂无数据</div>
       </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="closeDialogDetail('allform')">关 闭</el-button>
@@ -75,6 +77,7 @@
 
 <script>
   import { findPreplan, findAllExecutionByPreplanId } from '@/api/plans/plandrill'
+  import { alertBox } from '@/utils/request'
   export default {
     data() {
       return {
@@ -149,6 +152,10 @@
       search() {
         this.fetchData()
       },
+      // 删除等 公共弹框
+      operation(id, msg, url) {
+        alertBox(this, msg, url, id)
+      },
       detail(val) {
         this.thisId = val.id
         findAllExecutionByPreplanId({ id: val.id }).then(response => {
@@ -165,6 +172,9 @@
         this.detailShow = true
       },
       closeDialogDetail() {
+        this.thisNoStart = {
+          userName: ''
+        }
         this.detailShow = false
       },
       goLoginAudit() {
@@ -331,5 +341,11 @@
         }
       }
     }
+  }
+  .no-detail-show{
+    text-align: center;
+    line-height: 150px;
+    font-size: 16px;
+    color: #aaa;
   }
 </style>

@@ -29,16 +29,17 @@ service.interceptors.response.use(
     }
     if (res.code) {
       if (res.code && res.code !== 20000 && res.code !== 200 && res.code !== 2000 && res.code !== '2000' && res.code !== '200') {
-        msg(res.msg, 'error')
-        return Promise.reject('error')
-      } else if (res.code === 20000 || res.code === 2000 || res.code === '2000') {
-        return response.data
+        if (res.code === 40001) {
+          msg('登录失败，请检查用户名和密码是否正确！', 'error')
+        } else {
+          msg(res.msg, 'error')
+        }
       } else {
         if (res.code === 200 || res.code === '200') {
           msg('操作成功！', 'success')
-          return response.data
         }
       }
+      return response.data
     } else {
       return response.data
     }
@@ -66,7 +67,6 @@ export function alertBox(_this, msg, url, params, otherfun) {
   }).then(() => {
     axios.get(axios.baseURL + url, { params: params })
       .then(function(response) {
-        console.log(response)
         if (response.data.code === 200 || response.data.code === '200') {
           _this.$message({
             type: 'success',
@@ -140,6 +140,66 @@ export function alertOtherBox(_this, url, makeurl, params) {
         // })
       })
     })
+}
+export function alertProcess(_this, url, params) {
+  axios.get(axios.baseURL + url, { params: params })
+    .then(function(response) {
+      if (response.data.code === 200 || response.data.code === '200') {
+        _this.$message({
+          type: 'success',
+          message: response.data.msg
+        })
+        _this.fetchData()
+        if (_this.runShow) {
+          _this.runShow = false
+        }
+      } else {
+        _this.$message({
+          type: 'error',
+          message: response.data.msg
+        })
+      }
+    })
+    .catch(function(response) {
+      _this.$message({
+        type: 'error',
+        message: '操作失败!'
+      })
+    })
+}
+
+export function alertPost(_this, data, msg, url) {
+  _this.$confirm(msg, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    axios.post(axios.baseURL + url, data)
+      .then(function(response) {
+        if (response.data.code === 200 || response.data.code === '200') {
+          _this.$message({
+            type: 'success',
+            message: response.data.msg
+          })
+          _this.fetchData()
+          if (_this.setShow) {
+            _this.setShow = false
+          }
+        } else {
+          _this.$message({
+            type: 'error',
+            message: response.data.msg
+          })
+        }
+      })
+      .catch(function(response) {
+        _this.$message({
+          type: 'error',
+          message: '操作失败!'
+        })
+      })
+  }).catch(() => {
+  })
 }
 
 export function downURL() {

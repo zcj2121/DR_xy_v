@@ -66,7 +66,7 @@
       return {
         data: null,
         list: null,
-        listLoading: true,
+        listLoading: false,
         isEdit: false, // 是否是进行编辑操作
         pageTotal: 0,
         pageSizes: [10, 15, 20],

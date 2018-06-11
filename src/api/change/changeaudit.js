@@ -16,4 +16,12 @@ export function updateStatus(params) { // 审核
     params
   })
 }
+
+export function findAllToExamine(params) { // 查看
+  return request({
+    url: '/rs/dr/drmSwitchingProcess/findAllToExamine',
+    method: 'get',
+    params
+  })
+}
 // 执行切换审核 API changeaudit

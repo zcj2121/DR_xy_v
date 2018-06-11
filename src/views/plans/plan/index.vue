@@ -37,12 +37,12 @@
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===1" @click="operate('edit',scope.row)">编辑</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===4" @click="operate('back',scope.row)">编辑</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===1" @click="setshow('cfg',scope.row)">配置流程</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.preStatus===1||scope.row.preStatus===4" @click="operationOther({ id: scope.row.id, preStatus: 2 }, '确认提交审核吗')">提交审核</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===1||scope.row.preStatus===4" @click="operationOther({ id: scope.row.id, preStatus: 2 }, '确认提交审核吗', '/dr/preplan/changePreplanStatus.do')">提交审核</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===1||scope.row.preStatus===4" @click="operation({ id: scope.row.id }, '确认删除吗', '/rs/dr/preplanManager/deletePreplan')">删除</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 5 }, '确认发布吗')">发布</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 0 }, '确认标记为历史吗')">标记为历史</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 5 }, '确认发布吗', '/dr/preplan/changePreplanStatus.do')">发布</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 0 }, '确认标记为历史吗', '/dr/preplan/changePreplanStatus.do')">标记为历史</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operation({ id: scope.row.id }, '确认演练吗', '/rs/dr/preplanManager/startPreplanDrill')">演练</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operationOther({ id: scope.row.id, preStatus: 3 }, '确认撤回吗')">撤回</el-button>
+            <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operationOther({ id: scope.row.id, preStatus: 3 }, '确认撤回吗', '/dr/preplan/changePreplanStatus.do')">撤回</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -300,8 +300,8 @@
 </template>
 
 <script>
-  import { findAllUserInRoleEnable, findPreplanApproveTemplate, findPreplanCanUseParent, savePreplan, updatePreplan, findPreplan, findPreplanById, savePreplanExecution, uploadPreplanFile, changePreplanStatus, downPreplanFile } from '@/api/plans/plan'
-  import { alertBox, downURL } from '@/utils/request'
+  import { findAllUserInRoleEnable, findPreplanApproveTemplate, findPreplanCanUseParent, savePreplan, updatePreplan, findPreplan, findPreplanById, savePreplanExecution, uploadPreplanFile, downPreplanFile } from '@/api/plans/plan'
+  import { alertBox, downURL, alertPost } from '@/utils/request'
   export default {
     data() {
       return {
@@ -692,22 +692,8 @@
       delSet(index) {
         this.executionList.splice(index, 1)
       },
-      operationOther(val, msg) {
-        this.$confirm(msg, '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          changePreplanStatus(val).then(() => {
-            this.fetchData()
-            this.setShow = false
-          })
-        }).catch(() => {
-          // this.$message({
-          //   type: 'info',
-          //   message: '已取消操作'
-          // })
-        })
+      operationOther(val, msg, url) {
+        alertPost(this, val, msg, url)
       },
       typeChange() {
         if (this.form.type === '0') {

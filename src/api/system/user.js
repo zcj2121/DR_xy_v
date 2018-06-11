@@ -32,4 +32,12 @@ export function update(data) { // 修改用户
     data
   })
 }
+
+export function updatePassword(params) { // 修改用户密码
+  return request({
+    url: '/rs/dr/system/usermanager/updatePassword',
+    method: 'get',
+    params
+  })
+}
 // 用户管理 API user

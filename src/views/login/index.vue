@@ -8,7 +8,7 @@
         <span class="svg-container svg-container_login">
           <i class="fa fa-user"></i>
         </span>
-        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="username" />
+        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="username" @keyup.enter.native="handleLogin" />
       </el-form-item>
       <el-form-item prop="password">
         <span class="svg-container">
@@ -51,7 +51,7 @@ export default {
     }
     return {
       loginForm: {
-        username: 'zhangm',
+        username: 'admin',
         password: '123456'
       },
       loginRules: {

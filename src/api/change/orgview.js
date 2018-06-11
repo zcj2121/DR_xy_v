@@ -1,19 +1,11 @@
 import request from '@/utils/request'
 
-// 预案演练 API plandrill
-export function findPreplan(params) { // 预案 列表
+// 指挥组织架构 API orgview
+export function findAllGroupCascadeUser(params) {
   return request({
-    url: '/rs/dr/preplanManager/findPreplan',
+    url: '/rs/dr/groupUserManager/findAllGroupCascadeUser',
     method: 'post',
     params
   })
 }
-
-export function findAllExecutionByPreplanId(params) { // 所有 预案演练 操作
-  return request({
-    url: '/rs/dr/preplanManager/findAllExecutionByPreplanId',
-    method: 'get',
-    params
-  })
-}
-// 预案演练 API plandrill
+// 指挥组织架构 API orgview

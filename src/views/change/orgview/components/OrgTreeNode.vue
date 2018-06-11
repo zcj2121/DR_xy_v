@@ -6,18 +6,26 @@
           <div class="node" style="cursor: n-resize;" @click="toggleNode">
             <a class='myOrgCharta' href='javascript:void(0)'>
               <div class="ort-item-title">
-                <span>{{model.name}}</span>
-                <i class="fa opened" :class="!isShow&&model.children.length>0?'fa-plus':'fa-minus'"></i>
+                <span>{{model.groupName}}</span>
+                <i class="fa opened" :class="!isShow&&model.node.length>0?'fa-plus':'fa-minus'"></i>
               </div>
-              <div class="org-item-class"><span>组&nbsp;&nbsp;长：</span>{{model.leader}}</div>
-              <div class="org-item-class"><span>副组长：</span>{{model.Fleader}}</div>
+              <div class="org-item-class"><span style="display: block;float: left;">组&nbsp;&nbsp;长：</span>
+                <span style="float: left">
+                  <div v-for="(item, index) in model.personnelList" :key="index+'-1'" v-if="item.personPost === '组长'">{{item.displayName}}</div>
+                </span>
+              </div>
+              <div class="org-item-class"><span style="display: block;float: left;">副组长：</span>
+                <span style="float: left">
+                  <div v-for="(item, index) in model.personnelList" :key="index+'-2'" v-if="item.personPost === '副组长'">{{item.displayName}}</div>
+                </span>
+              </div>
               <div class="org-item-class"><span style="display: block;float: left;">成&nbsp;&nbsp;员：</span>
                 <span style="float: left">
-                  <div v-for="(item, index) in model.member" :key="index">{{item.name}}</div>
+                  <div v-for="(item, index) in model.personnelList" :key="index+'-3'" v-if="item.personPost !== '组长'&&item.personPost !== '副组长'">{{item.displayName}}</div>
                 </span>
               </div>
               <div class="ort-item-footer">
-                总人数：{{model.number}}人
+                总人数：{{model.personnelList.length|| 0}}人
               </div>
             </a>
           </div>
@@ -32,7 +40,7 @@
         <td v-for="element in lineClass" :key="element.index" :class="element.className" >&nbsp;</td>
       </tr>
       <tr v-if="haveChildren" v-show="isShow">
-        <td class="node-container" colspan="2" v-for="(element, index) in model.children" :key="index" >
+        <td class="node-container" colspan="2" v-for="(element, index) in model.node" :key="index" >
           <org-tree-node :model='element'></org-tree-node>
         </td>
       </tr>
@@ -51,10 +59,10 @@
     },
     computed: {
       haveChildren() {
-        return this.model.children && this.model.children.length
+        return this.model.node && this.model.node.length
       },
       colspanCount() {
-        return this.model.children ? this.model.children.length * 2 : 0
+        return this.model.node ? this.model.node.length * 2 : 0
       },
       lineClass() {
         const arr = []

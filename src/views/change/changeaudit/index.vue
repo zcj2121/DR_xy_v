@@ -11,7 +11,7 @@
       <el-table-column label="操作" width="63">
         <template slot-scope="scope">
           <el-button-group>
-            <el-button size="mini" type="primary" @click="operation(scope.row)">审核</el-button>
+            <el-button size="mini" type="primary" @click="audit(scope.row)">审核</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -25,24 +25,51 @@
                    layout="total, sizes, prev, pager, next, jumper"
                    :total="pageTotal">
     </el-pagination>
-    <el-dialog
-      title="提示"
-      :visible.sync="auditShow"
-      width="420px"
-      :before-close="handleClose">
-      <span><div class="el-message-box__status el-icon-warning"></div><div style="padding-left: 36px;">确认审核吗</div></span>
-      <span slot="footer" class="dialog-footer">
-    <el-button size="mini" @click="handleClose">取 消</el-button>
-    <el-button size="mini" type="primary" @click="audit(1)">通 过</el-button>
-    <el-button size="mini" type="primary" @click="audit(2)">驳 回</el-button>
-  </span>
+    <!--审批弹出框-->
+    <el-dialog title="执行切换审核" id="dialogMitop" width="80%" :visible.sync="auditShow" :modal-append-to-body="false"
+               @close="auditClose">
+      <table class="el-table__body">
+        <tr>
+          <td class="text-bold" style="width:150px;">切换流程名称</td>
+          <td colspan="2">{{detailFrom.process_name}}</td>
+          <td class="text-bold" style="width:150px;">负责人</td>
+          <td colspan="2">{{detailFrom.user_name}}</td>
+        </tr>
+        <tr>
+          <td class="text-bold">切换流程描述</td>
+          <td colspan="5">{{detailFrom.process_title}}</td>
+        </tr>
+      </table>
+      <div id="elStepBox">
+        <org-tree
+          :data="treedata"
+          :horizontal="horizontal"
+          :collapsable="collapsable"
+          :label-class-name="labelClassName"
+          :render-content="renderContent"
+        >
+        </org-tree>
+      </div>
+      <div class="child-title">驳回原因：</div>
+      <div>
+        <el-input type="textarea" placeholder="请输入驳回原因" v-model="form.rebutString" :rows="4"></el-input>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="handleClose('allform')">取 消</el-button>
+        <el-button type="primary" @click="auditSave(1)">通 过</el-button>
+        <el-button type="primary" @click="auditSave(2)">驳 回</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { getAllProcess, updateStatus } from '@/api/change/changeaudit'
+  import { getAllProcess, updateStatus, findAllToExamine } from '@/api/change/changeaudit'
+  import OrgTree from '@/components/org-tree'
   export default {
+    components: {
+      OrgTree
+    },
     data() {
       return {
         data: null,
@@ -55,10 +82,24 @@
           size: 10
         },
         auditShow: false,
+        form: {
+          id: '',
+          rebutString: '',
+          mark: null
+        },
         thisId: '',
         searchQuery: { // 查询数据
           processName: ''
-        }
+        },
+        detailFrom: {
+          process_name: '',
+          process_title: '',
+          user_name: ''
+        },
+        treedata: {},
+        horizontal: true,
+        collapsable: false,
+        labelClassName: 'bg-white'
       }
     },
     watch: {
@@ -113,14 +154,54 @@
         this.thisId = val.id
         this.auditShow = true
       },
-      handleClose() {
+      audit(val) {
+        this.form.id = val.id
+        this.detailFrom = {
+          process_name: val.process_name,
+          process_title: val.process_title,
+          user_name: val.user_name
+        }
+        findAllToExamine({ id: val.id }).then(response => {
+          if (response) {
+            this.treedata = response.data
+            console.log(this.treedata)
+          }
+        })
+        this.auditShow = true
+      },
+      auditSave(val) {
+        if (val === 2) {
+          if (!this.form.rebutString) {
+            this.$message.error('请输入驳回意见')
+          } else {
+            updateStatus({
+              id: this.form.id,
+              mark: 2,
+              rebutString: this.form.rebutString
+            }).then(() => {
+              this.fetchData()
+              this.auditShow = false
+            })
+          }
+        } else {
+          updateStatus({
+            id: this.form.id,
+            mark: 1
+          }).then(() => {
+            this.fetchData()
+            this.auditShow = false
+          })
+        }
+      },
+      auditClose() {
         this.auditShow = false
       },
-      audit(val) {
-        updateStatus({ id: this.thisId, mark: val }).then(response => {
-          this.fetchData()
-          this.auditShow = false
-        })
+      renderContent(h, data) {
+        if (data.typeName) {
+          return data.name + '\n' + data.typeName + '   ' + data.userName
+        } else {
+          return data.name + '\n' + data.userName
+        }
       }
     }
   }
@@ -134,11 +215,110 @@
         overflow-y: auto;
       }
     }
+    #dialogMitop {
+      .el-dialog {
+        margin-top: 6vh !important;
+      }
+      .el-dialog__body{
+        height:550px;
+        overflow-y: auto;
+      }
+    }
   }
 </style>
 <style  rel="stylesheet/scss" lang="scss" scoped>
-  .filter-container{
+  .filter-container {
     text-align: right;
     margin-bottom: 10px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+    color: #606266;
+    tr {
+      td {
+        border: 1px solid #ebeef5;
+        padding: 10px 12px;
+        line-height: 25px;
+      }
+      th {
+        border: 1px solid #ebeef5;
+      }
+    }
+  }
+
+  .text-bold {
+    font-weight: bold;
+  }
+  #elStepBox{
+    margin-top:35px;
+    overflow-x: auto;
+    .el-step__head{
+      padding-top: 10px;
+      .el-step__line {
+        width: 2px;
+        top: 34px;
+        bottom: -11px;
+        left: 11px;
+      }
+    }
+    .el-step__main{
+      display: inherit;
+      .el-step__title {
+        line-height: 24px;
+        width: 150px;
+        border: 1px solid;
+        padding: 10px;
+        border-radius: 2px;
+        float: left;
+        display: inline;
+        height: 46px;
+      }
+      .icon-toright{
+        float: left;
+        margin-left: 10px;
+        line-height: 50px;
+        color: #aaa;
+      }
+      .el-step-con{
+        float: left;
+        margin-left: 10px;
+        height: 158px;
+        overflow-y: auto;
+        .el-step-con-item{
+          width: 150px;
+          overflow: hidden;
+          border:1px solid #ccc;
+          padding: 0px 6px;
+          border-radius: 2px;
+          margin-bottom: 10px;
+          height:46px;
+          .el-step-con-item-title{
+            font-size:14px;
+            font-weight: bold;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            line-height: 26px;
+          }
+          .el-step-con-item-btm{
+            font-size:12px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 14px;
+          }
+        }
+      }
+    }
+
+  }
+  .child-title{
+    font-size: 15px;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: bold;
   }
 </style>

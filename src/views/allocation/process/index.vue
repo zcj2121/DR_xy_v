@@ -146,8 +146,8 @@
 </template>
 
 <script>
-  import { getAllProcess, findApproveTempkate, findAllUser, insert, update, getRebut, enforcement, findAllToExamine } from '@/api/allocation/process'
-  import { alertBox, alertOtherBox } from '@/utils/request'
+  import { getAllProcess, findApproveTempkate, findAllUser, insert, update, getRebut, findAllToExamine } from '@/api/allocation/process'
+  import { alertBox, alertOtherBox, alertProcess } from '@/utils/request'
   import OrgTree from '@/components/org-tree'
 
   export default {
@@ -311,6 +311,7 @@
         this.formShow = true
       },
       operateClose(formName) {
+        this.formShow = false
         this.$refs[formName].resetFields()
         this.form = {
           process_name: '',
@@ -318,7 +319,6 @@
           userid: '',
           approvalidLong: ''
         }
-        this.formShow = false
       },
       save(formName) {
         if (this.isEdit === true) {
@@ -373,10 +373,7 @@
       runSave(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            enforcement(this.runForm).then(response => {
-              this.fetchData()
-              this.runShow = false
-            })
+            alertProcess(this, '/dr/switchingProcess/enforcement.do', this.runForm)
           } else {
             return false
           }
@@ -384,9 +381,9 @@
       },
       renderContent(h, data) {
         if (data.typeName) {
-          return `${data.name}\n${data.typeName}  ${data.userName}`
+          return data.name + '\n' + data.typeName + '   ' + data.userName
         } else {
-          return `${data.name}\n${data.userName}`
+          return data.name + '\n' + data.userName
         }
       }
     }

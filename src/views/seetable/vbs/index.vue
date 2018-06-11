@@ -76,7 +76,7 @@ export default {
       retrieve(this.listQuery).then(response => {
         if (response) {
           this.data = response.result
-          this.pageTotal = response.count
+          this.pageTotal = response.result.length
           this.listData()
           this.listLoading = false
         }

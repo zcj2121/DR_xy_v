@@ -100,7 +100,7 @@
       return {
         data: null,
         list: null,
-        listLoading: true,
+        listLoading: false,
         pageTotal: 0,
         pageSizes: [10, 15, 20],
         queryPage: {
@@ -154,6 +154,17 @@
           // }
           if (this.defSearchQuery.process) {
             this.processstageData()
+          }
+        },
+        deep: true
+      },
+      'listLoading': {
+        handler(listLoading) {
+          if (this.listLoading === true) {
+            console.log('1231231')
+            setTimeout(function() {
+              this.listLoading = false
+            }, 3000)
           }
         },
         deep: true
