@@ -37,7 +37,7 @@
             <el-button size="mini" type="primary" v-if="scope.row.process_status=== 2||scope.row.process_status===4"
                        @click="operation({ id: scope.row.id }, '确认撤回吗', '/dr/switchingProcess/withdraw.do')">撤回
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.process_status=== 0||scope.row.process_status===3"
+            <el-button size="mini" type="primary" v-if="scope.row.process_status=== 0||scope.row.process_status===3||scope.row.process_status===1"
                        @click="operationOther({ id: scope.row.id }, '/rs/dr/drmSwitchingProcess/verifyingdelete' , '/rs/dr/drmSwitchingProcess/delete')">删除
             </el-button>
           </el-button-group>

@@ -24,4 +24,12 @@ export function getAll(params) { // 查看详情
     params
   })
 }
+
+export function bigScreen(params) { // 查看大屏数据
+  return request({
+    url: '/rs/dr/drmProcessExecution/bigScreen',
+    method: 'get',
+    params
+  })
+}
 // 切换流程执行 API execute

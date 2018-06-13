@@ -74,6 +74,9 @@ export function alertBox(_this, msg, url, params, otherfun) {
           })
           if (otherfun === 'detailDefFun') {
             _this.detailDefFun()
+          } else if (otherfun === 'delconString') {
+            _this.delconString()
+            _this.fetchData()
           } else {
             _this.fetchData()
             if (_this.groupTree) {

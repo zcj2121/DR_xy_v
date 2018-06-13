@@ -21,7 +21,7 @@
             <el-button size="mini" type="primary" v-if="scope.row.state===0"
                        @click="operation({ id: scope.row.id }, '确认开始执行吗', '/rs/dr/drmProcessExecution/start')">开始
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.state!==0" style="padding:0px;"><a @click="isRest" href="#/bigscreen" target="_blank" style="padding:7px;display: block;">大屏</a>
+            <el-button size="mini" type="primary" v-if="scope.row.state!==0" style="padding:0px;"><a @click="isRest" :href="'#/bigscreen?id='+scope.row.id" target="_blank" style="padding:7px;display: block;">大屏</a>
             </el-button>
             <el-button size="mini" type="primary" v-if="scope.row.state===8||scope.row.state===10"
                        @click="operation({ id: scope.row.id }, '确认完成执行吗', '/rs/dr/drmProcessExecution/completeProcess')">完毕

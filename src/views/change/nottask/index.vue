@@ -41,6 +41,7 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
   import { getAllTask } from '@/api/change/nottask'
   import { alertBox } from '@/utils/request'
   import { formatDate } from '@/utils/index'
@@ -79,6 +80,11 @@
         }
       }
     },
+    computed: {
+      ...mapGetters([
+        'conString'
+      ])
+    },
     created() {
       this.fetchData()
     },
@@ -114,7 +120,16 @@
         this.list = this.data.slice(size * (index - 1), size * index)
       },
       operation(id, msg, url) {
-        alertBox(this, msg, url, id)
+        alertBox(this, msg, url, id, 'delconString')
+      },
+      delconString() {
+        let number
+        if (this.conString > 0) {
+          number = this.conString - 1
+        } else {
+          number = 0
+        }
+        this.$store.commit('SET_CONSTRING', number)
       }
     }
   }

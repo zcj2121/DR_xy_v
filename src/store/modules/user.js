@@ -9,7 +9,8 @@ const user = {
     rolesValue: '',
     roles: '',
     editMenu: '',
-    executionId: ''
+    executionId: '',
+    conString: 0
   },
 
   mutations: {
@@ -33,6 +34,9 @@ const user = {
     },
     SET_EXECUTIONID: (state, executionId) => {
       state.executionId = executionId
+    },
+    SET_CONSTRING: (state, conString) => {
+      state.conString = conString
     }
   },
 
@@ -58,11 +62,13 @@ const user = {
         getInfo(state.token).then(response => {
           const data = response.data
           const executionId = response.executionId
+          const conString = response.conString
           commit('SET_ROLES', data.roles)
           commit('SET_NAME', data.displayName)
           commit('SET_USER_ID', data.userId)
           commit('SET_AVATAR', data.rolesValue)
           commit('SET_EXECUTIONID', executionId)
+          commit('SET_CONSTRING', conString)
           menuItem().then(res => {
             const datachild = res.list
             commit('SET_EDITMENU', datachild)

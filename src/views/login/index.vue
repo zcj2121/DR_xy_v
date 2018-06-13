@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" ref="loginContainer" @mousemove="mouseMove($event)">
     <el-form autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left" label-width="0px"
       class="card-box login-form">
       <!--<h3 class="title">XX灾备管理系统</h3>-->
@@ -95,6 +95,15 @@ export default {
       const url = window.location.href
       const thisid = url.split('auditId=')[1]
       this.thisId = thisid
+    },
+    mouseMove(event) {
+      const thisBg = this.$refs.loginContainer
+      const x = document.body.offsetWidth / 2
+      const y = document.body.offsetHeight / 2
+      const mx = event.clientX
+      const my = event.clientY
+      thisBg.style.backgroundPositionX = (x - mx) / 90 + 'px'
+      thisBg.style.backgroundPositionY = (y - my) / 90 + 'px'
     }
   }
 }
@@ -106,8 +115,10 @@ export default {
   $light_gray:#eee;
   .login-container {
     position: fixed;
-    height: 100%;
-    width:100%;
+    height: 110%;
+    width:110%;
+    left: -5%;
+    top: -5%;
     background: url('login-bg.jpg');
     background-size: 100% 100%;
     background-repeat: no-repeat;

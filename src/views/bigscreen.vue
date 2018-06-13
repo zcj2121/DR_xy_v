@@ -1,8 +1,8 @@
 <template>
   <div class="bigscreen">
     <div class="header">
-      <span class="pull-left time-start">开始时间：<span>2018-05-18 14:21:00</span></span>
-      <span class="pull-right time-end">结束时间：<span>2018-05-18 14:21:00</span></span>
+      <span class="pull-left time-start">开始时间：<span style="color:#66FF33">2018-05-18 14:21:00</span></span>
+      <span class="pull-right time-end">执行时间：<span style="color:#fecd54">00:21:25</span></span>
       <div class="title-box">
         <div class="title">
           <div class="names">切换流程名称</div>
@@ -14,75 +14,79 @@
       <div class="progress-title">
       </div>
       <div class="title">流程执行进度：</div>
-      <el-progress :text-inside="true" :stroke-width="14" :percentage="80"
-                   color="rgba(14, 170, 182, 0.7)"></el-progress>
-    </div>
-    <div class="timebox">
-      <div class="time-title">
+      <div class="title" style="right: 15px;">
         <span class="time-name">切换状态：</span>
         <span style="    color: #67C23A;">完成</span>
       </div>
-      <div class="time-title">
-        <span class="time-name">执行时间：</span>
-        <span style="color:#66FF33">14:21:00</span>
-      </div>
-      <div class="time-title">
-        <span class="time-name">剩余时间：</span>
-        <span style="color:#fecd54">14:21:00</span>
-      </div>
+      <el-progress :text-inside="true" :stroke-width="14" :percentage="80" color="rgba(14, 170, 182, 0.7)"></el-progress>
     </div>
+    <!--<div class="timebox">-->
+      <!--<div class="time-title">-->
+        <!--<span class="time-name">切换状态：</span>-->
+        <!--<span style="    color: #67C23A;">完成</span>-->
+      <!--</div>-->
+      <!--<div class="time-title">-->
+        <!--<span class="time-name">执行时间：</span>-->
+        <!--<span style="color:#66FF33">14:21:00</span>-->
+      <!--</div>-->
+      <!--<div class="time-title">-->
+        <!--<span class="time-name">剩余时间：</span>-->
+        <!--<span style="color:#fecd54">14:21:00</span>-->
+      <!--</div>-->
+    <!--</div>-->
     <div class="stagebox">
       <div class='content-prc'>
         <div class="tit-box">
           <span class="stage-name">切换流程阶段</span>
           <small class="pull-right">
-            <span class='statebutton-finish'><span class="panel-btn scene-finish"></span>&nbsp;已完成</span>
-            <span class='statebutton-running'><span class="panel-btn scene-running"></span>&nbsp;执行中</span>
-            <span class='statebutton-nostart'><span class="panel-btn scene-nostart"></span>&nbsp;未开始</span>
+            <span class='statespan-finish'><span class="panel-btn scene-finish"></span>&nbsp;已完成</span>
+            <span class='statespan-running'><span class="panel-btn scene-running"></span>&nbsp;执行中</span>
+            <span class='statespan-nostart'><span class="panel-btn scene-nostart"></span>&nbsp;未开始</span>
+            <span class='statespan-stop'><span class="panel-btn scene-stop"></span>&nbsp;停止</span>
           </small>
         </div>
         <div class="prc-box">
           <div class="r_box end">
             <div class="r_item">
               <p>1.切换阶段一</p>
-              <el-progress :text-inside="true" :stroke-width="14" :percentage="100"
-                           color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index r_isfinish">已完成</div>
+              <el-progress :text-inside="true" :stroke-width="14" :percentage="100" color="rgba(14, 170, 182, 0.7)"></el-progress>
+              <div class="r_item_index">已完成</div>
+            </div>
+          </div>
+          <div class="r_box stop">
+            <div class="r_item">
+              <p>2.切换阶段二</p>
+              <el-progress :text-inside="true" :stroke-width="14" :percentage="80" color="rgba(14, 170, 182, 0.7)"></el-progress>
+              <div class="r_item_index">停止</div>
             </div>
           </div>
           <div class="r_box active">
             <div class="r_item">
-              <p>2.切换阶段二</p>
-              <el-progress :text-inside="true" :stroke-width="14" :percentage="50"
-                           color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index r_running">执行中</div>
+              <p>3.切换阶段三</p>
+              <el-progress :text-inside="true" :stroke-width="14" :percentage="50" color="rgba(14, 170, 182, 0.7)"></el-progress>
+              <div class="r_item_index">执行中</div>
             </div>
             <div class="r_box-sanjiao"></div>
           </div>
           <div class="r_box">
             <div class="r_item">
-              <p>3.切换阶段三</p>
-              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0"
-                           color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index r_nostart">未执行</div>
-
+              <p>4.切换阶段四</p>
+              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0" color="rgba(14, 170, 182, 0.7)"></el-progress>
+              <div class="r_item_index">未执行</div>
             </div>
           </div>
           <div class="r_box">
             <div class="r_item">
-              <p>4.第四阶段</p>
-              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0"
-                           color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index r_nostart">未执行</div>
-
+              <p>5.切换阶段五</p>
+              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0" color="rgba(14, 170, 182, 0.7)"></el-progress>
+              <div class="r_item_index">未执行</div>
             </div>
           </div>
           <div class="r_box">
             <div class="r_item">
-              <p>5.第五阶段</p>
-              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0"
-                           color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index r_nostart">未执行</div>
+              <p>6.切换阶段六</p>
+              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0" color="rgba(14, 170, 182, 0.7)"></el-progress>
+              <div class="r_item_index">未执行</div>
             </div>
           </div>
         </div>
@@ -92,13 +96,13 @@
       <div class='step-name-box'>
         <span class="title">切换流程步骤</span>
         <small class="pull-right">
-          <span class='statebutton-finish'><buton class="panel-btn scene-finish"></buton>&nbsp;已完成</span>
-          <span class='statebutton-running'><buton class="panel-btn scene-running"></buton>&nbsp;执行中</span>
-          <span class='statebutton-skip'><buton class="panel-btn scene-skip"></buton>&nbsp;跳过</span>
-          <span class='statebutton-nostart'><buton class="panel-btn scene-nostart"></buton>&nbsp;未开始</span>
-          <span class='statebutton-stop'><buton class="panel-btn scene-stop"></buton>&nbsp;停止</span>
-          <span class='statebutton-error'><buton class="panel-btn scene-error"></buton>&nbsp;异常</span>
-          <span class='statebutton-suspend'><buton class="panel-btn scene-suspend"></buton>&nbsp;暂停</span>
+          <span class='statespan-finish'><span class="panel-btn scene-finish"></span>&nbsp;已完成</span>
+          <span class='statespan-running'><span class="panel-btn scene-running"></span>&nbsp;执行中</span>
+          <span class='statespan-skip'><span class="panel-btn scene-skip"></span>&nbsp;跳过</span>
+          <span class='statespan-nostart'><span class="panel-btn scene-nostart"></span>&nbsp;未开始</span>
+          <span class='statespan-stop'><span class="panel-btn scene-stop"></span>&nbsp;停止</span>
+          <span class='statespan-error'><span class="panel-btn scene-error"></span>&nbsp;异常</span>
+          <span class='statespan-suspend'><span class="panel-btn scene-suspend"></span>&nbsp;暂停</span>
         </small>
       </div>
       <div class='content-process'>
@@ -461,15 +465,59 @@
 </template>
 
 <script>
+  import { bigScreen } from '@/api/change/execute'
+  import { formatDate } from '@/utils/index'
   export default {
     data() {
-      return {}
+      return {
+        bigScreenData: {}
+      }
     },
-    computed: {},
+    filters: {
+      stageFilter(stage) {
+        const stageMap = {
+          0: 'end',
+          1: 'stop',
+          2: 'active',
+          3: ''
+        }
+        return stageMap[stage]
+      },
+      stepFilter(step) {
+        const stepMap = {
+          0: 'is-finish-box',
+          1: 'is-skip-box',
+          2: 'is-running-box',
+          3: 'is-suspend-box',
+          4: 'is-stop-box',
+          5: 'is-error-box',
+          6: 'is-nostart-box'
+        }
+        return stepMap[step]
+      },
+      dateFilter(time) {
+        if (time) {
+          const date = new Date(time)
+          return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
+        } else {
+          return ''
+        }
+      }
+    },
+    computed: {
+    },
+    created() {
+      console.log()
+      this.fetchData()
+    },
     methods: {
-      confirmSave() {
-        this.$store.dispatch('LogOut').then(() => {
-          location.reload() // 为了重新实例化vue-router对象 避免bug
+      fetchData() {
+        bigScreen({
+          id: this.$route.query.id
+        }).then(response => {
+          if (response) {
+            this.bigScreenData = response.data
+          }
         })
       }
     }
@@ -644,13 +692,13 @@
         vertical-align: top;
         border-radius: 2px;
       }
-      .statebutton-finish{
+      .statespan-finish{
         color: #67C23A;
         .panel-btn{
           background: #000;
         }
       }
-      .statebutton-running{
+      .statespan-running{
         margin-left:5px;
         color:#409EFF;
         .panel-btn{
@@ -658,7 +706,7 @@
           border:1px solid #4978ac;
         }
       }
-      .statebutton-nostart{
+      .statespan-nostart{
         margin-left:5px;
         color: #909399;
         .panel-btn{
@@ -671,15 +719,35 @@
           background: #112a40;
         }
       }
+      .statespan-stop{
+        margin-left:5px;
+        color: #E6A23C;
+        .panel-btn{
+          display: inline-block;
+          width: 25px;
+          height: 13px;
+          border: 1px dashed #E6A23C;
+          vertical-align: top;
+          border-radius: 2px;
+          background: #112a40;
+        }
+      }
       .content-prc .prc-box {
         min-height: 80px;
         overflow: hidden;
       }
       .r_box{
         float: left;
-        width: 20%;
+        width: 16.6666666%;
         text-align: center;
         position: relative;
+        .r_item_index{
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          font-size: 17px;
+          color: #909399;
+        }
       }
       .r_box p{
         font-size:14px;
@@ -704,11 +772,36 @@
       .r_box.end .r_item{
         border:1px solid #4978ac;
         background: #000;
+        .r_item_index{
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          font-size: 17px;
+          color: #67C23A;
+        }
+      }
+      .r_box.stop .r_item{
+        border:1px dashed #E6A23C;
+        background: #000;
+        .r_item_index{
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          font-size: 17px;
+          color: #E6A23C;
+        }
       }
       .r_box.active .r_item{
         margin-top:0px;
         background: #103350;
         border:3px solid #4978ac;
+        .r_item_index{
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          font-size: 17px;
+          color: #409EFF;
+        }
       }
       .r_finish .r_num{
         color:#efefef;
@@ -725,6 +818,9 @@
       }
       .r_running{
         color:#409EFF;
+      }
+      .r_stop{
+        color:#E6A23C;
       }
       .r_nostart{
         color:#909399;
@@ -758,7 +854,7 @@
       right: 0px;
       left: 0px;
       bottom: 0px;
-      top:322px;
+      top:262px;
       color:#fff;
       overflow: hidden;
       .title{
@@ -773,13 +869,13 @@
         vertical-align: top;
         border-radius: 2px;
       }
-      .statebutton-finish{
+      .statespan-finish{
         color: #67C23A;
         .panel-btn{
           background: #000;
         }
       }
-      .statebutton-running{
+      .statespan-running{
         margin-left:5px;
         color:#409EFF;
         .panel-btn{
@@ -787,7 +883,7 @@
           border:1px solid #4978ac;
         }
       }
-      .statebutton-nostart{
+      .statespan-nostart{
         margin-left:5px;
         color: #909399;
         .panel-btn{
@@ -801,7 +897,7 @@
         }
       }
       /*跳过*/
-      .statebutton-skip{
+      .statespan-skip{
         margin-left:5px;
         color: #33FFFF;
         .panel-btn{
@@ -815,7 +911,7 @@
         }
       }
       /*停止*/
-      .statebutton-stop{
+      .statespan-stop{
         margin-left:5px;
         color: #E6A23C;
         .panel-btn{
@@ -829,7 +925,7 @@
         }
       }
       /*异常*/
-      .statebutton-error{
+      .statespan-error{
         margin-left:5px;
         color: #FF0066;
         .panel-btn{
@@ -843,7 +939,7 @@
         }
       }
       /*暂停*/
-      .statebutton-suspend{
+      .statespan-suspend{
         margin-left:5px;
         color: #F56C6C;
         .panel-btn{
@@ -862,7 +958,8 @@
         left: 15px;
         top: 50px;
         overflow-y: auto;
-        height: 100%;
+        overflow-x: hidden;
+        height: 90%;
         .step-box{
           margin: 0px 24px 220px 0px;
           position: relative;

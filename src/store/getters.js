@@ -6,6 +6,7 @@ const getters = {
   roles: state => state.user.roles,
   editMenu: state => state.user.editMenu,
   executionId: state => state.user.executionId,
-  userId: state => state.user.userId
+  userId: state => state.user.userId,
+  conString: state => state.user.conString
 }
 export default getters

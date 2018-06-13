@@ -5,7 +5,7 @@
     <div class="right-menu">
       <el-tooltip class="item" effect="dark" content="通知待办" placement="bottom">
         <span class="screenfull" @click="goNottask">
-          <el-badge :value="badge" class="item">
+          <el-badge :value="conString || 0" class="item">
             <i class="fa fa-bell"></i>
           </el-badge>
         </span>
@@ -129,7 +129,8 @@
         'avatar',
         'name',
         'executionId',
-        'userId'
+        'userId',
+        'conString'
       ])
     },
     created() {
