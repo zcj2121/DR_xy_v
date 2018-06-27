@@ -43,6 +43,14 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  updated() {
+    // for (const item of this.routes) {
+    //   if (item.children.length > 0) {
+    //     this.$router.push({ path: `/${item.path}/${item.children[0].path}` })
+    //     return
+    //   }
+    // }
   }
 }
 </script>

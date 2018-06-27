@@ -1,13 +1,13 @@
 <template>
   <div class="app-container" id="historyTable">
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit highlight-current-row>
-      <el-table-column label="名称" prop="processName" sortable width="160"></el-table-column>
+      <el-table-column label="切换流程名称" prop="processName" :show-overflow-tooltip="true" sortable width="160"></el-table-column>
       <el-table-column class-name="status-col" label="时间" width="152" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           {{scope.row.endTime | dateFilter}}
         </template>
       </el-table-column>
-      <el-table-column label="描述" prop="processTitle" min-width="220"></el-table-column>
+      <el-table-column label="描述" prop="processTitle" min-width="220" :show-overflow-tooltip="true"></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           {{scope.row.state | statusFilter}}
@@ -50,7 +50,7 @@
             {{scope.row.stepType | stepTypeFilter}}
           </template>
         </el-table-column>
-        <el-table-column label="负责人" prop="userName" :show-overflow-tooltip="true" width="78"></el-table-column>
+        <el-table-column label="步骤负责人" prop="userName" :show-overflow-tooltip="true" width="100"></el-table-column>
         <el-table-column class-name="status-col" label="开始时间" :show-overflow-tooltip="true" width="151">
           <template slot-scope="scope">
             {{scope.row.startTime | dateFilter}}
@@ -112,11 +112,10 @@ export default {
         1: '执行中',
         3: '暂停',
         4: '跳过',
-        2: '完成',
         5: '终止',
         0: '未执行',
         13: '异常',
-        14: '正常'
+        2: '正常'
       }
       return statesMap[states]
     },

@@ -31,6 +31,8 @@ service.interceptors.response.use(
       if (res.code && res.code !== 20000 && res.code !== 200 && res.code !== 2000 && res.code !== '2000' && res.code !== '200') {
         if (res.code === 40001) {
           msg('登录失败，请检查用户名和密码是否正确！', 'error')
+        } else if (res.code === 40005) {
+          msg('登录失败，请重试！', 'error')
         } else {
           msg(res.msg, 'error')
         }

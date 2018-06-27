@@ -17,13 +17,13 @@
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit
               highlight-current-row>
       <el-table-column label="切换步骤名称" prop="stepNameString" sortable></el-table-column>
-      <el-table-column class-name="status-col" label="分类" width="110" align="center">
+      <el-table-column class-name="status-col" label="切换步骤分类" width="110" align="center">
         <template slot-scope="scope">
           {{scope.row.stepTypeInteger | statusFilter}}
         </template>
       </el-table-column>
       <el-table-column label="灾难恢复计划" prop="recoveryPlanName" sortable></el-table-column>
-      <el-table-column label="阶段负责人" prop="userName" sortable width="120"></el-table-column>
+      <el-table-column label="步骤负责人" prop="userName" sortable width="120"></el-table-column>
       <el-table-column label="操作" width="100">
         <template slot-scope="scope">
           <el-button-group>
@@ -74,7 +74,7 @@
                        :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="负责人：" prop="userId" :rules="[
+        <el-form-item label="步骤负责人：" prop="userId" :rules="[
                 { required: true, message: '请选择负责人', trigger: 'change' }
               ]">
           <el-select v-model="form.userId" placeholder="请选择负责人" style="width:100%;">
@@ -161,7 +161,6 @@
       'listLoading': {
         handler(listLoading) {
           if (this.listLoading === true) {
-            console.log('1231231')
             setTimeout(function() {
               this.listLoading = false
             }, 3000)

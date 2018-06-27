@@ -8,14 +8,14 @@
         <span class="svg-container svg-container_login">
           <i class="fa fa-user"></i>
         </span>
-        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="username" @keyup.enter.native="handleLogin" />
+        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="用户名" @keyup.enter.native="handleLogin" />
       </el-form-item>
       <el-form-item prop="password">
         <span class="svg-container">
           <i class="fa fa-lock"></i>
         </span>
         <el-input name="password" :type="pwdType" @keyup.enter.native="handleLogin" v-model="loginForm.password" autoComplete="on"
-          placeholder="password"></el-input>
+          placeholder="密码"></el-input>
           <span class="show-pwd" @click="showPwd">
             <i class="fa fa-eye-slash" v-if="pwdType===''"></i>
             <i class="fa fa-eye" v-else="pwdType==='password'"></i>
@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import { menuItem } from '@/api/login'
 // import { isvalidUsername } from '@/utils/validate'
 export default {
   name: 'login',
@@ -51,8 +52,8 @@ export default {
     }
     return {
       loginForm: {
-        username: 'admin',
-        password: '123456'
+        username: '',
+        password: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', message: '请输入用户名' }],
@@ -78,10 +79,19 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$router.push({ path: '/' })
           this.$store.dispatch('Login', this.loginForm).then(() => {
             this.loading = false
-            this.$router.push({ path: '/' })
+            menuItem().then(response => {
+              if (response.list) {
+                for (const item of response.list) {
+                  if (item.children.length > 0) {
+                    this.$router.push({ path: `/${item.path}/${item.children[0].path}` })
+                    return
+                  }
+                }
+              }
+              this.$router.push({ path: '/' })
+            })
           }).catch(() => {
             this.loading = false
           })

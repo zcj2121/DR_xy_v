@@ -53,7 +53,7 @@ export const constantRouterMap = [
         path: 'planaudit',
         name: 'planaudit',
         component: () => import('@/views/plans/planaudit/index'),
-        meta: { title: '预案审批', icon: 'file-image-o' }
+        meta: { title: '预案审核', icon: 'file-image-o' }
       },
       {
         path: 'plandrill',
@@ -203,7 +203,7 @@ export const constantRouterMap = [
         path: 'auditall',
         name: 'auditall',
         component: () => import('@/views/system/auditall/index'),
-        meta: { title: '审批流程配置', icon: 'flag-o' }
+        meta: { title: '审核流程配置', icon: 'flag-o' }
       }
     ]
   },

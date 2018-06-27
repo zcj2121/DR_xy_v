@@ -1,11 +1,11 @@
 <template>
   <div class="app-container" id="userTable">
     <div class="filter-container">
-      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.approveName" placeholder="请输入审批流程名称">
+      <el-input style="width: 200px;" size="mini" class="filter-item" v-model="searchQuery.approveName" placeholder="请输入审核流程名称">
       </el-input>
       <el-select style="width: 200px;" size="mini" v-model="searchQuery.approveType" placeholder="请选择分类">
-        <el-option key="0" label="全部审批" value=""></el-option>
-        <el-option key="1" label="预案审批" value="1"></el-option>
+        <el-option key="0" label="全部审核" value=""></el-option>
+        <el-option key="1" label="预案审核" value="1"></el-option>
         <el-option key="2" label="切换流程" value="2"></el-option>
         <el-option key="3" label="切换执行" value="3"></el-option>
       </el-select>
@@ -13,13 +13,13 @@
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
     </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit>
-      <el-table-column label="审批流程名称" prop="approveName" min-width="150" sortable></el-table-column>
+      <el-table-column label="审核流程名称" prop="approveName" min-width="150" sortable></el-table-column>
       <el-table-column class-name="status-col" label="分类" width="150" align="center">
         <template slot-scope="scope">
           {{scope.row.approveType | statusFilter}}
         </template>
       </el-table-column>
-      <el-table-column class-name="status-col" label="审批人流程"  min-width="300">
+      <el-table-column class-name="status-col" label="审核人"  min-width="300">
         <template slot-scope="scope">
           {{scope.row.userList | processFilter}}
         </template>
@@ -51,19 +51,19 @@
               ]">
           <el-input v-model="form.approveName" placeholder="请输入名称"></el-input>
         </el-form-item>
-        <el-form-item label="审批类型：" prop="approveType" :rules="[
-                { required: true, message: '请选择审批类型', trigger: 'change' }
+        <el-form-item label="审核类型：" prop="approveType" :rules="[
+                { required: true, message: '请选择审核类型', trigger: 'change' }
               ]">
-          <el-select v-model="form.approveType" placeholder="请选择审批类型" style="width:100%;">
-            <el-option key="1" label="预案审批" value="1"></el-option>
+          <el-select v-model="form.approveType" placeholder="请选择审核类型" style="width:100%;">
+            <el-option key="1" label="预案审核" value="1"></el-option>
             <el-option key="2" label="切换流程" value="2"></el-option>
             <el-option key="3" label="切换执行" value="3"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item :label="index === 0?'审批人：':''" :prop="'userList.' + index + '.value'" v-for="(item, index) in form.userList" :key="index" :rules="[
-                { required: true, message: '请选择审批人', trigger: 'change' }
+        <el-form-item :label="index === 0?'审核人：':''" :prop="'userList.' + index + '.value'" v-for="(item, index) in form.userList" :key="index" :rules="[
+                { required: true, message: '请选择审核人', trigger: 'change' }
               ]">
-          <el-select v-model="item.value" placeholder="请选择审批人" style="width:86.3%;">
+          <el-select v-model="item.value" placeholder="请选择审核人" style="width:86.3%;">
             <el-option v-for="userOption in userOptions" :key="userOption.id+'-'+index" :label="userOption.displayName"
                        :value="userOption.id"></el-option>
           </el-select>
@@ -115,7 +115,7 @@
     filters: {
       statusFilter(status) {
         const statusMap = {
-          1: '预案审批',
+          1: '预案审核',
           2: '切换流程',
           3: '切换执行'
         }
@@ -206,7 +206,7 @@
           this.userOptions = response.list
         })
         if (type === 'add') {
-          this.operateTitle = '新增审批模板'
+          this.operateTitle = '新增审核模板'
           this.isEdit = false
         } else if (type === 'edit') {
           this.isEdit = true
@@ -224,7 +224,7 @@
               this.form.userList = Object.assign([], arr)
             }
           }
-          this.operateTitle = '编辑审批模板'
+          this.operateTitle = '编辑审核模板'
         }
         this.formShow = true
       },

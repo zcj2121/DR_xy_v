@@ -43,7 +43,7 @@
     <el-dialog title="查看切换流程执行详情" id="dialogMitop" width="90%" :visible.sync="detailShow" :modal-append-to-body="false"
                @close="closeDialog">
       <div class="title pull-left">{{detailForm.processName}}</div>
-      <span class="pull-right" style="margin-bottom: 5px;">
+      <span class="pull-right" style="margin-bottom: 5px;" v-if="detailForm.state !== 8 && detailForm.state !== 0">
         <el-button size="mini" type="primary" @click="operation({ id: detailForm.id}, '确认暂停执行吗', '/rs/dr/drmProcessExecution/stopProcess', 'detailDefFun')">暂停</el-button>
         <el-button size="mini" type="primary" @click="operation({ id: detailForm.id}, '确认终止执行吗', '/rs/dr/drmProcessExecution/stopitProcess', 'detailDefFun')">终止</el-button>
         <!--<el-button size="mini" type="primary" @click="operation({ id: detailForm.id}, '确认一键回退吗', '123', 'detailDefFun')">一键回退</el-button>-->
@@ -120,6 +120,7 @@
         thisIdbox: {},
         detailForm: {
           processName: '',
+          state: '',
           list: []
         },
         intervalid: null
@@ -234,6 +235,7 @@
         location.reload()
         this.detailForm = {
           processName: '',
+          state: '',
           id: '',
           list: []
         }
@@ -244,6 +246,7 @@
         getAll({ id: this.thisIdbox.id }).then(response => {
           if (response) {
             this.detailForm.id = response.data.id
+            this.detailForm.state = response.data.state
             this.detailForm.processName = response.data.processName
             console.log()
             if (response.data.drmSwitchingStageInstanceDtos) {

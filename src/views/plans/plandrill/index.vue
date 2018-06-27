@@ -6,14 +6,14 @@
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
     </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit>
-      <el-table-column label="名称" prop="preplanName" min-width="100" sortable></el-table-column>
-      <el-table-column label="版本" prop="versionNum" width="80" sortable></el-table-column>
+      <el-table-column label="预案名称" prop="preplanName" min-width="100" sortable></el-table-column>
+      <el-table-column label="版本号" prop="versionNum" width="90" sortable></el-table-column>
       <el-table-column class-name="status-col" label="预案类型" width="110">
         <template slot-scope="scope">
           {{scope.row.type === 1 ? '专项预案' : '总体预案'}}
         </template>
       </el-table-column>
-      <el-table-column label="负责人" prop="userName" width="100" sortable></el-table-column>
+      <el-table-column label="预案负责人" prop="userName" width="120" sortable></el-table-column>
       <el-table-column label="描述" prop="preDesc" min-width="120" sortable></el-table-column>
       <el-table-column label="操作" width="130">
         <template slot-scope="scope">
@@ -45,15 +45,15 @@
               </div>
               <div class="card-panel-description">
                 <div class="card-row-over">
-                  <span>预案操作：</span>
+                  <span>预&nbsp;案&nbsp; 操&nbsp;作：</span>
                   <span :title="item.executionName">{{item.executionName}}</span>
                 </div>
                 <div class="card-row-over">
-                  <span>负&nbsp;责&nbsp;人：</span>
+                  <span>预案负责人：</span>
                   <span :title="item.userName">{{item.userName}}</span>
                 </div>
                 <div class="card-row-over">
-                  <span>联系电话：</span>
+                  <span>联&nbsp;系&nbsp; 电&nbsp;话：</span>
                   <span :title="item.telPhone">{{item.telPhone}}</span>
                 </div>
               </div>

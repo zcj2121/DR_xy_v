@@ -12,7 +12,7 @@
               highlight-current-row>
       <el-table-column label="切换流程名称" prop="process_name" min-width="100" sortable></el-table-column>
       <el-table-column label="描述" prop="process_title" min-width="120" sortable></el-table-column>
-      <el-table-column label="负责人" prop="user_name" width="100" sortable></el-table-column>
+      <el-table-column label="流程负责人" prop="user_name" width="120" sortable></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="75" align="center">
         <template slot-scope="scope">
           {{scope.row.process_status | statusFilter}}
@@ -34,7 +34,7 @@
             <el-button size="mini" type="primary" v-if="scope.row.process_status=== 2||scope.row.process_status===4"
                        @click="run(scope.row)">申请执行
             </el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.process_status=== 2||scope.row.process_status===4"
+            <el-button size="mini" type="primary" v-if="scope.row.process_status=== 2"
                        @click="operation({ id: scope.row.id }, '确认撤回吗', '/dr/switchingProcess/withdraw.do')">撤回
             </el-button>
             <el-button size="mini" type="primary" v-if="scope.row.process_status=== 0||scope.row.process_status===3||scope.row.process_status===1"

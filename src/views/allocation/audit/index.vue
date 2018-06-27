@@ -9,7 +9,7 @@
               highlight-current-row>
       <el-table-column label="切换流程名称" prop="process_name" min-width="100" sortable></el-table-column>
       <el-table-column label="描述" prop="process_title" min-width="120" sortable></el-table-column>
-      <el-table-column label="负责人" prop="user_name" width="100" sortable></el-table-column>
+      <el-table-column label="流程负责人" prop="user_name" width="120" sortable></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="75" align="center">
         <template slot-scope="scope">
           {{scope.row.process_status | statusFilter}}

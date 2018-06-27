@@ -108,10 +108,10 @@
         },
         rules: {
           newPassword: [
-            { validator: validatePass, trigger: 'blur' }
+            { validator: validatePass, trigger: 'blur', required: true }
           ],
           checkPass: [
-            { validator: validatePass2, trigger: 'blur' }
+            { validator: validatePass2, trigger: 'blur', required: true }
           ],
           password: [
             { required: true, message: '请输入原密码', trigger: 'blur' }

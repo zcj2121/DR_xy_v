@@ -1,12 +1,12 @@
 <template>
   <div class="bigscreen">
     <div class="header">
-      <span class="pull-left time-start">开始时间：<span style="color:#66FF33">2018-05-18 14:21:00</span></span>
-      <span class="pull-right time-end">执行时间：<span style="color:#fecd54">00:21:25</span></span>
+      <span class="pull-left time-start">开始时间：<span style="color:#66FF33">{{bigScreenData.startTime | dateFilter}}</span></span>
+      <span class="pull-right time-end">执行时间：<span style="color:#fecd54">{{bigRunDate}}</span></span>
       <div class="title-box">
         <div class="title">
-          <div class="names">切换流程名称</div>
-          <div class="times">2018-05-18 14:21:00</div>
+          <div class="names">{{bigScreenData.processTitle}}</div>
+          <div class="times">{{newDate | dateFilter}}</div>
         </div>
       </div>
     </div>
@@ -16,9 +16,9 @@
       <div class="title">流程执行进度：</div>
       <div class="title" style="right: 15px;">
         <span class="time-name">切换状态：</span>
-        <span style="    color: #67C23A;">完成</span>
+        <span class="progress-state" :class="{'isrunning': bigScreenData.state === 1}">{{bigScreenData.state | stateFilter}}</span>
       </div>
-      <el-progress :text-inside="true" :stroke-width="14" :percentage="80" color="rgba(14, 170, 182, 0.7)"></el-progress>
+      <el-progress :class="{'no-start': bigScreenData.processSpeed <5}" :text-inside="true" :stroke-width="14" :percentage="bigScreenData.processSpeed | speedFilter" color="rgba(14, 170, 182, 0.7)"></el-progress>
     </div>
     <!--<div class="timebox">-->
       <!--<div class="time-title">-->
@@ -42,52 +42,17 @@
             <span class='statespan-finish'><span class="panel-btn scene-finish"></span>&nbsp;已完成</span>
             <span class='statespan-running'><span class="panel-btn scene-running"></span>&nbsp;执行中</span>
             <span class='statespan-nostart'><span class="panel-btn scene-nostart"></span>&nbsp;未开始</span>
-            <span class='statespan-stop'><span class="panel-btn scene-stop"></span>&nbsp;停止</span>
+            <span class='statespan-stop'><span class="panel-btn scene-stop"></span>&nbsp;终止</span>
           </small>
         </div>
         <div class="prc-box">
-          <div class="r_box end">
+          <div class="r_box" :style="{width:100/bigScreenData.drmSwitchingStageInstanceDtos.length+'%'}" :class="item.state | stageFilter" v-for="(item, index) in bigScreenData.drmSwitchingStageInstanceDtos" :key="index+'-'+item.id">
             <div class="r_item">
-              <p>1.切换阶段一</p>
-              <el-progress :text-inside="true" :stroke-width="14" :percentage="100" color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index">已完成</div>
+              <p>{{item.stageName}}</p>
+              <el-progress :class="{'no-start': item.stageSpeed <5}" :text-inside="true" :stroke-width="14" :percentage="item.stageSpeed | speedFilter" color="rgba(14, 170, 182, 0.7)"></el-progress>
+              <div class="r_item_index">{{item.state | stageNameFilter}}</div>
             </div>
-          </div>
-          <div class="r_box stop">
-            <div class="r_item">
-              <p>2.切换阶段二</p>
-              <el-progress :text-inside="true" :stroke-width="14" :percentage="80" color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index">停止</div>
-            </div>
-          </div>
-          <div class="r_box active">
-            <div class="r_item">
-              <p>3.切换阶段三</p>
-              <el-progress :text-inside="true" :stroke-width="14" :percentage="50" color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index">执行中</div>
-            </div>
-            <div class="r_box-sanjiao"></div>
-          </div>
-          <div class="r_box">
-            <div class="r_item">
-              <p>4.切换阶段四</p>
-              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0" color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index">未执行</div>
-            </div>
-          </div>
-          <div class="r_box">
-            <div class="r_item">
-              <p>5.切换阶段五</p>
-              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0" color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index">未执行</div>
-            </div>
-          </div>
-          <div class="r_box">
-            <div class="r_item">
-              <p>6.切换阶段六</p>
-              <el-progress class="no-start" :text-inside="true" :stroke-width="14" :percentage="0" color="rgba(14, 170, 182, 0.7)"></el-progress>
-              <div class="r_item_index">未执行</div>
-            </div>
+            <div class="r_box-sanjiao" v-if="item.state === 1"></div>
           </div>
         </div>
       </div>
@@ -100,356 +65,37 @@
           <span class='statespan-running'><span class="panel-btn scene-running"></span>&nbsp;执行中</span>
           <span class='statespan-skip'><span class="panel-btn scene-skip"></span>&nbsp;跳过</span>
           <span class='statespan-nostart'><span class="panel-btn scene-nostart"></span>&nbsp;未开始</span>
-          <span class='statespan-stop'><span class="panel-btn scene-stop"></span>&nbsp;停止</span>
+          <span class='statespan-stop'><span class="panel-btn scene-stop"></span>&nbsp;终止</span>
           <span class='statespan-error'><span class="panel-btn scene-error"></span>&nbsp;异常</span>
           <span class='statespan-suspend'><span class="panel-btn scene-suspend"></span>&nbsp;暂停</span>
         </small>
       </div>
       <div class='content-process'>
         <el-row :gutter="5">
-          <el-col :span="4">
+          <el-col :span="4" v-for="(child, index) in bigContent" :key="index+'--'+child.id">
             <div class="step-box">
-              <div class="step-title is-finish-box">
-                <span>切换步骤一</span>
+              <div class="step-title" :class="child.state | stepFilter">
+                <span>{{child.stepName}}</span>
               </div>
-              <i class="fa fa-angle-double-right"></i>
+              <i class="fa fa-angle-double-right" v-if="index+1 !== bigContent.length"></i>
               <div class="info-box">
                 <i class="fa fa-angle-down info-icon"></i>
                 <div class="info-item">
                   <div class="item-list">
                     <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
+                    <div :title="child.startTime | dateFilter">{{child.startTime | dateFilter}}</div>
                   </div>
                   <div class="item-list">
                     <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
+                    <div :title="child.endTime | dateFilter">{{child.endTime | dateFilter}}</div>
                   </div>
                   <div class="item-list">
                     <div>操作情况：</div>
-                    <div>完成</div>
+                    <div>{{child.state | stepNameFilter}}</div>
                   </div>
                   <div class="item-list">
                     <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-skip-box">
-                <span>切换步骤二</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-running-box">
-                <span>切换步骤三</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-suspend-box">
-                <span>切换步骤四</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-stop-box">
-                <span>切换步骤五</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-error-box">
-                <span>切换步骤六</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-nostart-box">
-                <span>切换步骤七</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-nostart-box">
-                <span>切换步骤八</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-nostart-box">
-                <span>切换步骤九</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-nostart-box">
-                <span>切换步骤十</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-nostart-box">
-                <span>切换步骤十一</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </el-col>
-          <el-col :span="4">
-            <div class="step-box">
-              <div class="step-title is-nostart-box">
-                <span>切换步骤十二</span>
-              </div>
-              <i class="fa fa-angle-double-right"></i>
-              <div class="info-box">
-                <i class="fa fa-angle-down info-icon"></i>
-                <div class="info-item">
-                  <div class="item-list">
-                    <div>开始时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>完成时间：</div>
-                    <div title="2018-05-18 14:21:00">2018-05-18 14:21:00</div>
-                  </div>
-                  <div class="item-list">
-                    <div>操作情况：</div>
-                    <div class="is-detail">自动化自行的日志</div>
-                  </div>
-                  <div class="item-list">
-                    <div>负责人：</div>
-                    <div>李四</div>
+                    <div>{{child.userName}}</div>
                   </div>
                 </div>
               </div>
@@ -466,32 +112,68 @@
 
 <script>
   import { bigScreen } from '@/api/change/execute'
-  import { formatDate } from '@/utils/index'
+  import { formatDate, MillisecondToDate } from '@/utils/index'
   export default {
     data() {
       return {
-        bigScreenData: {}
+        bigScreenData: {},
+        bigContent: [],
+        newDate: null,
+        bigRunDate: null,
+        isNow: []
       }
     },
     filters: {
+      stateFilter(state) {
+        const stateMap = {
+          0: '未开始',
+          1: '执行中',
+          7: '暂停',
+          8: '执行完成',
+          9: '进入历史',
+          10: '终止'
+        }
+        return stateMap[state]
+      },
       stageFilter(stage) {
         const stageMap = {
-          0: 'end',
-          1: 'stop',
-          2: 'active',
-          3: ''
+          2: 'end',
+          5: 'stop',
+          1: 'active',
+          0: ''
+        }
+        return stageMap[stage]
+      },
+      stageNameFilter(stage) {
+        const stageMap = {
+          2: '已完成',
+          5: '终止',
+          1: '执行中',
+          0: '未执行'
         }
         return stageMap[stage]
       },
       stepFilter(step) {
         const stepMap = {
-          0: 'is-finish-box',
-          1: 'is-skip-box',
-          2: 'is-running-box',
+          2: 'is-finish-box',
+          4: 'is-skip-box',
+          1: 'is-running-box',
           3: 'is-suspend-box',
-          4: 'is-stop-box',
-          5: 'is-error-box',
-          6: 'is-nostart-box'
+          5: 'is-stop-box',
+          13: 'is-error-box',
+          0: 'is-nostart-box'
+        }
+        return stepMap[step]
+      },
+      stepNameFilter(step) {
+        const stepMap = {
+          2: '已完成',
+          4: '已跳过',
+          1: '执行中',
+          3: '已暂停',
+          5: '已终止',
+          13: '异常',
+          0: '未开始'
         }
         return stepMap[step]
       },
@@ -502,13 +184,29 @@
         } else {
           return ''
         }
+      },
+      speedFilter(speed) {
+        if (speed) {
+          return Number(parseInt(speed))
+        }
       }
     },
-    computed: {
+    watch: {
+      isNow: {
+        handler(isNow) {
+          this.timeRun()
+        },
+        deep: true
+      }
     },
     created() {
-      console.log()
       this.fetchData()
+      setInterval(() => {
+        this.newDate = new Date()
+      }, 1000)
+      setInterval(() => {
+        this.fetchData()
+      }, 3000)
     },
     methods: {
       fetchData() {
@@ -517,8 +215,38 @@
         }).then(response => {
           if (response) {
             this.bigScreenData = response.data
+            const contentData = response.data.drmSwitchingStageInstanceDtos
+            this.isNow = [response.data.executionTime, response.data.endTime]
+            for (let i = 0; i < contentData.length; i++) {
+              if (contentData[i].state === 1) {
+                this.bigContent = contentData[i].lists
+                return
+              } else {
+                this.bigContent = contentData[contentData.length - 1].lists
+              }
+            }
           }
         })
+      },
+      timeRun() {
+        const date = this.isNow[0]
+        // this.bigRunDate = MillisecondToDate(Math.round(date * 60))
+        const endtime = this.isNow[1]
+        this.bigRunDate = ''
+        if (endtime) {
+          this.bigRunDate = MillisecondToDate(Math.round(date * 60))
+        } else {
+          this.bigRunDate = MillisecondToDate(Math.round(date * 60))
+          let thisDate = Math.round(date * 60)
+          setTimeout(() => {
+            thisDate += 1
+            this.bigRunDate = MillisecondToDate(thisDate)
+            setTimeout(() => {
+              thisDate += 1
+              this.bigRunDate = MillisecondToDate(thisDate)
+            }, 1000)
+          }, 1000)
+        }
       }
     }
   }
@@ -531,6 +259,11 @@
           margin-top: 0px;
           height: 14px;
           font-size: 12px;
+        }
+      }
+      .no-start{
+        .el-progress-bar__innerText{
+          color:#000;
         }
       }
     }
@@ -596,6 +329,11 @@
           width: 100%;
           .names {
             font-size: 18px;
+            position: absolute;
+            width: 300px;
+            bottom: 18px;
+            text-align: center;
+            left: -75px;
           }
           .times {
             margin-top: 3px;
@@ -616,6 +354,12 @@
       border-radius: 2px;
       padding: 10px 15px;
       border: 2px solid #222;
+      .progress-state{
+        color:rgb(254, 205, 84);
+      }
+      .isrunning{
+        color:#409EFF;
+      }
       .progress-title {
         width: 250px;
         height: 0;
@@ -733,7 +477,7 @@
         }
       }
       .content-prc .prc-box {
-        min-height: 80px;
+        min-height: 86px;
         overflow: hidden;
       }
       .r_box{
@@ -910,7 +654,7 @@
           background: #112a40;
         }
       }
-      /*停止*/
+      /*终止*/
       .statespan-stop{
         margin-left:5px;
         color: #E6A23C;
@@ -999,7 +743,7 @@
             border: 1px dashed #F56C6C;
             color:#F56C6C;
           }
-          /*停止*/
+          /*终止*/
           .is-stop-box{
             border: 1px dashed #E6A23C;
             color:#E6A23C;
@@ -1049,6 +793,9 @@
                 margin-top: 6px;
                 padding-bottom: 3px;
                 line-height: 16px;
+                div{
+                  min-height: 16px;
+                }
               }
               .item-list:last-child{
                 border-bottom:none;

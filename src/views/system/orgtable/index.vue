@@ -351,7 +351,6 @@
               })
             }
             this.userIdOptions = arr
-            console.log(this.userIdOptions)
           }
         })
         if (type === 'add') {

@@ -16,14 +16,14 @@
       <el-button class="filter-item" size="mini" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="operate('add')">新增</el-button>
     </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit>
-      <el-table-column label="名称" :show-overflow-tooltip="true" prop="preplanName" min-width="100" sortable></el-table-column>
-      <el-table-column label="版本" prop="versionNum" width="80" sortable></el-table-column>
+      <el-table-column label="预案名称" :show-overflow-tooltip="true" prop="preplanName" min-width="100" sortable></el-table-column>
+      <el-table-column label="版本号" prop="versionNum" width="90" sortable></el-table-column>
       <el-table-column class-name="status-col" label="预案类型" width="110">
         <template slot-scope="scope">
           {{scope.row.type === 1 ? '专项预案' : '总体预案'}}
         </template>
       </el-table-column>
-      <el-table-column label="负责人" prop="userName" width="100" sortable></el-table-column>
+      <el-table-column label="预案负责人" prop="userName" width="120" sortable></el-table-column>
       <el-table-column label="描述" :show-overflow-tooltip="true" prop="preDesc" min-width="120" sortable></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="75" align="center">
         <template slot-scope="scope">
@@ -42,7 +42,7 @@
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 5 }, '确认发布吗', '/dr/preplan/changePreplanStatus.do')">发布</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===3" @click="operationOther({ id: scope.row.id, preStatus: 0 }, '确认标记为历史吗', '/dr/preplan/changePreplanStatus.do')">标记为历史</el-button>
             <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operation({ id: scope.row.id }, '确认演练吗', '/rs/dr/preplanManager/startPreplanDrill')">演练</el-button>
-            <el-button size="mini" type="primary" v-if="scope.row.preStatus===5" @click="operationOther({ id: scope.row.id, preStatus: 3 }, '确认撤回吗', '/dr/preplan/changePreplanStatus.do')">撤回</el-button>
+            <el-button size="mini" type="primary" v-if="!(scope.row.preStatus===5 && scope.row.isDill === 2)" @click="operationOther({ id: scope.row.id, preStatus: 3 }, '确认撤回吗', '/dr/preplan/changePreplanStatus.do')">撤回</el-button>
           </el-button-group>
         </template>
       </el-table-column>
@@ -58,7 +58,7 @@
     </el-pagination>
     <!--新增、编辑、驳回编辑 弹出框-->
     <el-dialog :title="planTitle" width="800px" :visible.sync="formShow" :modal-append-to-body="false" @close="closeDialog('formAll')">
-      <el-form :model="form" ref="formAll" label-position="right" label-width="100px">
+      <el-form :model="form" ref="formAll" label-position="right" label-width="110px">
         <div class="error-box" v-if="isType === 'back'">
           <div class="pull-left error-box-title">驳回原因：</div>
           <div class="pull-left">{{form.rejectAdvice}}</div>
@@ -81,10 +81,10 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="负责人：" prop="userId" :rules="[
-                { required: true, message: '请选择负责人', trigger: 'change' }
+            <el-form-item label="预案负责人：" prop="userId" :rules="[
+                { required: true, message: '请选择预案负责人', trigger: 'change' }
               ]">
-              <el-select v-model="form.userId" placeholder="请选择负责人" style="width:100%;">
+              <el-select v-model="form.userId" placeholder="请选择预案负责人" style="width:100%;">
                 <el-option v-for="(item,index) in useridOptions" :key="index+'*'" :value="item.id"
                            :label="item.displayName"></el-option>
               </el-select>
@@ -154,7 +154,7 @@
           <tr>
             <td class="text-bold" style="width:100px;">编号</td>
             <td class="text-bold">预案验证执行操作</td>
-            <td class="text-bold" style="width:155px;">负责人</td>
+            <td class="text-bold" style="width:155px;">预案负责人</td>
             <td class="text-bold" style="width:65px;">操作</td>
           </tr>
           <tr v-for="(item, index) in executionList" :key="index">
@@ -163,7 +163,7 @@
               <el-input v-model="item.executionName" placeholder="请输入预案操作内容"></el-input>
             </td>
             <td>
-              <el-select v-model="item.userId" placeholder="请选择负责人" style="width:100%;">
+              <el-select v-model="item.userId" placeholder="请选择预案负责人" style="width:100%;">
                 <el-option v-for="(userOption, child) in useridOptions" :key="userOption.id+'+'+index" :value="userOption.id"
                            :label="userOption.displayName"></el-option>
               </el-select>
@@ -185,7 +185,7 @@
           <tr>
             <td class="text-bold" style="width:100px;">版本号</td>
             <td colspan="2">{{detailForm.versionNum}}</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
+            <td class="text-bold" style="width:100px;">预案负责人</td>
             <td colspan="2">{{detailForm.userName}}</td>
           </tr>
           <tr>
@@ -213,7 +213,7 @@
           <tr style="background: #f7f7f7;" v-if="isType === 'detail'">
             <td class="text-bold"></td>
             <td class="text-bold" colspan="4">预案验证执行操作</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
+            <td class="text-bold" style="width:100px;">预案负责人</td>
           </tr>
           <tr v-if="isType === 'detail'" v-for="(item,index) in detailForm.executionList" :key="index">
             <td>{{index+1}}</td>
@@ -229,7 +229,7 @@
             <tr>
               <td class="text-bold" style="width:100px;">版本号</td>
               <td colspan="2">{{item.versionNum}}</td>
-              <td class="text-bold" style="width:100px;">负责人</td>
+              <td class="text-bold" style="width:100px;">预案负责人</td>
               <td colspan="2">{{item.userName}}</td>
             </tr>
             <tr>
@@ -257,7 +257,7 @@
             <tr style="background: #f7f7f7;">
               <td class="text-bold"></td>
               <td class="text-bold" colspan="4">预案验证执行操作</td>
-              <td class="text-bold" style="width:100px;">负责人</td>
+              <td class="text-bold" style="width:100px;">预案负责人</td>
             </tr>
             <tr v-for="(child,childindex) in item.executionList" :key="index+'-'+childindex">
               <td>{{childindex+1}}</td>
@@ -273,7 +273,7 @@
           <tr>
             <td class="text-bold" style="width:100px;">编号</td>
             <td class="text-bold">预案验证执行操作</td>
-            <td class="text-bold" style="width:155px;">负责人</td>
+            <td class="text-bold" style="width:155px;">预案负责人</td>
             <td class="text-bold" style="width:65px;">操作</td>
           </tr>
           <tr v-for="(item, index) in executionList" :key="index">
@@ -282,7 +282,7 @@
               <el-input v-model="item.executionName" placeholder="请输入预案操作内容"></el-input>
             </td>
             <td>
-              <el-select v-model="item.userId" placeholder="请选择负责人" style="width:100%;">
+              <el-select v-model="item.userId" placeholder="请选择预案负责人" style="width:100%;">
                 <el-option v-for="(userOption, child) in useridOptions" :key="userOption.id+'-'+child" :value="userOption.id"
                            :label="userOption.displayName"></el-option>
               </el-select>
@@ -541,7 +541,7 @@
           })
         } else if (this.isType === 'back') {
           if (this.executionList.length < 1) {
-            this.$message.error('请配置预案验证执行操作和负责人')
+            this.$message.error('请配置预案验证执行操作和预案负责人')
             return
           } else {
             for (const i in this.executionList) {
@@ -550,7 +550,7 @@
                 return
               }
               if (!this.executionList[i].userId) {
-                this.$message.error('请选择负责人')
+                this.$message.error('请选择预案负责人')
                 return
               }
             }
@@ -662,7 +662,7 @@
       saveSet() {
         if (this.isType === 'cfg') {
           if (this.executionList.length < 1) {
-            this.$message.error('请配置预案验证执行操作和负责人')
+            this.$message.error('请配置预案验证执行操作和预案负责人')
             return
           } else {
             for (const i in this.executionList) {
@@ -671,7 +671,7 @@
                 return
               }
               if (!this.executionList[i].userId) {
-                this.$message.error('请选择负责人')
+                this.$message.error('请选择预案负责人')
                 return
               }
             }

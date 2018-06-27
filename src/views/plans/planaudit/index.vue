@@ -6,14 +6,14 @@
       <el-button class="filter-item" size="mini" type="primary" icon="el-icon-search" @click="search">搜索</el-button>
     </div>
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="Loading" border fit>
-      <el-table-column label="名称" :show-overflow-tooltip="true" prop="preplanName" min-width="100" sortable></el-table-column>
-      <el-table-column label="版本" prop="versionNum" width="80" sortable></el-table-column>
+      <el-table-column label="预案名称" :show-overflow-tooltip="true" prop="preplanName" min-width="100" sortable></el-table-column>
+      <el-table-column label="版本号" prop="versionNum" width="90" sortable></el-table-column>
       <el-table-column class-name="status-col" label="预案类型" width="110">
         <template slot-scope="scope">
           {{scope.row.type === 1 ? '专项预案' : '总体预案'}}
         </template>
       </el-table-column>
-      <el-table-column label="负责人" prop="userName" width="100" sortable></el-table-column>
+      <el-table-column label="预案负责人" prop="userName" width="120" sortable></el-table-column>
       <el-table-column label="描述" :show-overflow-tooltip="true" prop="preDesc" min-width="120" sortable></el-table-column>
       <el-table-column class-name="status-col" label="状态" width="75" align="center">
         <template slot-scope="scope">
@@ -45,7 +45,7 @@
           <tr>
             <td class="text-bold" style="width:100px;">版本号</td>
             <td colspan="2">{{detailForm.versionNum}}</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
+            <td class="text-bold" style="width:120px;">预案负责人</td>
             <td colspan="2">{{detailForm.userName}}</td>
           </tr>
           <tr>
@@ -73,10 +73,10 @@
           <tr style="background: #f7f7f7;">
             <td class="text-bold"></td>
             <td class="text-bold" colspan="4">预案验证执行操作</td>
-            <td class="text-bold" style="width:100px;">负责人</td>
+            <td class="text-bold" style="width:120px;">预案负责人</td>
           </tr>
           <tr v-for="(item,index) in detailForm.executionList" :key="index">
-            <td>{{index}}</td>
+            <td>{{index+1}}</td>
             <td colspan="4">{{item.executionName}}</td>
             <td style="width:100px;">{{item.userName}}</td>
           </tr>
@@ -89,7 +89,7 @@
             <tr>
               <td class="text-bold" style="width:100px;">版本号</td>
               <td colspan="2">{{item.versionNum}}</td>
-              <td class="text-bold" style="width:100px;">负责人</td>
+              <td class="text-bold" style="width:120px;">预案负责人</td>
               <td colspan="2">{{item.userName}}</td>
             </tr>
             <tr>
@@ -118,10 +118,10 @@
             <tr style="background: #f7f7f7;">
               <td class="text-bold"></td>
               <td class="text-bold" colspan="4">预案验证执行操作</td>
-              <td class="text-bold" style="width:100px;">负责人</td>
+              <td class="text-bold" style="width:120px;">预案负责人</td>
             </tr>
             <tr v-for="(child,childindex) in item.executionList" :key="index+'-'+childindex">
-              <td>{{childindex}}</td>
+              <td>{{childindex+1}}</td>
               <td colspan="4">{{child.executionName}}</td>
               <td style="width:100px;">{{child.userName}}</td>
             </tr>

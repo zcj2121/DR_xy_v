@@ -90,7 +90,9 @@
   .jOrgChart table {
     margin: auto;
   }
-
+  .jOrgChart>table {
+    margin-bottom: 20px;
+  }
   .jOrgChart td {
     text-align: center;
     vertical-align: top;

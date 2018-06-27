@@ -115,7 +115,6 @@
             }
             this.menuActive = Object.assign([], arr)
             this.defMenuActive = Object.assign([], arr)
-            console.log(this.defMenuActive)
             this.reset()
             this.listLoading = false
           }
@@ -158,7 +157,6 @@
         })
       },
       reset() {
-        console.log('123')
         this.$refs.tree.setCheckedKeys(this.defMenuActive) // 设置选中值
       }
     }
